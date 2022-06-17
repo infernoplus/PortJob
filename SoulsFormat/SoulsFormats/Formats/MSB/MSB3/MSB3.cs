@@ -192,7 +192,7 @@ namespace SoulsFormats
                 if (type != Type)
                     throw new InvalidDataException($"Expected param \"{Type}\", got param \"{type}\"");
 
-                var entries = new List<T>(offsetCount - 1);
+                List<T> entries = new List<T>(offsetCount - 1);
                 foreach (long offset in entryOffsets)
                 {
                     br.Position = offset;

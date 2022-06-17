@@ -26,7 +26,7 @@ namespace SoulsFormats
                 Capacity = memberCount;
                 for (int i = 0; i < memberCount; i++)
                 {
-                    var member = new FLVER.LayoutMember(br, structOffset);
+                    FLVER.LayoutMember member = new FLVER.LayoutMember(br, structOffset);
                     structOffset += member.Size;
                     Add(member);
                 }

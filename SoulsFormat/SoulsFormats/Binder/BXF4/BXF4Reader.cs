@@ -35,8 +35,8 @@ namespace SoulsFormats
             using (FileStream fsHeader = File.OpenRead(bhdPath))
             {
                 FileStream fsData = File.OpenRead(bdtPath);
-                var brHeader = new BinaryReaderEx(false, fsHeader);
-                var brData = new BinaryReaderEx(false, fsData);
+                BinaryReaderEx brHeader = new BinaryReaderEx(false, fsHeader);
+                BinaryReaderEx brData = new BinaryReaderEx(false, fsData);
                 Read(brHeader, brData);
             }
         }
@@ -48,9 +48,9 @@ namespace SoulsFormats
         {
             using (FileStream fsHeader = File.OpenRead(bhdPath))
             {
-                var msData = new MemoryStream(bdtBytes);
-                var brHeader = new BinaryReaderEx(false, fsHeader);
-                var brData = new BinaryReaderEx(false, msData);
+                MemoryStream msData = new MemoryStream(bdtBytes);
+                BinaryReaderEx brHeader = new BinaryReaderEx(false, fsHeader);
+                BinaryReaderEx brData = new BinaryReaderEx(false, msData);
                 Read(brHeader, brData);
             }
         }
@@ -60,11 +60,11 @@ namespace SoulsFormats
         /// </summary>
         public BXF4Reader(byte[] bhdBytes, string bdtPath)
         {
-            using (var msHeader = new MemoryStream(bhdBytes))
+            using (MemoryStream msHeader = new MemoryStream(bhdBytes))
             {
                 FileStream fsData = File.OpenRead(bdtPath);
-                var brHeader = new BinaryReaderEx(false, msHeader);
-                var brData = new BinaryReaderEx(false, fsData);
+                BinaryReaderEx brHeader = new BinaryReaderEx(false, msHeader);
+                BinaryReaderEx brData = new BinaryReaderEx(false, fsData);
                 Read(brHeader, brData);
             }
         }
@@ -74,11 +74,11 @@ namespace SoulsFormats
         /// </summary>
         public BXF4Reader(byte[] bhdBytes, byte[] bdtBytes)
         {
-            using (var msHeader = new MemoryStream(bhdBytes))
+            using (MemoryStream msHeader = new MemoryStream(bhdBytes))
             {
-                var msData = new MemoryStream(bdtBytes);
-                var brHeader = new BinaryReaderEx(false, msHeader);
-                var brData = new BinaryReaderEx(false, msData);
+                MemoryStream msData = new MemoryStream(bdtBytes);
+                BinaryReaderEx brHeader = new BinaryReaderEx(false, msHeader);
+                BinaryReaderEx brData = new BinaryReaderEx(false, msData);
                 Read(brHeader, brData);
             }
         }

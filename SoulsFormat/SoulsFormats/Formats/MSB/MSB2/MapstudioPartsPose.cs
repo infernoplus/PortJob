@@ -57,7 +57,7 @@ namespace SoulsFormats
             /// </summary>
             public PartPose DeepCopy()
             {
-                var pose = (PartPose)MemberwiseClone();
+                PartPose pose = (PartPose)MemberwiseClone();
                 pose.Bones = new List<Bone>(Bones.Count);
                 foreach (Bone bone in Bones)
                     pose.Bones.Add(bone.DeepCopy());

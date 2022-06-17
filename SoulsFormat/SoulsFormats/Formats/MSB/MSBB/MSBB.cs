@@ -139,7 +139,7 @@ namespace SoulsFormats
                 if (name != Name)
                     throw new InvalidDataException($"Expected param \"{Name}\", got param \"{name}\"");
 
-                var entries = new List<T>(offsetCount - 1);
+                List<T> entries = new List<T>(offsetCount - 1);
                 foreach (long offset in entryOffsets)
                 {
                     br.Position = offset;

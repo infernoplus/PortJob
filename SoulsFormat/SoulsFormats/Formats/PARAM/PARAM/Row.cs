@@ -37,7 +37,7 @@ namespace SoulsFormats
                 ID = id;
                 Name = name;
 
-                var cells = new Cell[paramdef.Fields.Count];
+                Cell[] cells = new Cell[paramdef.Fields.Count];
                 for (int i = 0; i < paramdef.Fields.Count; i++)
                 {
                     PARAMDEF.Field field = paramdef.Fields[i];
@@ -83,7 +83,7 @@ namespace SoulsFormats
                     return;
 
                 br.Position = DataOffset;
-                var cells = new Cell[paramdef.Fields.Count];
+                Cell[] cells = new Cell[paramdef.Fields.Count];
 
                 int bitOffset = -1;
                 PARAMDEF.DefType bitType = PARAMDEF.DefType.u8;

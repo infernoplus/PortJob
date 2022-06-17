@@ -17,9 +17,9 @@ namespace PortJob.Solvers
             {
                 List<FLVER.Bone> result = new List<FLVER.Bone>();
 
-                for (var i = 0; i < v.BoneIndices.Length; i++)
+                for (int i = 0; i < v.BoneIndices.Length; i++)
                 {
-                    var vertBoneIndex = v.BoneIndices[i];
+                    int vertBoneIndex = v.BoneIndices[i];
                     if (vertBoneIndex >= 0)
                     {
 /*                        if (Importer.JOBCONFIG.UseDirectBoneIndices) // Don't need this for DS1, just commented out
@@ -42,12 +42,12 @@ namespace PortJob.Solvers
 
         private static List<FLVER.Vertex> GetVerticesParentedToBone(FLVER2 f, FLVER.Bone b, Dictionary<FLVER.Vertex, List<FLVER.Bone>> pcbl)
         {
-            var result = new List<FLVER.Vertex>();
-            foreach (var sm in f.Meshes)
+            List<FLVER.Vertex> result = new List<FLVER.Vertex>();
+            foreach (FLVER2.Mesh sm in f.Meshes)
             {
-                foreach (var v in sm.Vertices)
+                foreach (FLVER.Vertex v in sm.Vertices)
                 {
-                    var bonesReferencedByThisShit = GetAllBonesReferencedByVertex(f, sm, v, pcbl);
+                    List<FLVER.Bone> bonesReferencedByThisShit = GetAllBonesReferencedByVertex(f, sm, v, pcbl);
                     if (bonesReferencedByThisShit.Contains(b))
                         result.Add(v);
                 }
@@ -67,7 +67,7 @@ namespace PortJob.Solvers
         {
             FLVER.Bone parent = bone;
 
-            var boneParentMatrix = Matrix.Identity;
+            Matrix boneParentMatrix = Matrix.Identity;
 
             do
             {
@@ -98,10 +98,10 @@ namespace PortJob.Solvers
 
         private static void SetBoneBoundingBox(FLVER2 f, FLVER.Bone b, Dictionary<FLVER.Vertex, List<FLVER.Bone>> pcbl)
         {
-            var bb = GetBoundingBox(GetVerticesParentedToBone(f, b, pcbl).Select(v => new Vector3(v.Position.X, v.Position.Y, v.Position.Z)).ToList());
+            BoundingBox bb = GetBoundingBox(GetVerticesParentedToBone(f, b, pcbl).Select(v => new Vector3(v.Position.X, v.Position.Y, v.Position.Z)).ToList());
             if (bb.Max.LengthSquared() != 0 || bb.Min.LengthSquared() != 0)
             {
-                var matrix = GetParentBoneMatrix(f, b);
+                Matrix matrix = GetParentBoneMatrix(f, b);
                 b.BoundingBoxMin = Vector3.Transform(bb.Min, Matrix.Invert(matrix)).ToNumerics();
                 b.BoundingBoxMax = Vector3.Transform(bb.Max, Matrix.Invert(matrix)).ToNumerics();
             }
@@ -116,17 +116,17 @@ namespace PortJob.Solvers
         {
             Dictionary<FLVER.Vertex, List<FLVER.Bone>> pcbl = new Dictionary<FLVER.Vertex, List<FLVER.Bone>>();
 
-            foreach (var b in f.Bones)
+            foreach (FLVER.Bone b in f.Bones)
             {
                 SetBoneBoundingBox(f, b, pcbl);
             }
 
 
-            var submeshBBs = new List<BoundingBox>();
+            List<BoundingBox> submeshBBs = new List<BoundingBox>();
 
-            foreach (var sm in f.Meshes)
+            foreach (FLVER2.Mesh sm in f.Meshes)
             {
-                var bb = GetBoundingBox(sm.Vertices.Select(v => new Vector3(v.Position.X, v.Position.Y, v.Position.Z)).ToList());
+                BoundingBox bb = GetBoundingBox(sm.Vertices.Select(v => new Vector3(v.Position.X, v.Position.Y, v.Position.Z)).ToList());
                 if (bb.Max.LengthSquared() != 0 || bb.Min.LengthSquared() != 0)
                 {
                     submeshBBs.Add(bb);
@@ -142,7 +142,7 @@ namespace PortJob.Solvers
 
             if (submeshBBs.Count > 0)
             {
-                var finalBB = submeshBBs[0];
+                BoundingBox finalBB = submeshBBs[0];
                 for (int i = 1; i < submeshBBs.Count; i++)
                 {
                     finalBB = BoundingBox.CreateMerged(finalBB, submeshBBs[i]);

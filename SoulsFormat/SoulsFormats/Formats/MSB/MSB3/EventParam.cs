@@ -207,7 +207,7 @@ namespace SoulsFormats
             /// </summary>
             public Event DeepCopy()
             {
-                var evnt = (Event)MemberwiseClone();
+                Event evnt = (Event)MemberwiseClone();
                 DeepCopyTo(evnt);
                 return evnt;
             }
@@ -510,7 +510,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Event evnt)
                 {
-                    var generator = (Generator)evnt;
+                    Generator generator = (Generator)evnt;
                     generator.SpawnPointNames = (string[])SpawnPointNames.Clone();
                     generator.SpawnPartNames = (string[])SpawnPartNames.Clone();
                 }
@@ -855,7 +855,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Event evnt)
                 {
-                    var walkRoute = (PatrolInfo)evnt;
+                    PatrolInfo walkRoute = (PatrolInfo)evnt;
                     walkRoute.WalkPointNames = (string[])WalkPointNames.Clone();
                 }
 
@@ -929,7 +929,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Event evnt)
                 {
-                    var groupTour = (PlatoonInfo)evnt;
+                    PlatoonInfo groupTour = (PlatoonInfo)evnt;
                     groupTour.GroupPartsNames = (string[])GroupPartsNames.Clone();
                 }
 

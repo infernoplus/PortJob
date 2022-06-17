@@ -20,7 +20,7 @@ namespace SoulsFormats.AC4
         {
             using (FileStream fs = System.IO.File.OpenRead(path))
             {
-                var br = new BinaryReaderEx(true, fs);
+                BinaryReaderEx br = new BinaryReaderEx(true, fs);
                 if (br.Length < 0x50 || br.GetInt32(4) != 0x10 || br.GetInt32(8) != 0x10 || br.GetInt32(0xC) != 0x800000)
                     return false;
 
@@ -38,7 +38,7 @@ namespace SoulsFormats.AC4
         /// </summary>
         public static Zero3 Read(string path)
         {
-            var containers = new List<BinaryReaderEx>();
+            List<BinaryReaderEx> containers = new List<BinaryReaderEx>();
             int index = 0;
             string containerPath = Path.ChangeExtension(path, index.ToString("D3"));
             while (System.IO.File.Exists(containerPath))
@@ -48,7 +48,7 @@ namespace SoulsFormats.AC4
                 containerPath = Path.ChangeExtension(path, index.ToString("D3"));
             }
 
-            var result = new Zero3(containers[0], containers);
+            Zero3 result = new Zero3(containers[0], containers);
             foreach (BinaryReaderEx br in containers)
                 br.Stream.Close();
             return result;

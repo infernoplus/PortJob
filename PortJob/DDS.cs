@@ -12,7 +12,7 @@ namespace PortJob
     {
         public static int GetTpfFormatFromDdsBytes(string texName, byte[] ddsBytes)
         {
-            using (var ddsStream = new MemoryStream(ddsBytes))
+            using (MemoryStream ddsStream = new MemoryStream(ddsBytes))
             {
                 DXGIFormat format = DDSFile.Read(ddsStream).Format;
 

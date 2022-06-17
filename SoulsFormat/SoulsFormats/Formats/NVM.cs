@@ -100,7 +100,7 @@ namespace SoulsFormats
             foreach (Triangle triangle in Triangles)
                 triangle.Write(bw);
 
-            var boxTriangleIndexOffsets = new Queue<int>();
+            Queue<int> boxTriangleIndexOffsets = new Queue<int>();
             void WriteBoxTriangleIndices(Box box)
             {
                 if (box == null)
@@ -126,7 +126,7 @@ namespace SoulsFormats
             int rootBoxOffset = RootBox.Write(bw, boxTriangleIndexOffsets);
             bw.FillInt32("RootBoxOffset", rootBoxOffset);
 
-            var entityTriangleIndexOffsets = new List<int>();
+            List<int> entityTriangleIndexOffsets = new List<int>();
             foreach (Entity entity in Entities)
             {
                 entityTriangleIndexOffsets.Add((int)bw.Position);

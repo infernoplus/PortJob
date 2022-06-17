@@ -88,7 +88,7 @@ namespace SoulsFormats
             bw.WriteInt32(Rooms.Count);
             bw.ReserveInt32("RoomsOffset");
 
-            var indicesOffsets = new long[Rooms.Count];
+            long[] indicesOffsets = new long[Rooms.Count];
             for (int i = 0; i < Rooms.Count; i++)
             {
                 indicesOffsets[i] = bw.Position;

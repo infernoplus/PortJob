@@ -39,7 +39,7 @@ namespace PortJob
         public static void convert(string fbxPath)
         {
             /* Create a blank FLVER */
-            var flver = new SoulsFormats.FLVER2();
+            FLVER2 flver = new SoulsFormats.FLVER2();
             flver.Header.Version = FLVER_VERSION;
 
             /* List for storing all TPF textures that this FLVER will use */
@@ -47,18 +47,18 @@ namespace PortJob
 
             /* Load FBX */
             Log.Info(0, "Converting static mesh: " + fbxPath);
-            var flverMeshNameMap = new Dictionary<SoulsFormats.FLVER2.Mesh, string>();
+            Dictionary<FLVER2.Mesh, string> flverMeshNameMap = new Dictionary<SoulsFormats.FLVER2.Mesh, string>();
 
-            var fbxImporter = new FbxImporter();
-            var context = new FBXConverterContext();
-            var fbx = fbxImporter.Import(fbxPath, context);
+            FbxImporter fbxImporter = new FbxImporter();
+            FBXConverterContext context = new FBXConverterContext();
+            NodeContent fbx = fbxImporter.Import(fbxPath, context);
 
             /* Grab all mesh content from FBX */
-            var FBX_Meshes = new Dictionary<SoulsFormats.FLVER2.Mesh, MeshContent>();
+            Dictionary<FLVER2.Mesh, MeshContent> FBX_Meshes = new Dictionary<SoulsFormats.FLVER2.Mesh, MeshContent>();
 
             void FBXHierarchySearch(NodeContent node)
             {
-                foreach (var fbxComponent in node.Children)
+                foreach (NodeContent fbxComponent in node.Children)
                 {
                     if (fbxComponent.Name.ToLower() == "collision")
                     {
@@ -91,22 +91,22 @@ namespace PortJob
 
             /* Read FBX mesh data */
             int mc = 0;
-            foreach (var kvp in FBX_Meshes)
+            foreach (KeyValuePair<FLVER2.Mesh, MeshContent> kvp in FBX_Meshes)
             {
                 Log.Info(2, "Mesh #" + mc + " :: " + kvp.Value.Name);
-                var flverMesh = kvp.Key;
-                var fbxMesh = kvp.Value;
+                FLVER2.Mesh flverMesh = kvp.Key;
+                MeshContent fbxMesh = kvp.Value;
 
-                var bonesReferencedByThisMesh = new List<SoulsFormats.FLVER.Bone>();
+                List<FLVER.Bone> bonesReferencedByThisMesh = new List<SoulsFormats.FLVER.Bone>();
 
-                var submeshHighQualityNormals = new List<Vector3>();
-                var submeshHighQualityTangents = new List<Vector4>();
-                var submeshVertexHighQualityBasePositions = new List<Vector3>();
-                var submeshVertexHighQualityBaseUVs = new List<Vector2>();
+                List<Vector3> submeshHighQualityNormals = new List<Vector3>();
+                List<Vector4> submeshHighQualityTangents = new List<Vector4>();
+                List<Vector3> submeshVertexHighQualityBasePositions = new List<Vector3>();
+                List<Vector2> submeshVertexHighQualityBaseUVs = new List<Vector2>();
 
                 /* Create face sets, split them if they are to big. */
                 int gc = 0;
-                foreach (var geometryNode in fbxMesh.Geometry)
+                foreach (GeometryContent geometryNode in fbxMesh.Geometry)
                 {
                     Log.Info(3, "Geometry #" + gc + " :: " + geometryNode.Name);
                     if (geometryNode is GeometryContent geometryContent)
@@ -116,7 +116,7 @@ namespace PortJob
                         int numFacesets = numTriangles / FACESET_MAX_TRIANGLES;
 
                         {
-                            var faceSet = new SoulsFormats.FLVER2.FaceSet();
+                            FLVER2.FaceSet faceSet = new SoulsFormats.FLVER2.FaceSet();
 
                             faceSet.CullBackfaces = geometryNode.Material.Name.StartsWith("!");
 
@@ -165,17 +165,17 @@ namespace PortJob
                             // The order that the textures are written to the material matters!
                             List<TextureKey> TextureChannelMap = MTD.getTextureMap(mtdName + ".mtd");
                             if (TextureChannelMap == null) { Log.Error(6, "Invalid MTD: " + mtdName);  }
-                            foreach (var TEX in TextureChannelMap)
+                            foreach (TextureKey TEX in TextureChannelMap)
                             {
                                 KeyValuePair<string, ExternalReference<TextureContent>> texKvp = new KeyValuePair<string, ExternalReference<TextureContent>>(null, null); //???? C# why the fuck even ??????????
-                                foreach (var boop in geometryContent.Material.Textures)
+                                foreach (KeyValuePair<string, ExternalReference<TextureContent>> boop in geometryContent.Material.Textures)
                                 {
                                     if (boop.Key.Equals(TEX.Key)) { texKvp = boop; break; }
                                 }
 
                                 if (texKvp.Key == null) { Log.Error(6, "Missing key: " + TEX.Value); }
 
-                                var shortTexName = "mw_" + Utility.PathToFileName(texKvp.Value.Filename);
+                                string shortTexName = "mw_" + Utility.PathToFileName(texKvp.Value.Filename);
                                 matTextures.Add(new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11));
 
                                 // Writes every texture to a seperate file.
@@ -183,8 +183,8 @@ namespace PortJob
                                 TPF nuTpf = new TPF();
                                 nuTpf.Encoding = TPF_ENCODING;
                                 nuTpf.Flag2 = TPF_FLAG_2;
-                                var texBytes = File.ReadAllBytes(texKvp.Value.Filename);
-                                var texFormat = DDS.GetTpfFormatFromDdsBytes(shortTexName, texBytes);
+                                byte[] texBytes = File.ReadAllBytes(texKvp.Value.Filename);
+                                int texFormat = DDS.GetTpfFormatFromDdsBytes(shortTexName, texBytes);
 
                                 if(texFormat == 0) { Log.Error(6, "Texture is an unrecognized format [" + shortTexName + "::" + texFormat + "]"); }
                                 else { Log.Info(6, "Texure [" + shortTexName + "::" + texFormat + "]"); }
@@ -205,7 +205,7 @@ namespace PortJob
 
                         /* Write material to FLVER */
                         FLVER2.Material mat = new FLVER2.Material(matName, mtdName + ".mtd", 0);
-                        foreach(var t in matTextures)
+                        foreach(TextureKey t in matTextures)
                         {
                             FLVER2.Texture tex = new FLVER2.Texture(t.Key, t.Value, System.Numerics.Vector2.One, t.Unk10, t.Unk11, 0, 0, 0);
                             mat.Textures.Add(tex);
@@ -216,13 +216,13 @@ namespace PortJob
                         Log.Info(5, "Writing vertices");
                         for (int i = 0; i < geometryContent.Vertices.Positions.Count; i++)
                         {
-                            var nextPosition = geometryContent.Vertices.Positions[i];
-                            var posVec3 = Vector3.Transform(
+                            Vector3 nextPosition = geometryContent.Vertices.Positions[i];
+                            Vector3 posVec3 = Vector3.Transform(
                                 new Vector3(-nextPosition.X, nextPosition.Y, nextPosition.Z)
                                 , (ABSOLUTE_VERT_POSITIONS ? fbxMesh.AbsoluteTransform : fbx.Transform) * Matrix.CreateScale(GLOBAL_SCALE)
                                 );
 
-                            var newVert = new SoulsFormats.FLVER.Vertex()
+                            FLVER.Vertex newVert = new SoulsFormats.FLVER.Vertex()
                             {
                                 Position = new System.Numerics.Vector3(posVec3.X, posVec3.Y, posVec3.Z),
                                 BoneIndices = new SoulsFormats.FLVER.VertexBoneIndices(),
@@ -230,7 +230,7 @@ namespace PortJob
                             };
 
                             /* Add placeholder vertex data to FLVER */
-                            foreach (var memb in MTD.getLayout(mtdName + ".mtd", true))
+                            foreach (FLVER.LayoutMember memb in MTD.getLayout(mtdName + ".mtd", true))
                             {
                                 switch (memb.Semantic)
                                 {
@@ -259,15 +259,15 @@ namespace PortJob
 
                         /* Write real vertex data to FLVER */
                         Log.Info(5, "Writing vertex data");
-                        foreach (var channel in geometryContent.Vertices.Channels)
+                        foreach (VertexChannel channel in geometryContent.Vertices.Channels)
                         {
                             if (channel.Name == "Normal0")
                             {
                                 for (int i = 0; i < flverMesh.Vertices.Count; i++)
                                 {
-                                    var channelValue = (Vector3)(channel[i]);
-                                    var normalRotMatrix = Matrix.CreateRotationX(-MathHelper.PiOver2);
-                                    var normalInputVector = new Vector3(-channelValue.X, channelValue.Y, channelValue.Z);
+                                    Vector3 channelValue = (Vector3)(channel[i]);
+                                    Matrix normalRotMatrix = Matrix.CreateRotationX(-MathHelper.PiOver2);
+                                    Vector3 normalInputVector = new Vector3(-channelValue.X, channelValue.Y, channelValue.Z);
 
                                     Vector3 rotatedNormal = Vector3.Normalize(
                                         Vector3.TransformNormal(normalInputVector, normalRotMatrix)
@@ -285,7 +285,7 @@ namespace PortJob
                             }
                             else if (channel.Name.StartsWith("TextureCoordinate"))
                             {
-                                var uvIndex = Utility.GetChannelIndex(channel.Name);
+                                int uvIndex = Utility.GetChannelIndex(channel.Name);
 
                                 if (uvIndex > 2)
                                 {
@@ -296,9 +296,9 @@ namespace PortJob
 
                                 for (int i = 0; i < flverMesh.Vertices.Count; i++)
                                 {
-                                    var channelValue = (Vector2)channel[i];
+                                    Vector2 channelValue = (Vector2)channel[i];
 
-                                    var uv = new System.Numerics.Vector3(channelValue.X, channelValue.Y, 0);
+                                    System.Numerics.Vector3 uv = new System.Numerics.Vector3(channelValue.X, channelValue.Y, 0);
 
                                     if (flverMesh.Vertices[i].UVs.Count > uvIndex)
                                     {
@@ -328,7 +328,7 @@ namespace PortJob
                                 Log.Info(6, "Mesh vertex color data.");
                                 for (int i = 0; i < flverMesh.Vertices.Count; i++)
                                 {
-                                    var channelValue = (Vector4)channel[i];
+                                    Vector4 channelValue = (Vector4)channel[i];
                                     flverMesh.Vertices[i].Colors[0] = new SoulsFormats.FLVER.VertexColor(channelValue.W, channelValue.X, channelValue.Y, channelValue.Z);
                                 }
                             }
@@ -340,7 +340,7 @@ namespace PortJob
 
                         /* Set blank weights for all vertices */
                         // According to meows code, not doing this causes weird things to happen
-                        foreach (var vert in flverMesh.Vertices)
+                        foreach (FLVER.Vertex vert in flverMesh.Vertices)
                         {
                             vert.BoneIndices = new SoulsFormats.FLVER.VertexBoneIndices();
                             vert.BoneWeights = new SoulsFormats.FLVER.VertexBoneWeights();
@@ -356,15 +356,15 @@ namespace PortJob
                 }
 
                 /* Don't know */
-                foreach (var refBone in bonesReferencedByThisMesh)
+                foreach (FLVER.Bone refBone in bonesReferencedByThisMesh)
                 {
                     flverMesh.BoneIndices.Add(flver.Bones.IndexOf(refBone));
                 }
 
                 /* Don't know */
-                var submeshVertexIndices = new List<int>();
+                List<int> submeshVertexIndices = new List<int>();
 
-                foreach (var faceSet in flverMesh.FaceSets)
+                foreach (FLVER2.FaceSet faceSet in flverMesh.FaceSets)
                 {
                     submeshVertexIndices.AddRange(faceSet.Indices);
                 }
@@ -396,7 +396,7 @@ namespace PortJob
                 }
 
                 /* Meow just wrote "bone shit" here so I guess that? */
-                foreach (var mesh in flver.Meshes)
+                foreach (FLVER2.Mesh mesh in flver.Meshes)
                 {
                     if (mesh.BoneIndices.Count == 0)
                         mesh.BoneIndices.Add(0);
@@ -404,7 +404,7 @@ namespace PortJob
                     mesh.DefaultBoneIndex = 0;
                 }
 
-                var topLevelParentBones = flver.Bones.Where(x => x.ParentIndex == -1).ToArray();
+                FLVER.Bone[] topLevelParentBones = flver.Bones.Where(x => x.ParentIndex == -1).ToArray();
 
                 if (topLevelParentBones.Length > 0)
                 {
@@ -436,7 +436,7 @@ namespace PortJob
 
             /* Write Buffer Layouts */
             flver.BufferLayouts = new List<SoulsFormats.FLVER2.BufferLayout>();
-            foreach (var mat in flver.Materials)
+            foreach (FLVER2.Material mat in flver.Materials)
             {
                 flver.BufferLayouts.Add(MTD.getLayout(mat.MTD, true));
             }
@@ -453,7 +453,7 @@ namespace PortJob
             Solvers.BoundingBoxSolver.FixAllBoundingBoxes(flver);
 
             /* Don't know */
-            foreach (var kvp in FBX_Meshes)
+            foreach (KeyValuePair<FLVER2.Mesh, MeshContent> kvp in FBX_Meshes)
             {
                 flverMeshNameMap.Add(kvp.Key, kvp.Value.Name);
             }
@@ -463,7 +463,7 @@ namespace PortJob
             string flverPath = outPath + "test.flver";
             Log.Info(1, "Writing FLVER to: " + flverPath);
             flver.Write(flverPath);
-            foreach (var tpf in tpfs)
+            foreach (TPF tpf in tpfs)
             {
                 string tpfPath = outPath + tpf.Textures[0].Name + ".tpf";
                 Log.Info(2, "Writing TPF to: " + tpfPath);

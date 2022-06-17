@@ -36,7 +36,7 @@ namespace SoulsFormats
             do
             {
                 ambiguous = false;
-                var nameCounts = new Dictionary<string, int>();
+                Dictionary<string, int> nameCounts = new Dictionary<string, int>();
                 foreach (IMsbEntry entry in entries)
                 {
                     string name = entry.Name;
@@ -70,7 +70,7 @@ namespace SoulsFormats
 
         internal static string[] FindNames<T>(List<T> list, int[] indices) where T : IMsbEntry
         {
-            var names = new string[indices.Length];
+            string[] names = new string[indices.Length];
             for (int i = 0; i < indices.Length; i++)
                 names[i] = FindName(list, indices[i]);
             return names;
@@ -93,7 +93,7 @@ namespace SoulsFormats
 
         internal static int[] FindIndices<T>(List<T> list, string[] names) where T : IMsbEntry
         {
-            var indices = new int[names.Length];
+            int[] indices = new int[names.Length];
             for (int i = 0; i < names.Length; i++)
                 indices[i] = FindIndex(list, names[i]);
             return indices;

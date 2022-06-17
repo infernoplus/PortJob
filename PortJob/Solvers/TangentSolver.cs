@@ -16,30 +16,30 @@ namespace PortJob.Solvers
             Vector3 ans = new Vector3(0, 0, 0);
 
 
-            var cosa = Math.Cos(yaw);
-            var sina = Math.Sin(yaw);
+            double cosa = Math.Cos(yaw);
+            double sina = Math.Sin(yaw);
 
-            var cosb = Math.Cos(pitch);
-            var sinb = Math.Sin(pitch);
+            double cosb = Math.Cos(pitch);
+            double sinb = Math.Sin(pitch);
 
-            var cosc = Math.Cos(roll);
-            var sinc = Math.Sin(roll);
+            double cosc = Math.Cos(roll);
+            double sinc = Math.Sin(roll);
 
-            var Axx = cosa * cosb;
-            var Axy = cosa * sinb * sinc - sina * cosc;
-            var Axz = cosa * sinb * cosc + sina * sinc;
+            double Axx = cosa * cosb;
+            double Axy = cosa * sinb * sinc - sina * cosc;
+            double Axz = cosa * sinb * cosc + sina * sinc;
 
-            var Ayx = sina * cosb;
-            var Ayy = sina * sinb * sinc + cosa * cosc;
-            var Ayz = sina * sinb * cosc - cosa * sinc;
+            double Ayx = sina * cosb;
+            double Ayy = sina * sinb * sinc + cosa * cosc;
+            double Ayz = sina * sinb * cosc - cosa * sinc;
 
-            var Azx = -sinb;
-            var Azy = cosb * sinc;
-            var Azz = cosb * cosc;
+            double Azx = -sinb;
+            double Azy = cosb * sinc;
+            double Azz = cosb * cosc;
 
-            var px = p.X;
-            var py = p.Y;
-            var pz = p.Z;
+            float px = p.X;
+            float py = p.Y;
+            float pz = p.Z;
 
             ans.X = (float)(Axx * px + Axy * py + Axz * pz);
             ans.Y = (float)(Ayx * px + Ayy * py + Ayz * pz);
@@ -114,13 +114,13 @@ namespace PortJob.Solvers
 
                 float w = ((!(Vector3.Dot(Vector3.Cross(n, t), tan2[i]) < 0f)) ? 1 : (-1));
 
-                var outTanVec3 = Vector3.Normalize(t - n * Vector3.Dot(n, t));
+                Vector3 outTanVec3 = Vector3.Normalize(t - n * Vector3.Dot(n, t));
 
                 mesh.Vertices[i].Tangents[0] = (new System.Numerics.Vector4(outTanVec3.X, outTanVec3.Y, outTanVec3.Z, w));
 
                 if (mesh.Vertices[i].Tangents.Count == 2)
                 {
-                    var ghettoTan = RotatePoint(new Vector3(mesh.Vertices[i].Normal.X, mesh.Vertices[i].Normal.Y, mesh.Vertices[i].Normal.Z), 0, MathHelper.PiOver2, 0);
+                    Vector3 ghettoTan = RotatePoint(new Vector3(mesh.Vertices[i].Normal.X, mesh.Vertices[i].Normal.Y, mesh.Vertices[i].Normal.Z), 0, MathHelper.PiOver2, 0);
                     mesh.Vertices[i].Tangents[1] = new System.Numerics.Vector4(ghettoTan.X, ghettoTan.Y, ghettoTan.Z, 0);
                 }
 

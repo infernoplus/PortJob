@@ -91,8 +91,8 @@ namespace PortJob
 
         private static void loadMTDInfoList()
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "PortJob.Resources.DS1_MTD_INFO.json";
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string resourceName = "PortJob.Resources.DS1_MTD_INFO.json";
             string data;
 
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
