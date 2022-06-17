@@ -154,7 +154,7 @@ namespace SoulsFormats
 
             Animations.Sort((a1, a2) => a1.ID.CompareTo(a2.ID));
 
-            var animOffsets = new List<long>(Animations.Count);
+            List<long> animOffsets = new List<long>(Animations.Count);
             if (Animations.Count == 0)
             {
                 bw.FillInt64("AnimsOffset", 0);
@@ -270,7 +270,7 @@ namespace SoulsFormats
                     br.ReadInt32(); // Times count
                     br.AssertInt32(0);
 
-                    var eventHeaderOffsets = new List<long>(eventCount);
+                    List<long> eventHeaderOffsets = new List<long>(eventCount);
                     Events = new List<Event>(eventCount);
                     br.StepIn(eventHeadersOffset);
                     {
@@ -355,7 +355,7 @@ namespace SoulsFormats
 
             internal Dictionary<float, long> WriteTimes(BinaryWriterEx bw, int animIndex)
             {
-                var times = new SortedSet<float>();
+                SortedSet<float> times = new SortedSet<float>();
                 foreach (Event evt in Events)
                 {
                     times.Add(evt.StartTime);
@@ -368,7 +368,7 @@ namespace SoulsFormats
                 else
                     bw.FillInt64($"TimesOffset{animIndex}", bw.Position);
 
-                var timeOffsets = new Dictionary<float, long>();
+                Dictionary<float, long> timeOffsets = new Dictionary<float, long>();
                 foreach (float time in times)
                 {
                     timeOffsets[time] = bw.Position;
@@ -381,7 +381,7 @@ namespace SoulsFormats
 
             internal List<long> WriteEventHeaders(BinaryWriterEx bw, int animIndex, Dictionary<float, long> timeOffsets)
             {
-                var eventHeaderOffsets = new List<long>(Events.Count);
+                List<long> eventHeaderOffsets = new List<long>(Events.Count);
                 if (Events.Count > 0)
                 {
                     bw.FillInt64($"EventHeadersOffset{animIndex}", bw.Position);

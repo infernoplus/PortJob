@@ -85,7 +85,7 @@ namespace SoulsFormats.SOM
 
             public List<Vertex[]> GetFaces()
             {
-                var faces = new List<Vertex[]>();
+                List<Vertex[]> faces = new List<Vertex[]>();
                 for (int i = 0; i < Indices.Length; i += 3)
                 {
                     faces.Add(new Vertex[]

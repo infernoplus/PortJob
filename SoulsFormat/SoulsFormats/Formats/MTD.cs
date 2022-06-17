@@ -106,9 +106,9 @@ namespace SoulsFormats
         protected override void Write(BinaryWriterEx bw)
         {
             bw.BigEndian = false;
-            var fileBlock = Block.Write(bw, 0, 3, 0x01);
+            Block fileBlock = Block.Write(bw, 0, 3, 0x01);
             {
-                var headerBlock = Block.Write(bw, 1, 2, 0xB0);
+                Block headerBlock = Block.Write(bw, 1, 2, 0xB0);
                 {
                     WriteMarkedString(bw, 0x34, "MTD ");
                     bw.WriteInt32(1000);
@@ -116,13 +116,13 @@ namespace SoulsFormats
                 headerBlock.Finish(bw);
                 WriteMarker(bw, 0x01);
 
-                var dataBlock = Block.Write(bw, 2, 4, 0xA3);
+                Block dataBlock = Block.Write(bw, 2, 4, 0xA3);
                 {
                     WriteMarkedString(bw, 0xA3, ShaderPath);
                     WriteMarkedString(bw, 0x03, Description);
                     bw.WriteInt32(1);
 
-                    var listsBlock = Block.Write(bw, 3, 4, 0xA3);
+                    Block listsBlock = Block.Write(bw, 3, 4, 0xA3);
                     {
                         bw.WriteInt32(0);
                         WriteMarker(bw, 0x03);
@@ -227,7 +227,7 @@ namespace SoulsFormats
 
             internal void Write(BinaryWriterEx bw)
             {
-                var paramBlock = Block.Write(bw, 4, 4, 0xA3);
+                Block paramBlock = Block.Write(bw, 4, 4, 0xA3);
                 {
                     WriteMarkedString(bw, 0xA3, Name);
                     WriteMarkedString(bw, 0x04, Type.ToString().ToLower());
@@ -251,7 +251,7 @@ namespace SoulsFormats
                         valueBlockMarker = 0xCA;
                     }
 
-                    var valueBlock = Block.Write(bw, valueBlockType, 1, valueBlockMarker);
+                    Block valueBlock = Block.Write(bw, valueBlockType, 1, valueBlockMarker);
                     {
                         int valueCount = -1;
                         if (Type == ParamType.Bool || Type == ParamType.Int || Type == ParamType.Float)
@@ -389,7 +389,7 @@ namespace SoulsFormats
 
             internal Texture(BinaryReaderEx br)
             {
-                var textureBlock = Block.Read(br, 0x2000, null, 0xA3);
+                Block textureBlock = Block.Read(br, 0x2000, null, 0xA3);
                 {
                     if (textureBlock.Version == 3)
                         Extended = false;
@@ -420,7 +420,7 @@ namespace SoulsFormats
 
             internal void Write(BinaryWriterEx bw)
             {
-                var textureBlock = Block.Write(bw, 0x2000, Extended ? 5 : 3, 0xA3);
+                Block textureBlock = Block.Write(bw, 0x2000, Extended ? 5 : 3, 0xA3);
                 {
                     WriteMarkedString(bw, 0x35, Type);
                     bw.WriteInt32(UVNumber);

@@ -155,14 +155,14 @@ namespace SoulsFormats
 
             bw.FillInt32("Section3Offset", (int)bw.Position);
             List<Section2> section2s = Section1Tree.Section2s;
-            var section3s = new List<Section3>();
+            List<Section3> section3s = new List<Section3>();
             for (int i = 0; i < section2s.Count; i++)
                 section2s[i].WriteSection3s(bw, i, section3s);
             bw.FillInt32("Section3Count", section3s.Count);
             bw.Pad(0x10);
 
             bw.FillInt32("Section4Offset", (int)bw.Position);
-            var section4s = new List<Section4>();
+            List<Section4> section4s = new List<Section4>();
             Section4Tree.Write(bw, section4s);
             Section4Tree.WriteSection4s(bw, section4s);
             bw.FillInt32("Section4Count", section4s.Count);
@@ -177,35 +177,35 @@ namespace SoulsFormats
 
             bw.FillInt32("Section6Offset", (int)bw.Position);
             section5Count = 0;
-            var section6s = new List<FFXDrawEntityHost>();
+            List<FFXDrawEntityHost> section6s = new List<FFXDrawEntityHost>();
             for (int i = 0; i < section4s.Count; i++)
                 section4s[i].WriteSection6s(bw, i, ref section5Count, section6s);
             bw.FillInt32("Section6Count", section6s.Count);
             bw.Pad(0x10);
 
             bw.FillInt32("Section7Offset", (int)bw.Position);
-            var section7s = new List<FFXProperty>();
+            List<FFXProperty> section7s = new List<FFXProperty>();
             for (int i = 0; i < section6s.Count; i++)
                 section6s[i].WriteSection7s(bw, i, section7s);
             bw.FillInt32("Section7Count", section7s.Count);
             bw.Pad(0x10);
 
             bw.FillInt32("Section8Offset", (int)bw.Position);
-            var section8s = new List<Section8>();
+            List<Section8> section8s = new List<Section8>();
             for (int i = 0; i < section7s.Count; i++)
                 section7s[i].WriteSection8s(bw, i, section8s);
             bw.FillInt32("Section8Count", section8s.Count);
             bw.Pad(0x10);
 
             bw.FillInt32("Section9Offset", (int)bw.Position);
-            var section9s = new List<Section9>();
+            List<Section9> section9s = new List<Section9>();
             for (int i = 0; i < section8s.Count; i++)
                 section8s[i].WriteSection9s(bw, i, section9s);
             bw.FillInt32("Section9Count", section9s.Count);
             bw.Pad(0x10);
 
             bw.FillInt32("Section10Offset", (int)bw.Position);
-            var section10s = new List<Section10>();
+            List<Section10> section10s = new List<Section10>();
             for (int i = 0; i < section6s.Count; i++)
                 section6s[i].WriteSection10s(bw, i, section10s);
             bw.FillInt32("Section10Count", section10s.Count);

@@ -112,7 +112,7 @@ namespace SoulsFormats
                     Vertices = new List<FLVER.Vertex>(vertexCount);
                     for (int i = 0; i < vertexCount; i++)
                     {
-                        var vert = new FLVER.Vertex();
+                        FLVER.Vertex vert = new FLVER.Vertex();
                         vert.Read(br, layout, uvFactor);
                         Vertices.Add(vert);
                     }
@@ -123,7 +123,7 @@ namespace SoulsFormats
             public List<FLVER.Vertex[]> GetFaces(int version)
             {
                 List<int> indices = Triangulate(version);
-                var faces = new List<FLVER.Vertex[]>();
+                List<FLVER.Vertex[]> faces = new List<FLVER.Vertex[]>();
                 for (int i = 0; i < indices.Count; i += 3)
                 {
                     faces.Add(new FLVER.Vertex[]
@@ -138,7 +138,7 @@ namespace SoulsFormats
 
             public List<int> Triangulate(int version)
             {
-                var triangles = new List<int>();
+                List<int> triangles = new List<int>();
                 if (version >= 0x15 && Unk03 == 0)
                 {
                     triangles = new List<int>(VertexIndices);

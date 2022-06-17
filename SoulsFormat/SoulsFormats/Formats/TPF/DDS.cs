@@ -41,7 +41,7 @@ namespace SoulsFormats
         /// </summary>
         public DDS(byte[] bytes)
         {
-            var br = new BinaryReaderEx(false, bytes);
+            BinaryReaderEx br = new BinaryReaderEx(false, bytes);
 
             br.AssertASCII("DDS "); // dwMagic
             br.AssertInt32(0x7C); // dwSize
@@ -70,7 +70,7 @@ namespace SoulsFormats
         /// </summary>
         public byte[] Write(byte[] pixelData)
         {
-            var bw = new BinaryWriterEx(false);
+            BinaryWriterEx bw = new BinaryWriterEx(false);
 
             bw.WriteASCII("DDS ");
             bw.WriteInt32(0x7C);

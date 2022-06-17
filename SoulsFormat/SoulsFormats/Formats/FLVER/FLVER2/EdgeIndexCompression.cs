@@ -23,7 +23,7 @@ namespace SoulsFormats
                     br.AssertInt32(0);
                     br.ReadInt32();
 
-                    var indices = new List<int>(indexCount);
+                    List<int> indices = new List<int>(indexCount);
                     for (int i = 0; i < memberCount; i++)
                     {
                         int dataLength = br.ReadInt32();
@@ -52,7 +52,7 @@ namespace SoulsFormats
                         byte[] buffer = new byte[memberIndexCount * 32];
                         br.GetBytes(start + dataOffset, buffer, 0, dataLength);
                         DecompressIndexes_C_Standalone(memberIndexCount, buffer);
-                        var brBuffer = new BinaryReaderEx(true, buffer);
+                        BinaryReaderEx brBuffer = new BinaryReaderEx(true, buffer);
                         for (int j = 0; j < memberIndexCount; j++)
                             indices.Add(baseIndex + brBuffer.ReadUInt16());
                     }

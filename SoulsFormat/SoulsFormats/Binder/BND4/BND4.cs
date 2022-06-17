@@ -132,7 +132,7 @@ namespace SoulsFormats
             if (fileHeaderSize != Binder.GetBND4FileHeaderSize(bnd.Format))
                 throw new FormatException($"File header size for format {bnd.Format} is expected to be 0x{Binder.GetBND4FileHeaderSize(bnd.Format):X}, but was 0x{fileHeaderSize:X}");
 
-            var fileHeaders = new List<BinderFileHeader>(fileCount);
+            List<BinderFileHeader> fileHeaders = new List<BinderFileHeader>(fileCount);
             for (int i = 0; i < fileCount; i++)
                 fileHeaders.Add(BinderFileHeader.ReadBinder4FileHeader(br, bnd.Format, bnd.BitBigEndian, bnd.Unicode));
 
@@ -144,7 +144,7 @@ namespace SoulsFormats
         /// </summary>
         protected override void Write(BinaryWriterEx bw)
         {
-            var fileHeaders = new List<BinderFileHeader>(Files.Count);
+            List<BinderFileHeader> fileHeaders = new List<BinderFileHeader>(Files.Count);
             foreach (BinderFile file in Files)
                 fileHeaders.Add(new BinderFileHeader(file));
 

@@ -317,7 +317,7 @@ namespace SoulsFormats
                 br.AssertInt64(0);
             }
 
-            var fileHeaders = new List<BinderFileHeader>(fileCount);
+            List<BinderFileHeader> fileHeaders = new List<BinderFileHeader>(fileCount);
             for (int i = 0; i < fileCount; i++)
                 fileHeaders.Add(BinderFileHeader.ReadBinder4FileHeader(br, bxf.Format, bxf.BitBigEndian, bxf.Unicode));
 
@@ -326,7 +326,7 @@ namespace SoulsFormats
 
         private void Write(BinaryWriterEx bhdWriter, BinaryWriterEx bdtWriter)
         {
-            var fileHeaders = new List<BinderFileHeader>(Files.Count);
+            List<BinderFileHeader> fileHeaders = new List<BinderFileHeader>(Files.Count);
             foreach (BinderFile file in Files)
                 fileHeaders.Add(new BinderFileHeader(file));
 

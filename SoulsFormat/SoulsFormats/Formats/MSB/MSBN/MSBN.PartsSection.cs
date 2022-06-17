@@ -99,57 +99,57 @@ namespace SoulsFormats
                 switch (type)
                 {
                     case PartsType.MapPiece:
-                        var mapPiece = new Part(br);
+                        Part mapPiece = new Part(br);
                         MapPieces.Add(mapPiece);
                         return mapPiece;
 
                     case PartsType.Object:
-                        var obj = new Part(br);
+                        Part obj = new Part(br);
                         Objects.Add(obj);
                         return obj;
 
                     case PartsType.Enemy:
-                        var enemy = new Part(br);
+                        Part enemy = new Part(br);
                         Enemies.Add(enemy);
                         return enemy;
 
                     case PartsType.Item:
-                        var item = new Part(br);
+                        Part item = new Part(br);
                         Items.Add(item);
                         return item;
 
                     case PartsType.Player:
-                        var player = new Part(br);
+                        Part player = new Part(br);
                         Players.Add(player);
                         return player;
 
                     case PartsType.Collision:
-                        var collision = new Part(br);
+                        Part collision = new Part(br);
                         Collisions.Add(collision);
                         return collision;
 
                     case PartsType.Protoboss:
-                        var protoboss = new Part(br);
+                        Part protoboss = new Part(br);
                         Protobosses.Add(protoboss);
                         return protoboss;
 
                     case PartsType.Navmesh:
-                        var navmesh = new Part(br);
+                        Part navmesh = new Part(br);
                         Navmeshes.Add(navmesh);
                         return navmesh;
 
                     case PartsType.DummyObject:
-                        var dummyObj = new Part(br);
+                        Part dummyObj = new Part(br);
                         DummyObjects.Add(dummyObj);
                         return dummyObj;
 
                     case PartsType.DummyEnemy:
-                        var dummyEne = new Part(br);
+                        Part dummyEne = new Part(br);
                         DummyEnemies.Add(dummyEne);
                         return dummyEne;
 
                     case PartsType.ConnectCollision:
-                        var connectColl = new Part(br);
+                        Part connectColl = new Part(br);
                         ConnectCollisions.Add(connectColl);
                         return connectColl;
 

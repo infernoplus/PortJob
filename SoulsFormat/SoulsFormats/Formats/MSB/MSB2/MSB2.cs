@@ -255,7 +255,7 @@ namespace SoulsFormats
                 if (name != Name)
                     throw new InvalidDataException($"Expected param \"{Name}\", got param \"{name}\"");
 
-                var entries = new List<T>(offsetCount - 1);
+                List<T> entries = new List<T>(offsetCount - 1);
                 foreach (long offset in entryOffsets)
                 {
                     br.Position = offset;
@@ -329,7 +329,7 @@ namespace SoulsFormats
 
         private static Dictionary<string, int> MakeNameLookup<T>(List<T> list) where T : NamedEntry
         {
-            var lookup = new Dictionary<string, int>();
+            Dictionary<string, int> lookup = new Dictionary<string, int>();
             for (int i = 0; i < list.Count; i++)
                 lookup[list[i].Name] = i;
             return lookup;

@@ -74,7 +74,7 @@ namespace SoulsFormats
             entries.Regions = Regions.Read(br);
             Parts = new PartsParam();
             entries.Parts = Parts.Read(br);
-            var tree = new MapstudioTree();
+            MapstudioTree tree = new MapstudioTree();
             Trees = tree.Read(br);
 
             if (br.Position != 0)
@@ -141,7 +141,7 @@ namespace SoulsFormats
                 if (name != Name)
                     throw new InvalidDataException($"Expected param \"{Name}\", got param \"{name}\"");
 
-                var entries = new List<T>(offsetCount - 1);
+                List<T> entries = new List<T>(offsetCount - 1);
                 foreach (int offset in entryOffsets)
                 {
                     br.Position = offset;

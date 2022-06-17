@@ -40,7 +40,7 @@ namespace SoulsFormats
                 if (version != MQBVersion.DarkSouls2Scholar)
                     br.AssertInt64(0);
 
-                var disposesByOffset = new Dictionary<long, Disposition>(disposCount);
+                Dictionary<long, Disposition> disposesByOffset = new Dictionary<long, Disposition>(disposCount);
                 for (int i = 0; i < disposCount; i++)
                     disposesByOffset[br.Position] = new Disposition(br);
 

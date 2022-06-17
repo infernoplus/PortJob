@@ -332,7 +332,7 @@ namespace SoulsFormats
             /// </summary>
             public Part DeepCopy()
             {
-                var part = (Part)MemberwiseClone();
+                Part part = (Part)MemberwiseClone();
                 part.DrawGroups = (uint[])DrawGroups.Clone();
                 part.DispGroups = (uint[])DispGroups.Clone();
                 DeepCopyTo(part);
@@ -669,7 +669,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    var enemy = (EnemyBase)part;
+                    EnemyBase enemy = (EnemyBase)part;
                     enemy.MovePointNames = (string[])MovePointNames.Clone();
                 }
 
@@ -851,7 +851,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    var collision = (Collision)part;
+                    Collision collision = (Collision)part;
                     collision.NvmGroups = (uint[])NvmGroups.Clone();
                     collision.RefTexIDs = (short[])RefTexIDs.Clone();
                 }
@@ -1034,7 +1034,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    var navmesh = (Navmesh)part;
+                    Navmesh navmesh = (Navmesh)part;
                     navmesh.NvmGroups = (uint[])NvmGroups.Clone();
                 }
 
@@ -1117,7 +1117,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    var connect = (ConnectCollision)part;
+                    ConnectCollision connect = (ConnectCollision)part;
                     connect.MapID = (byte[])MapID.Clone();
                 }
 

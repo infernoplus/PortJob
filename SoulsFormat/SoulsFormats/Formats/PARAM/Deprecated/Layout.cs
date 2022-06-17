@@ -63,7 +63,7 @@ namespace SoulsFormats
             /// </summary>
             public static Layout ReadXMLFile(string path)
             {
-                var xml = new XmlDocument();
+                XmlDocument xml = new XmlDocument();
                 xml.Load(path);
                 return new Layout(xml);
             }
@@ -73,7 +73,7 @@ namespace SoulsFormats
             /// </summary>
             public static Layout ReadXMLText(string text)
             {
-                var xml = new XmlDocument();
+                XmlDocument xml = new XmlDocument();
                 xml.LoadXml(text);
                 return new Layout(xml);
             }
@@ -112,11 +112,11 @@ namespace SoulsFormats
             /// </summary>
             public void Write(string path)
             {
-                var xws = new XmlWriterSettings()
+                XmlWriterSettings xws = new XmlWriterSettings()
                 {
                     Indent = true,
                 };
-                var xw = XmlWriter.Create(path, xws);
+                XmlWriter xw = XmlWriter.Create(path, xws);
                 xw.WriteStartElement("layout");
 
                 foreach (Entry entry in this)
@@ -135,7 +135,7 @@ namespace SoulsFormats
                 foreach (string enumName in Enums.Keys)
                     paramtdfs.Add(Enums[enumName].ToParamtdf(enumName));
 
-                var def = new PARAMDEF { ParamType = paramType, Unicode = true, FormatVersion = 201 };
+                PARAMDEF def = new PARAMDEF { ParamType = paramType, Unicode = true, FormatVersion = 201 };
                 foreach (Entry entry in this)
                 {
                     PARAMDEF.DefType fieldType;
@@ -162,7 +162,7 @@ namespace SoulsFormats
                             throw new NotImplementedException($"DefType not specified for CellType {entry.Type}.");
                     }
 
-                    var field = new PARAMDEF.Field(fieldType, entry.Name);
+                    PARAMDEF.Field field = new PARAMDEF.Field(fieldType, entry.Name);
                     field.Description = entry.Description;
                     if (entry.Enum != null)
                         field.InternalType = entry.Enum;

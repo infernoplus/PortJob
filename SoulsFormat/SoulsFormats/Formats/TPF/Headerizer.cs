@@ -102,7 +102,7 @@ namespace SoulsFormats
             if (SFEncoding.ASCII.GetString(texture.Bytes, 0, 4) == "DDS ")
                 return texture.Bytes;
 
-            var dds = new DDS();
+            DDS dds = new DDS();
             byte format = texture.Format;
             short width = texture.Header.Width;
             short height = texture.Header.Height;
@@ -380,7 +380,7 @@ namespace SoulsFormats
 
             public static byte[] Write(List<Image> images)
             {
-                var bw = new BinaryWriterEx(false);
+                BinaryWriterEx bw = new BinaryWriterEx(false);
                 foreach (Image image in images)
                     foreach (byte[] mip in image.MipLevels)
                         bw.WriteBytes(mip);
@@ -389,11 +389,11 @@ namespace SoulsFormats
 
             public static List<Image> ReadUncompressed(byte[] bytes, int width, int height, int padDimensions, int imageCount, int mipCount, int padBetween, int bytesPerPixel)
             {
-                var images = new List<Image>(imageCount);
-                var br = new BinaryReaderEx(false, bytes);
+                List<Image> images = new List<Image>(imageCount);
+                BinaryReaderEx br = new BinaryReaderEx(false, bytes);
                 for (int i = 0; i < imageCount; i++)
                 {
-                    var image = new Image();
+                    Image image = new Image();
                     br.Pad(padBetween);
                     for (int j = 0; j < mipCount; j++)
                     {
@@ -409,11 +409,11 @@ namespace SoulsFormats
 
             public static List<Image> ReadCompressed(byte[] bytes, int width, int height, int padDimensions, int imageCount, int mipCount, int padBetween, int bytesPerBlock)
             {
-                var images = new List<Image>(imageCount);
-                var br = new BinaryReaderEx(false, bytes);
+                List<Image> images = new List<Image>(imageCount);
+                BinaryReaderEx br = new BinaryReaderEx(false, bytes);
                 for (int i = 0; i < imageCount; i++)
                 {
-                    var image = new Image();
+                    Image image = new Image();
                     br.Pad(padBetween);
                     for (int j = 0; j < mipCount; j++)
                     {

@@ -15,7 +15,7 @@ namespace SoulsFormats
 
             public static PARAMDEF Deserialize(XmlDocument xml)
             {
-                var def = new PARAMDEF();
+                PARAMDEF def = new PARAMDEF();
                 XmlNode root = xml.SelectSingleNode("PARAMDEF");
                 // In the interest of maximum compatibility, we will no longer check the XML version;
                 // just try everything and hope it works.
@@ -68,7 +68,7 @@ namespace SoulsFormats
 
             private static Field DeserializeField(XmlNode node)
             {
-                var field = new Field();
+                Field field = new Field();
                 string def = node.Attributes["Def"].InnerText;
                 Match outerMatch = defOuterRx.Match(def);
                 field.DisplayType = (DefType)Enum.Parse(typeof(DefType), outerMatch.Groups["type"].Value.Trim());

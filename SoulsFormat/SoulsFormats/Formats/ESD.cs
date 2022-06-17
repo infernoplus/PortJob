@@ -125,7 +125,7 @@ namespace SoulsFormats
             else
                 Name = null;
 
-            var stateGroupOffsets = new Dictionary<long, long[]>(stateGroupCount);
+            Dictionary<long, long[]> stateGroupOffsets = new Dictionary<long, long[]>(stateGroupCount);
             for (int i = 0; i < stateGroupCount; i++)
             {
                 long id = ReadVarint(br, LongFormat);
@@ -135,11 +135,11 @@ namespace SoulsFormats
                 stateGroupOffsets[id] = stateOffsets;
             }
 
-            var states = new Dictionary<long, State>(stateCount);
+            Dictionary<long, State> states = new Dictionary<long, State>(stateCount);
             for (int i = 0; i < stateCount; i++)
                 states[br.Position - dataStart] = new State(br, LongFormat, dataStart);
 
-            var conditions = new Dictionary<long, Condition>(conditionCount);
+            Dictionary<long, Condition> conditions = new Dictionary<long, Condition>(conditionCount);
             for (int i = 0; i < conditionCount; i++)
                 conditions[br.Position - dataStart] = new Condition(br, LongFormat, dataStart);
 
@@ -147,7 +147,7 @@ namespace SoulsFormats
                 state.GetConditions(conditions);
 
             StateGroups = new Dictionary<long, Dictionary<long, State>>(stateGroupCount);
-            var groupedStateOffsets = new Dictionary<long, Dictionary<long, long>>();
+            Dictionary<long, Dictionary<long, long>> groupedStateOffsets = new Dictionary<long, Dictionary<long, long>>();
             foreach (long stateGroupID in stateGroupOffsets.Keys)
             {
                 long[] stateOffsets = stateGroupOffsets[stateGroupID];
@@ -220,7 +220,7 @@ namespace SoulsFormats
             // Collect and sort all the IDs so everything is definitely in the same order everywhere
             List<long> stateGroupIDs = StateGroups.Keys.ToList();
             stateGroupIDs.Sort();
-            var stateIDs = new Dictionary<long, List<long>>();
+            Dictionary<long, List<long>> stateIDs = new Dictionary<long, List<long>>();
             foreach (long groupID in stateGroupIDs)
             {
                 stateIDs[groupID] = StateGroups[groupID].Keys.ToList();
@@ -243,8 +243,8 @@ namespace SoulsFormats
                 }
             }
 
-            var stateOffsets = new Dictionary<long, Dictionary<long, long>>();
-            var weirdStateOffsets = new List<long[]>();
+            Dictionary<long, Dictionary<long, long>> stateOffsets = new Dictionary<long, Dictionary<long, long>>();
+            List<long[]> weirdStateOffsets = new List<long[]>();
             foreach (long groupID in stateGroupIDs)
             {
                 stateOffsets[groupID] = new Dictionary<long, long>();
@@ -264,7 +264,7 @@ namespace SoulsFormats
             }
 
             // Make a list of every unique condition
-            var conditions = new Dictionary<long, List<Condition>>();
+            Dictionary<long, List<Condition>> conditions = new Dictionary<long, List<Condition>>();
             foreach (long groupID in stateGroupIDs)
             {
                 conditions[groupID] = new List<Condition>();
@@ -289,7 +289,7 @@ namespace SoulsFormats
             bw.FillInt32("ConditionCount", conditions.Values.Sum(group => group.Count));
 
             // Yes, I do in fact want this to be keyed by reference
-            var conditionOffsets = new Dictionary<Condition, long>();
+            Dictionary<Condition, long> conditionOffsets = new Dictionary<Condition, long>();
             foreach (long groupID in stateGroupIDs)
             {
                 for (int i = 0; i < conditions[groupID].Count; i++)
@@ -300,7 +300,7 @@ namespace SoulsFormats
                 }
             }
 
-            var commands = new List<CommandCall>();
+            List<CommandCall> commands = new List<CommandCall>();
             foreach (long groupID in stateGroupIDs)
             {
                 foreach (long stateID in stateIDs[groupID])
@@ -383,7 +383,7 @@ namespace SoulsFormats
             long stateCount = ReadVarint(br, longFormat);
             AssertVarint(br, longFormat, statesOffset);
 
-            var stateOffsets = new long[stateCount];
+            long[] stateOffsets = new long[stateCount];
             for (int i = 0; i < stateCount; i++)
                 stateOffsets[i] = statesOffset + i * stateSize;
 
@@ -414,7 +414,7 @@ namespace SoulsFormats
                     throw new FormatException("Weird state not found.");
             }
 
-            var stateGroup = new Dictionary<long, State>(stateOffsets.Length);
+            Dictionary<long, State> stateGroup = new Dictionary<long, State>(stateOffsets.Length);
             foreach (long offset in stateOffsets)
             {
                 State state = states[offset];
