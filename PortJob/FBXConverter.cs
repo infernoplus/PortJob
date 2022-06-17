@@ -89,7 +89,7 @@ namespace PortJob
             rb.Name = "root";
             flver.Bones.Add(rb);
 
-            /* Begin converting mesh data */
+            /* Read FBX mesh data */
             int mc = 0;
             foreach (var kvp in FBX_Meshes)
             {
@@ -457,8 +457,6 @@ namespace PortJob
             {
                 flverMeshNameMap.Add(kvp.Key, kvp.Value.Name);
             }
-
-            //FLVER2 compa = FLVER2.Read("E:\\Backups\\Backup Remastest Source\\Dark Souls Prepare to Die Edition\\DATA\\map\\m10_00_00_00\\m2120B0A10.flver");
 
             /* Write FLVER to file */
             string outPath = "F:\\";
