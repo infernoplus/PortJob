@@ -206,7 +206,7 @@ namespace SoulsFormats
             /// </summary>
             public Region DeepCopy()
             {
-                var region = (Region)MemberwiseClone();
+                Region region = (Region)MemberwiseClone();
                 region.Shape = Shape.DeepCopy();
                 return region;
             }

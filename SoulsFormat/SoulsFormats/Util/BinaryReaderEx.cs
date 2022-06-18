@@ -180,7 +180,7 @@ namespace SoulsFormats
         /// </summary>
         public bool[] ReadBooleans(int count)
         {
-            var result = new bool[count];
+            bool[] result = new bool[count];
             for (int i = 0; i < count; i++)
                 result[i] = ReadBoolean();
             return result;
@@ -225,7 +225,7 @@ namespace SoulsFormats
         /// </summary>
         public sbyte[] ReadSBytes(int count)
         {
-            var result = new sbyte[count];
+            sbyte[] result = new sbyte[count];
             for (int i = 0; i < count; i++)
                 result[i] = ReadSByte();
             return result;
@@ -341,7 +341,7 @@ namespace SoulsFormats
         /// </summary>
         public short[] ReadInt16s(int count)
         {
-            var result = new short[count];
+            short[] result = new short[count];
             for (int i = 0; i < count; i++)
                 result[i] = ReadInt16();
             return result;
@@ -389,7 +389,7 @@ namespace SoulsFormats
         /// </summary>
         public ushort[] ReadUInt16s(int count)
         {
-            var result = new ushort[count];
+            ushort[] result = new ushort[count];
             for (int i = 0; i < count; i++)
                 result[i] = ReadUInt16();
             return result;
@@ -485,7 +485,7 @@ namespace SoulsFormats
         /// </summary>
         public uint[] ReadUInt32s(int count)
         {
-            var result = new uint[count];
+            uint[] result = new uint[count];
             for (int i = 0; i < count; i++)
                 result[i] = ReadUInt32();
             return result;
@@ -533,7 +533,7 @@ namespace SoulsFormats
         /// </summary>
         public long[] ReadInt64s(int count)
         {
-            var result = new long[count];
+            long[] result = new long[count];
             for (int i = 0; i < count; i++)
                 result[i] = ReadInt64();
             return result;
@@ -581,7 +581,7 @@ namespace SoulsFormats
         /// </summary>
         public ulong[] ReadUInt64s(int count)
         {
-            var result = new ulong[count];
+            ulong[] result = new ulong[count];
             for (int i = 0; i < count; i++)
                 result[i] = ReadUInt64();
             return result;
@@ -685,7 +685,7 @@ namespace SoulsFormats
         /// </summary>
         public float[] ReadSingles(int count)
         {
-            var result = new float[count];
+            float[] result = new float[count];
             for (int i = 0; i < count; i++)
                 result[i] = ReadSingle();
             return result;
@@ -733,7 +733,7 @@ namespace SoulsFormats
         /// </summary>
         public double[] ReadDoubles(int count)
         {
-            var result = new double[count];
+            double[] result = new double[count];
             for (int i = 0; i < count; i++)
                 result[i] = ReadDouble();
             return result;
@@ -870,7 +870,7 @@ namespace SoulsFormats
         /// </summary>
         private string ReadCharsTerminated(Encoding encoding)
         {
-            var bytes = new List<byte>();
+            List<byte> bytes = new List<byte>();
 
             byte b = ReadByte();
             while (b != 0)

@@ -50,7 +50,7 @@ namespace SoulsFormats
         /// </summary>
         public void ImportEMELD(EMELD eld, bool overwrite = false)
         {
-            var names = new Dictionary<long, string>(eld.Events.Count);
+            Dictionary<long, string> names = new Dictionary<long, string>(eld.Events.Count);
             foreach (EMELD.Event evt in eld.Events)
                 names[evt.ID] = evt.Name;
 
@@ -66,7 +66,7 @@ namespace SoulsFormats
         /// </summary>
         public EMELD ExportEMELD()
         {
-            var eld = new EMELD(Format);
+            EMELD eld = new EMELD(Format);
             foreach (Event evt in Events)
             {
                 if (evt.Name != null)
@@ -159,7 +159,7 @@ namespace SoulsFormats
             bool unk07 = Format >= Game.Sekiro;
             int version = Format < Game.DarkSouls3 ? 0xCC : 0xCD;
 
-            var layers = new List<uint>();
+            List<uint> layers = new List<uint>();
             foreach (Event evt in Events)
             {
                 foreach (Instruction inst in evt.Instructions)
@@ -214,7 +214,7 @@ namespace SoulsFormats
 
             offsets.Layers = bw.Position;
             bw.FillVarint("LayersOffset", bw.Position);
-            var layerOffsets = new Dictionary<uint, long>(layers.Count);
+            Dictionary<uint, long> layerOffsets = new Dictionary<uint, long>(layers.Count);
             foreach (uint layer in layers)
             {
                 layerOffsets[layer] = bw.Position - offsets.Layers;

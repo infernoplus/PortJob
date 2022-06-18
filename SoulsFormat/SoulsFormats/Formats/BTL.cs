@@ -89,7 +89,7 @@ namespace SoulsFormats
             bw.WriteInt32(0);
 
             long namesStart = bw.Position;
-            var nameOffsets = new List<long>(Lights.Count);
+            List<long> nameOffsets = new List<long>(Lights.Count);
             foreach (Light entry in Lights)
             {
                 long nameOffset = bw.Position - namesStart;
@@ -404,7 +404,7 @@ namespace SoulsFormats
             /// </summary>
             public Light Clone()
             {
-                var clone = (Light)MemberwiseClone();
+                Light clone = (Light)MemberwiseClone();
                 clone.Unk64 = (byte[])Unk64.Clone();
                 clone.Unk84 = (byte[])Unk84.Clone();
                 clone.UnkA0 = (byte[])UnkA0.Clone();

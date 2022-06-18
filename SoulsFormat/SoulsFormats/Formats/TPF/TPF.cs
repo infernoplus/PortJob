@@ -178,7 +178,7 @@ namespace SoulsFormats
                 Flags1 = flags1;
                 Bytes = bytes;
 
-                var dds = new DDS(bytes);
+                DDS dds = new DDS(bytes);
                 if (dds.dwCaps2.HasFlag(DDS.DDSCAPS2.CUBEMAP))
                     Type = TexType.Cubemap;
                 else if (dds.dwCaps2.HasFlag(DDS.DDSCAPS2.VOLUME))

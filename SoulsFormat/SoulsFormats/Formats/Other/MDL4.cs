@@ -265,7 +265,7 @@ namespace SoulsFormats.Other
             public List<Vertex[]> GetFaces()
             {
                 ushort[] indices = ToTriangleList();
-                var faces = new List<Vertex[]>();
+                List<Vertex[]> faces = new List<Vertex[]>();
                 for (int i = 0; i < indices.Length; i += 3)
                 {
                     faces.Add(new Vertex[]
@@ -280,7 +280,7 @@ namespace SoulsFormats.Other
 
             public ushort[] ToTriangleList()
             {
-                var converted = new List<ushort>();
+                List<ushort> converted = new List<ushort>();
                 bool flip = false;
                 for (int i = 0; i < VertexIndices.Length - 2; i++)
                 {

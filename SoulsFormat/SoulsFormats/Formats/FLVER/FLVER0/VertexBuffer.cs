@@ -29,7 +29,7 @@ namespace SoulsFormats
                 br.AssertInt32(0);
                 br.AssertInt32(0);
 
-                var buffers = new List<VertexBuffer>(bufferCount);
+                List<VertexBuffer> buffers = new List<VertexBuffer>(bufferCount);
                 br.StepIn(buffersOffset);
                 {
                     for (int i = 0; i < bufferCount; i++)

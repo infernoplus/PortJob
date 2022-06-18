@@ -70,7 +70,7 @@ namespace SoulsFormats
             /// </summary>
             public PartsPose DeepCopy()
             {
-                var pose = (PartsPose)MemberwiseClone();
+                PartsPose pose = (PartsPose)MemberwiseClone();
                 pose.Bones = new List<Bone>(Bones.Count);
                 foreach (Bone bone in Bones)
                     pose.Bones.Add(bone.DeepCopy());
@@ -96,7 +96,7 @@ namespace SoulsFormats
                 bw.WriteInt32(0);
                 bw.WriteInt64(0x10);
 
-                foreach (var member in Bones)
+                foreach (Bone member in Bones)
                     member.Write(bw);
             }
 
