@@ -117,7 +117,7 @@ namespace PortJob {
 
             JArray refc = (JArray)(data["references"]);
             for (int i = 0; i < refc.Count; i++) {
-                JObject reference = (JObject)();
+                JObject reference = (JObject)(refc[i]);
                 content.Add(new Content(esm, reference));
             }
         }
