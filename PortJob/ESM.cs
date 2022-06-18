@@ -137,9 +137,13 @@ namespace PortJob
 
     public class Cell
     {
+        public static readonly float CELL_SIZE = 81.92f;
+
         public readonly string name;
         public readonly string region;
         public readonly Grid grid;
+
+        public readonly Vector3 center;
 
         public readonly int flag;
         public readonly int[] flags;
@@ -154,6 +158,8 @@ namespace PortJob
             int x = int.Parse(data["data"]["grid"][0].ToString());
             int y = int.Parse(data["data"]["grid"][1].ToString());
             grid = new Grid(x, y);
+
+            center = new Vector3((CELL_SIZE * grid.x) + (CELL_SIZE * 0.5f), 0.0f, (CELL_SIZE * grid.y) + (CELL_SIZE * 0.5f));
 
             flag = int.Parse(data["data"]["flags"].ToString());
 
@@ -194,15 +200,15 @@ namespace PortJob
             if (tr.record["mesh"] != null) { mesh = tr.record["mesh"].ToString(); }
 
             float x = float.Parse(((JArray)(data["translation"]))[0].ToString());
-            float y = float.Parse(((JArray)(data["translation"]))[1].ToString());
-            float z = float.Parse(((JArray)(data["translation"]))[2].ToString());
+            float z = float.Parse(((JArray)(data["translation"]))[1].ToString());
+            float y = float.Parse(((JArray)(data["translation"]))[2].ToString());
 
             float i = float.Parse(((JArray)(data["rotation"]))[0].ToString());
-            float j = float.Parse(((JArray)(data["rotation"]))[1].ToString());
-            float k = float.Parse(((JArray)(data["rotation"]))[2].ToString());
+            float k = float.Parse(((JArray)(data["rotation"]))[1].ToString());
+            float j = float.Parse(((JArray)(data["rotation"]))[2].ToString()) - (float)Math.PI;
 
-            position = new Vector3(x, y, z);
-            rotation = new Vector3(x, y, z);
+            position = new Vector3(x, y, z) * FBXConverter.GLOBAL_SCALE;
+            rotation = new Vector3(i, j, k) * (float)(180/Math.PI);
         }
     }
 

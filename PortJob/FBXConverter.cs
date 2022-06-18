@@ -31,12 +31,12 @@ namespace PortJob
         const bool HARDCODE_TEXTURE_UNK11 = false;
 
         const bool ABSOLUTE_VERT_POSITIONS = true;
-        const float GLOBAL_SCALE = 0.01f;
+        public static readonly float GLOBAL_SCALE = 0.01f;
 
         const int FACESET_MAX_TRIANGLES = 65535; // Max triangles in a mesh for the DS1 engine.
 
         // Return an object containing the flver, tpfs, and generated ids and names stuff later
-        public static void convert(string fbxPath)
+        public static void convert(string fbxPath, string flverPath, string tpfDir)
         {
             /* Create a blank FLVER */
             FLVER2 flver = new SoulsFormats.FLVER2();
@@ -55,6 +55,8 @@ namespace PortJob
 
             /* Grab all mesh content from FBX */
             Dictionary<FLVER2.Mesh, MeshContent> FBX_Meshes = new Dictionary<SoulsFormats.FLVER2.Mesh, MeshContent>();
+            Vector3 rootPosition = fbx.Transform.Translation;
+
 
             void FBXHierarchySearch(NodeContent node)
             {
@@ -218,9 +220,11 @@ namespace PortJob
                         {
                             Vector3 nextPosition = geometryContent.Vertices.Positions[i];
                             Vector3 posVec3 = Vector3.Transform(
-                                new Vector3(-nextPosition.X, nextPosition.Y, nextPosition.Z)
+                                new Vector3(nextPosition.X, nextPosition.Y, nextPosition.Z)
                                 , (ABSOLUTE_VERT_POSITIONS ? fbxMesh.AbsoluteTransform : fbx.Transform) * Matrix.CreateScale(GLOBAL_SCALE)
                                 );
+
+                            posVec3.X = -posVec3.X; // Flip X after applying root transform, bugfix from FBX2FLVER
 
                             FLVER.Vertex newVert = new SoulsFormats.FLVER.Vertex()
                             {
@@ -459,13 +463,11 @@ namespace PortJob
             }
 
             /* Write FLVER to file */
-            string outPath = "F:\\";
-            string flverPath = outPath + "test.flver";
             Log.Info(1, "Writing FLVER to: " + flverPath);
             flver.Write(flverPath);
             foreach (TPF tpf in tpfs)
             {
-                string tpfPath = outPath + tpf.Textures[0].Name + ".tpf";
+                string tpfPath = tpfDir + tpf.Textures[0].Name + ".tpf";
                 Log.Info(2, "Writing TPF to: " + tpfPath);
                 tpf.Write(tpfPath);
             }
