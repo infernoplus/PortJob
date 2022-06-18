@@ -7,22 +7,18 @@ using System.Linq;
 using SoulsFormats;
 using System.Collections.Generic;
 
-namespace PortJob
-{
-    class PortJob
-    {
-        static void Main(string[] args)
-        {
+namespace PortJob {
+    class PortJob {
+        static void Main(string[] args) {
             Convert();
         }
 
-        private static void Convert()
-        {
+        private static void Convert() {
             /* Load ESM */
-            ESM esm = new ESM("D:\\Steam\\steamapps\\common\\Morrowind\\morrowind.json");
+            ESM esm = new("D:\\Steam\\steamapps\\common\\Morrowind\\morrowind.json");
 
             /* Generate a new MSB and fill out required default data */
-            MSB1 msb = new MSB1();
+            MSB1 msb = new();
 
             MSB1.Part.Player player = new(); // Player default spawn point
             MSB1.Model.Player playerRes = new();
@@ -42,8 +38,7 @@ namespace PortJob
             const int block = 0;
 
             int nextEnv = 0;
-            int NewEnvID()
-            {
+            int NewEnvID() {
                 return nextEnv++;
             }
 
@@ -52,10 +47,8 @@ namespace PortJob
             /* Precalculate draw group information for each cell */
             Dictionary<string, uint> drawGroupGrid = new();
             int c = 0;
-            for (int gx = -CELLS; gx <= CELLS; gx++)
-            {
-                for (int gy = -CELLS; gy <= CELLS; gy++)
-                {
+            for (int gx = -CELLS; gx <= CELLS; gx++) {
+                for (int gy = -CELLS; gy <= CELLS; gy++) {
                     uint drawGroup = 0;
                     drawGroup |= (uint)(1) << c++;
 
@@ -63,33 +56,28 @@ namespace PortJob
                 }
             }
 
-                    //int c = 0; // Cell count for this MSB
-            for (int gx = -CELLS; gx <= CELLS; gx++)
-            {
-                for(int gy = -CELLS; gy <= CELLS; gy++)
-                {
+            //int c = 0; // Cell count for this MSB
+            for (int gx = -CELLS; gx <= CELLS; gx++) {
+                for (int gy = -CELLS; gy <= CELLS; gy++) {
                     Log.Info(0, "Processing Cell [" + gx + ", " + gy + "]");
                     Cell cell = esm.GetCell(gx, gy);
 
                     /* Set drawgroup for this cell and adjacent cells */
                     uint drawGroup = drawGroupGrid[gx + "," + gy];
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx+1) + "," + (gy));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx-1) + "," + (gy));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx) + "," + (gy+1));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx) + "," + (gy-1));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx + 1) + "," + (gy+1));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx - 1) + "," + (gy-1));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx-1) + "," + (gy + 1));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx+1) + "," + (gy - 1));
+                    drawGroup += drawGroupGrid.GetValueOrDefault((gx + 1) + "," + (gy));
+                    drawGroup += drawGroupGrid.GetValueOrDefault((gx - 1) + "," + (gy));
+                    drawGroup += drawGroupGrid.GetValueOrDefault((gx) + "," + (gy + 1));
+                    drawGroup += drawGroupGrid.GetValueOrDefault((gx) + "," + (gy - 1));
+                    drawGroup += drawGroupGrid.GetValueOrDefault((gx + 1) + "," + (gy + 1));
+                    drawGroup += drawGroupGrid.GetValueOrDefault((gx - 1) + "," + (gy - 1));
+                    drawGroup += drawGroupGrid.GetValueOrDefault((gx - 1) + "," + (gy + 1));
+                    drawGroup += drawGroupGrid.GetValueOrDefault((gx + 1) + "," + (gy - 1));
 
                     string cModel = "h0000B0";
                     string cName;
-                    if (partMap.ContainsKey(cModel))
-                    {
+                    if (partMap.ContainsKey(cModel)) {
                         cName = "_" + (partMap[cModel]++.ToString("D4"));
-                    }
-                    else
-                    {
+                    } else {
                         cName = "_0000";
                         partMap.Add(cModel, 1);
                     }
@@ -139,18 +127,14 @@ namespace PortJob
                     /* Process content */
                     ESM.Type[] VALID_MAP_PIECE_TYPES = new[] { ESM.Type.Static, ESM.Type.Door, ESM.Type.Container };
 
-                    foreach (Content content in cell.content)
-                    {
+                    foreach (Content content in cell.content) {
                         if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
                         if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
 
                         string mpModel;
-                        if (modelMap.ContainsKey(content.mesh))
-                        {
+                        if (modelMap.ContainsKey(content.mesh)) {
                             mpModel = modelMap[content.mesh];
-                        }
-                        else
-                        {
+                        } else {
                             mpModel = NewMapPieceID();
                             string fbxPath = "D:\\Steam\\steamapps\\common\\Morrowind\\Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
                             string flverPath = "F:\\test\\map\\m" + area + "_0" + block + "_00_00\\" + mpModel + "A" + area + ".flver";
@@ -161,12 +145,9 @@ namespace PortJob
                         }
 
                         string mpName;
-                        if (partMap.ContainsKey(mpModel))
-                        {
+                        if (partMap.ContainsKey(mpModel)) {
                             mpName = "_" + (partMap[mpModel]++.ToString("D4"));
-                        }
-                        else
-                        {
+                        } else {
                             mpName = "_0000";
                             partMap.Add(mpModel, 1);
                         }
@@ -210,20 +191,17 @@ namespace PortJob
         }
 
         private static int nextCollisionID = 0;
-        private static string NewCollisionID()
-        {
+        private static string NewCollisionID() {
             return "h" + nextCollisionID++.ToString("D4") + "B0";
         }
 
         private static int nextMapPieceID = 0;
-        private static string NewMapPieceID()
-        {
+        private static string NewMapPieceID() {
             return "m" + nextMapPieceID++.ToString("D4") + "B0";
         }
 
         private static int nextEventID = 1;
-        private static int NewEventID()
-        {
+        private static int NewEventID() {
             return nextEventID++;
         }
     }
