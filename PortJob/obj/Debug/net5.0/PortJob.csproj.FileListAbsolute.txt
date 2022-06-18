@@ -33,5 +33,3 @@ C:\Users\dmtin\Dev\PortJob\PortJob\bin\Debug\net5.0\Microsoft.Xna.Framework.dll
 C:\Users\dmtin\Dev\PortJob\PortJob\bin\Debug\net5.0\Microsoft.Xna.Framework.Graphics.dll
 C:\Users\dmtin\Dev\PortJob\PortJob\bin\Debug\net5.0\Microsoft.Xna.Framework.Video.dll
 C:\Users\dmtin\Dev\PortJob\PortJob\bin\Debug\net5.0\Newtonsoft.Json.dll
-C:\Users\dmtin\Dev\PortJob\PortJob\bin\Debug\net5.0\Newtonsoft.Json.pdb
-C:\Users\dmtin\Dev\PortJob\PortJob\bin\Debug\net5.0\Newtonsoft.Json.xml
