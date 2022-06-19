@@ -6,18 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using TeximpNet.DDS;
 
-namespace PortJob
-{
-    public class DDS
-    {
-        public static int GetTpfFormatFromDdsBytes(string texName, byte[] ddsBytes)
-        {
-            using (MemoryStream ddsStream = new MemoryStream(ddsBytes))
-            {
+namespace PortJob {
+    public class DDS {
+        public static int GetTpfFormatFromDdsBytes(string texName, byte[] ddsBytes) {
+            using (MemoryStream ddsStream = new MemoryStream(ddsBytes)) {
                 DXGIFormat format = DDSFile.Read(ddsStream).Format;
 
-                switch (format)
-                {
+                switch (format) {
                     //DSR:
                     case DXGIFormat.BC1_UNorm:
                     case DXGIFormat.BC1_UNorm_SRGB:
