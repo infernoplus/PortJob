@@ -10,7 +10,7 @@ namespace PortJob.Solvers {
     public class TangentSolver {
         public static Vector3 RotatePoint(Vector3 p, float pitch, float roll, float yaw) {
 
-            Vector3 ans = new Vector3(0, 0, 0);
+            Vector3 ans = new(0, 0, 0);
 
 
             double cosa = Math.Cos(yaw);
@@ -58,7 +58,7 @@ namespace PortJob.Solvers {
             Vector3[] tan1 = new Vector3[vertexCount];
             Vector3[] tan2 = new Vector3[vertexCount];
 
-            List<Vector4> tangentList = new List<Vector4>();
+            List<Vector4> tangentList = new();
 
             for (int a = 0; a < vertexIndices.Count; a += 3) {
 
@@ -71,9 +71,9 @@ namespace PortJob.Solvers {
                     Vector3 v2 = hqVertPositions[i2];
                     Vector3 v3 = hqVertPositions[i3];
 
-                    Vector2 w1 = new Vector2(hqVertUVs[i1].X, hqVertUVs[i1].Y);
-                    Vector2 w2 = new Vector2(hqVertUVs[i2].X, hqVertUVs[i2].Y);
-                    Vector2 w3 = new Vector2(hqVertUVs[i3].X, hqVertUVs[i3].Y);
+                    Vector2 w1 = new(hqVertUVs[i1].X, hqVertUVs[i1].Y);
+                    Vector2 w2 = new(hqVertUVs[i2].X, hqVertUVs[i2].Y);
+                    Vector2 w3 = new(hqVertUVs[i3].X, hqVertUVs[i3].Y);
 
                     float x1 = v2.X - v1.X;
                     float x2 = v3.X - v1.X;
@@ -89,8 +89,8 @@ namespace PortJob.Solvers {
 
                     float r = 1.0f / (s1 * t2 - s2 * t1);
 
-                    Vector3 sdir = new Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
-                    Vector3 tdir = new Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
+                    Vector3 sdir = new((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+                    Vector3 tdir = new((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
 
                     tan1[i1] += sdir;
                     tan1[i2] += sdir;
