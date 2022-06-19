@@ -9,15 +9,15 @@ using System.Collections.Generic;
 
 namespace PortJob {
     class PortJob {
-        public static string MORROWIND_PATH = "D:\\Steam\\steamapps\\common\\Morrowind\\";
-        public static string OUTPUT_PATH = "F:\\test\\";
+        public static string MorrowindPath = "D:\\Steam\\steamapps\\common\\Morrowind\\";
+        public static string OutputPath = "F:\\test\\";
         static void Main(string[] args) {
             Convert();
         }
 
         private static void Convert() {
             /* Load ESM */
-            ESM esm = new(MORROWIND_PATH + "morrowind.json");
+            ESM esm = new(MorrowindPath + "morrowind.json");
 
             /* Generate a new MSB and fill out required default data */
             MSB1 msb = new();
@@ -138,9 +138,9 @@ namespace PortJob {
                             mpModel = modelMap[content.mesh];
                         } else {
                             mpModel = NewMapPieceID();
-                            string fbxPath = MORROWIND_PATH + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
-                            string flverPath = OUTPUT_PATH + "map\\m" + area + "_0" + block + "_00_00\\" + mpModel + "A" + area + ".flver";
-                            string tpfDir = OUTPUT_PATH + "map\\tx\\";
+                            string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
+                            string flverPath = OutputPath + "map\\m" + area + "_0" + block + "_00_00\\" + mpModel + "A" + area + ".flver";
+                            string tpfDir = OutputPath + "map\\tx\\";
                             FBXConverter.convert(fbxPath, flverPath, tpfDir);
 
                             modelMap.Add(content.mesh, mpModel);
@@ -187,7 +187,7 @@ namespace PortJob {
 
 
             /* Write to file */
-            string msbPath = OUTPUT_PATH + "map\\MapStudio\\m" + area + "_0" + block + "_00_00.msb";
+            string msbPath = OutputPath + "map\\MapStudio\\m" + area + "_0" + block + "_00_00.msb";
             Log.Info(0, "Writing MSB to: " + msbPath);
             msb.Write(msbPath);
         }
