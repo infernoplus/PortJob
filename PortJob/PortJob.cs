@@ -9,8 +9,8 @@ using System.Collections.Generic;
 
 namespace PortJob {
     class PortJob {
-        public static string MorrowindPath = "D:\\Steam\\steamapps\\common\\Morrowind\\";
-        public static string OutputPath = "F:\\test\\";
+        public static string MorrowindPath = "G:\\Steam\\steamapps\\common\\Morrowind\\";
+        public static string OutputPath = "G:\\test\\";
         static void Main(string[] args) {
             Convert();
         }
