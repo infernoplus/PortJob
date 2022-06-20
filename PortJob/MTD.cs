@@ -9,6 +9,7 @@ using System.IO;
 using System.Reflection;
 using System.Diagnostics;
 using System.Collections;
+using System.Linq;
 
 namespace PortJob {
     public class MTD {
@@ -40,7 +41,7 @@ namespace PortJob {
             }
 
             JObject MTD_INFO = getMTDInfo(MTDName);
-            JArray MTD_TEXTURE_MEMBERS = (JArray)MTD_INFO["TextureMembers"];
+            JArray MTD_TEXTURE_MEMBERS = (JArray)MTD_INFO["TextureChannels"];
             List<TextureKey> TM = new();
             for (int i = 0; i < MTD_TEXTURE_MEMBERS.Count; i++) {
                 string TexMem = MTD_TEXTURE_MEMBERS[i].ToString();
@@ -53,7 +54,7 @@ namespace PortJob {
                     case "g_Bumpmap_2": TM.Add(new TextureKey("Reflection", TexMem, 0x1, true)); break;
                     case "g_Envmap": TM.Add(new TextureKey("Transparency", TexMem, 0x1, true)); break;
                     case "g_Lightmap": TM.Add(new TextureKey("Emissive", TexMem, 0x1, true)); break;
-                    default: break;
+                    default: throw new Exception($"The texture member {TexMem} does not exist in current MTD info");
                 }
             }
             return TM;
@@ -67,18 +68,22 @@ namespace PortJob {
 
 
         private static JObject getMTDInfo(string MTDName) {
-            for (int i = 0; i < MTD_INFO_LIST.Count; i++) {
-                if (MTD_INFO_LIST[i]["mtdName"].ToString().Equals(MTDName)) {
-                    return (JObject)MTD_INFO_LIST[i];
+
+            JToken[] mtd_info = MTD_INFO_LIST[0].ToArray();
+
+            string lol = mtd_info[0].First["MTD"].ToString();
+            for (int i = 0; i < mtd_info.Length; i++) {
+                if (mtd_info[i].First["MTD"].ToString().Equals(MTDName, StringComparison.InvariantCultureIgnoreCase)) {
+                    return (JObject)mtd_info[i].First;
                 }
             }
             /* This is bad times if this happens */
-            return null;
+            throw new Exception("MTD Info not found");
         }
 
         private static void loadMTDInfoList() {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = "PortJob.Resources.DS1_MTD_INFO.json";
+            string resourceName = "PortJob.Resources.DS3_MTD_INFO.json";
             string data;
 
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))

@@ -137,7 +137,7 @@ namespace PortJob {
                         List<TextureKey> matTextures = new();
 
                         if (geometryContent.Material != null) {
-                            mtdName = "M[D]";
+                            mtdName = "M[A]";
                             matName = geometryContent.Material.Name;
 
                             Log.Info(5, "[MTD: " + mtdName + ", Material: " + matName + "]");
