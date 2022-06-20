@@ -68,10 +68,7 @@ namespace PortJob {
 
 
         private static JObject getMTDInfo(string MTDName) {
-
             JToken[] mtd_info = MTD_INFO_LIST[0].ToArray();
-
-            string lol = mtd_info[0].First["MTD"].ToString();
             for (int i = 0; i < mtd_info.Length; i++) {
                 if (mtd_info[i].First["MTD"].ToString().Equals(MTDName, StringComparison.InvariantCultureIgnoreCase)) {
                     return (JObject)mtd_info[i].First;
