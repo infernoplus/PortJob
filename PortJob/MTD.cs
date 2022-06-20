@@ -41,10 +41,10 @@ namespace PortJob {
             }
 
             JObject MTD_INFO = getMTDInfo(MTDName);
-            JArray MTD_TEXTURE_MEMBERS = (JArray)MTD_INFO["TextureChannels"];
+            JToken[] MTD_TEXTURE_MEMBERS = MTD_INFO["TextureChannels"].ToArray();
             List<TextureKey> TM = new();
-            for (int i = 0; i < MTD_TEXTURE_MEMBERS.Count; i++) {
-                string TexMem = MTD_TEXTURE_MEMBERS[i].ToString();
+            for (int i = 0; i < MTD_TEXTURE_MEMBERS.Length; i++) {
+                string TexMem = MTD_TEXTURE_MEMBERS[i].First.ToString();
                 switch (TexMem) {
                     case "g_Diffuse": TM.Add(new TextureKey("Texture", TexMem, 0x1, true)); break;
                     case "g_Diffuse_2": TM.Add(new TextureKey("SpecularFactor", TexMem, 0x1, true)); break;
