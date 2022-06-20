@@ -20,10 +20,10 @@ namespace PortJob {
             ESM esm = new(MorrowindPath + "morrowind.json");
 
             /* Generate a new MSB and fill out required default data */
-            MSB1 msb = new();
+            MSB3 msb = new();
 
-            MSB1.Part.Player player = new(); // Player default spawn point
-            MSB1.Model.Player playerRes = new();
+            MSB3.Part.Player player = new(); // Player default spawn point
+            MSB3.Model.Player playerRes = new();
             player.ModelName = "c0000";
             player.Position = new Vector3(0.0f, 0.1f, 0.0f);
             player.Name = "c0000_0000";
@@ -36,7 +36,7 @@ namespace PortJob {
             Dictionary<string, string> modelMap = new();
             Dictionary<string, int> partMap = new();
 
-            const int area = 11;
+            const int area = 30;
             const int block = 0;
 
             int nextEnv = 0;
@@ -84,8 +84,8 @@ namespace PortJob {
                         partMap.Add(cModel, 1);
                     }
 
-                    MSB1.Part.Collision flat = new(); // Flat ground for testing
-                    MSB1.Model.Collision flatRes = new();
+                    MSB3.Part.Collision flat = new(); // Flat ground for testing
+                    MSB3.Model.Collision flatRes = new();
                     flat.HitFilterID = 8;
                     flat.ModelName = cModel;
                     flat.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\layout\\h_layout.SIB";
@@ -98,33 +98,33 @@ namespace PortJob {
                     flat.DispGroups[1] = 0;
                     flat.DispGroups[2] = 0;
                     flat.DispGroups[3] = 0;
-                    flat.NvmGroups[0] = 0;
-                    flat.NvmGroups[1] = 0;
-                    flat.NvmGroups[2] = 0;
-                    flat.NvmGroups[3] = 0;
+                    //flat.NvmGroups[0] = 0;
+                    //flat.NvmGroups[1] = 0;
+                    //flat.NvmGroups[2] = 0;
+                    //flat.NvmGroups[3] = 0;
                     flat.Name = cModel + cName;
                     flatRes.Name = flat.ModelName;
                     flatRes.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\hkxwin\\" + cModel + ".hkxwin";
                     msb.Models.Collisions.Add(flatRes);
                     msb.Parts.Collisions.Add(flat);
 
-                    MSB1.Region envRegion = new(); // Environment region and event
-                    envRegion.Name = "GI" + NewEnvID().ToString("D2");
-                    envRegion.Shape = new MSB.Shape.Point();
-                    envRegion.Position = cell.center + new Vector3(0.0f, 5.0f, 0.0f);
-                    MSB1.Event.Environment env = new();
-                    env.UnkT00 = 0;
-                    env.UnkT04 = 50f;
-                    env.UnkT08 = 300f;
-                    env.UnkT0C = 200f;
-                    env.UnkT10 = 100f;
-                    env.UnkT14 = 50f;
-                    env.EventID = NewEventID();
-                    env.PartName = flat.Name;
-                    env.RegionName = envRegion.Name;
-                    env.Name = "evt " + envRegion.Name;
-                    msb.Regions.Add(envRegion);
-                    msb.Events.Environments.Add(env);
+                    //MSB3.Region envRegion = new(); // Environment region and event
+                    //envRegion.Name = "GI" + NewEnvID().ToString("D2");
+                    //envRegion.Shape = new MSB.Shape.Point();
+                    //envRegion.Position = cell.center + new Vector3(0.0f, 5.0f, 0.0f);
+                    //MSB1.Event.Environment env = new();
+                    //env.UnkT00 = 0;
+                    //env.UnkT04 = 50f;
+                    //env.UnkT08 = 300f;
+                    //env.UnkT0C = 200f;
+                    //env.UnkT10 = 100f;
+                    //env.UnkT14 = 50f;
+                    //env.EventID = NewEventID();
+                    //env.PartName = flat.Name;
+                    //env.RegionName = envRegion.Name;
+                    //env.Name = "evt " + envRegion.Name;
+                    //msb.Regions.Add(envRegion);
+                    //msb.Events.Environments.Add(env);
 
                     /* Process content */
                     ESM.Type[] VALID_MAP_PIECE_TYPES = new[] { ESM.Type.Static, ESM.Type.Door, ESM.Type.Container };
@@ -139,7 +139,7 @@ namespace PortJob {
                         } else {
                             mpModel = NewMapPieceID();
                             string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
-                            string flverPath = OutputPath + "map\\m" + area + "_0" + block + "_00_00\\" + mpModel + "A" + area + ".flver.dcx";
+                            string flverPath = OutputPath + "map\\m" + area + "_0" + block + "_00_00\\m" + area + "_0" + block + "_00_00_" + mpModel + ".flver";
                             string tpfDir = OutputPath + "map\\tx\\";
                             FBXConverter.convert(fbxPath, flverPath, tpfDir);
 
@@ -154,8 +154,8 @@ namespace PortJob {
                             partMap.Add(mpModel, 1);
                         }
 
-                        MSB1.Part.MapPiece mp = new();
-                        MSB1.Model.MapPiece mpRes = new();
+                        MSB3.Part.MapPiece mp = new();
+                        MSB3.Model.MapPiece mpRes = new();
                         mp.ModelName = mpModel;
                         mp.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\layout\\layout.SIB";
                         mp.Position = content.position;
@@ -164,12 +164,20 @@ namespace PortJob {
                         mp.DrawGroups[1] = 0;
                         mp.DrawGroups[2] = 0;
                         mp.DrawGroups[3] = 0;
+                        mp.DrawGroups[4] = 0;
+                        mp.DrawGroups[5] = 0;
+                        mp.DrawGroups[6] = 0;
+                        mp.DrawGroups[7] = 0;
                         mp.DispGroups[0] = drawGroup;
                         mp.DispGroups[1] = 0;
                         mp.DispGroups[2] = 0;
                         mp.DispGroups[3] = 0;
-                        mp.IsShadowDest = 0x1;
-                        mp.DrawByReflectCam = 0x1;
+                        mp.DispGroups[4] = 0;
+                        mp.DispGroups[5] = 0;
+                        mp.DispGroups[6] = 0;
+                        mp.DispGroups[7] = 0;
+                        //mp.IsShadowDest = 0x1;
+                        mp.DrawByReflectCam = true;
                         mp.Name = mpModel + mpName;
                         mpRes.Name = mp.ModelName;
                         mpRes.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\" + mpModel + ".sib";
@@ -183,7 +191,7 @@ namespace PortJob {
             Log.Info(0, "Generated MSB:");
             Log.Info(1, "MapPieces: " + msb.Parts.MapPieces.Count);
             Log.Info(1, "Collisions: " + msb.Parts.Collisions.Count);
-            Log.Info(1, "Regions: " + msb.Regions.Regions.Count);
+            //Log.Info(1, "Regions: " + msb.Regions.Regions.Count);
 
 
             /* Write to file */
@@ -194,12 +202,12 @@ namespace PortJob {
 
         private static int nextCollisionID = 0;
         private static string NewCollisionID() {
-            return "h" + nextCollisionID++.ToString("D4") + "B0";
+            return "h" + nextCollisionID++.ToString("D6");
         }
 
         private static int nextMapPieceID = 0;
         private static string NewMapPieceID() {
-            return "m" + nextMapPieceID++.ToString("D4") + "B0";
+            return nextMapPieceID++.ToString("D6");
         }
 
         private static int nextEventID = 1;

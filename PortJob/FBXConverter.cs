@@ -401,7 +401,17 @@ namespace PortJob {
 
             /* Write FLVER to file */
             Log.Info(1, "Writing FLVER to: " + flverPath);
-            flver.Write(flverPath, DCX.Type.DCX_DFLT_10000_24_9);
+            BND4 bnd = new() {
+                Compression = DCX.Type.DCX_DFLT_10000_44_9
+            };
+
+            string flverName = Path.GetFileNameWithoutExtension(flverPath);
+            string mapName = Path.GetFileName(flverPath.Substring(0, flverPath.LastIndexOf('_'))); //file name is just the top level directory, here. There is no GetTopLevelDirectory :(
+
+            string internalFlverPath = "N:\\FDP\\data\\INTERROOT_win64\\map\\" + mapName + "\\" + flverName + "\\Model\\" + flverName + ".flver";
+            bnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, internalFlverPath, flver.Write()));
+            bnd.Write(flverPath.Replace("flver", "mapbnd.dcx"), DCX.Type.DCX_DFLT_10000_44_9);
+            //flver.Write(flverPath, DCX.Type.DCX_DFLT_10000_24_9);
             foreach (TPF tpf in tpfs) {
                 string tpfPath = tpfDir + tpf.Textures[0].Name + ".tpf.dcx";
                 Log.Info(2, "Writing TPF to: " + tpfPath);
