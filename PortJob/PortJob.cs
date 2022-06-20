@@ -9,8 +9,8 @@ using System.Collections.Generic;
 
 namespace PortJob {
     class PortJob {
-        public static string MorrowindPath = "D:\\Steam\\steamapps\\common\\Morrowind\\";
-        public static string OutputPath = "F:\\test\\";
+        public static string MorrowindPath = "G:\\Steam\\steamapps\\common\\Morrowind\\";
+        public static string OutputPath = "G:\\test\\";
         static void Main(string[] args) {
             Convert();
         }
@@ -44,7 +44,7 @@ namespace PortJob {
                 return nextEnv++;
             }
 
-            int CELLS = 3;
+            int CELLS = 2;
 
             /* Precalculate draw group information for each cell */
             Dictionary<string, uint> drawGroupGrid = new();
@@ -139,7 +139,7 @@ namespace PortJob {
                         } else {
                             mpModel = NewMapPieceID();
                             string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
-                            string flverPath = OutputPath + "map\\m" + area + "_0" + block + "_00_00\\" + mpModel + "A" + area + ".flver";
+                            string flverPath = OutputPath + "map\\m" + area + "_0" + block + "_00_00\\" + mpModel + "A" + area + ".flver.dcx";
                             string tpfDir = OutputPath + "map\\tx\\";
                             FBXConverter.convert(fbxPath, flverPath, tpfDir);
 

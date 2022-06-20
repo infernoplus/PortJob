@@ -401,11 +401,11 @@ namespace PortJob {
 
             /* Write FLVER to file */
             Log.Info(1, "Writing FLVER to: " + flverPath);
-            flver.Write(flverPath);
+            flver.Write(flverPath, DCX.Type.DCX_DFLT_10000_24_9);
             foreach (TPF tpf in tpfs) {
-                string tpfPath = tpfDir + tpf.Textures[0].Name + ".tpf";
+                string tpfPath = tpfDir + tpf.Textures[0].Name + ".tpf.dcx";
                 Log.Info(2, "Writing TPF to: " + tpfPath);
-                tpf.Write(tpfPath);
+                tpf.Write(tpfPath, DCX.Type.DCX_DFLT_10000_24_9);
             }
         }
     }
