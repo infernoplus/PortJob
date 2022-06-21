@@ -161,7 +161,7 @@ namespace PortJob {
 
                         MSB3.Part.MapPiece mp = new();
                         MSB3.Model.MapPiece mpRes = new();
-                        mp.ModelName = mpModel;
+                        mp.ModelName = "m" + mpModel;
                         mp.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\layout\\layout.SIB";
                         mp.Position = content.position;
                         mp.Rotation = content.rotation;

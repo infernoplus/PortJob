@@ -21,7 +21,7 @@ namespace PortJob {
         const byte TPF_FLAG_2 = 3;
 
         const byte FLVER_UNK_0x5C = 0;
-        const int FLVER_UNK_0x68 = 0;
+        const int FLVER_UNK_0x68 = 4;
 
         const string HARDCODE_TEXTURE_KEY = "g_detailBumpmap";
         const string HARDCODE_TEXTURE_VAL = "";
@@ -174,7 +174,7 @@ namespace PortJob {
                             }
 
                             /* Add hardcoded detail bump texture data */
-                            matTextures.Add(new TextureKey(HARDCODE_TEXTURE_KEY, HARDCODE_TEXTURE_VAL, HARDCODE_TEXTURE_UNK10, HARDCODE_TEXTURE_UNK11));
+                            //matTextures.Add(new TextureKey(HARDCODE_TEXTURE_KEY, HARDCODE_TEXTURE_VAL, HARDCODE_TEXTURE_UNK10, HARDCODE_TEXTURE_UNK11));
                         } else {
                             Log.Error(5, "Missing material data for this mesh");
                         }
@@ -185,7 +185,6 @@ namespace PortJob {
                         FLVER2.Material mat = new(matName, mtdName + ".mtd", 0) {
                             GXIndex = gxIndex
                         };
-                        gxIndex++;
 
                         foreach (TextureKey t in matTextures) {
                             FLVER2.Texture tex = new(t.Key, t.Value, System.Numerics.Vector2.One, t.Unk10, t.Unk11, 0, 0, 0);
