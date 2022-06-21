@@ -16,7 +16,7 @@ namespace PortJob {
     /* Morrowinds native NIF format has to be mass converted to FBX first for this program to work. */
     /* Heavily references code from Meowmartius's FBX2FLVER. He's a secret gamer god. */
     class FBXConverter {
-        const int FLVER_VERSION = 0x2000C;
+        const int FLVER_VERSION = 0x20014;
         const byte TPF_ENCODING = 2;
         const byte TPF_FLAG_2 = 3;
 
@@ -25,8 +25,8 @@ namespace PortJob {
 
         const string HARDCODE_TEXTURE_KEY = "g_detailBumpmap";
         const string HARDCODE_TEXTURE_VAL = "";
-        const byte HARDCODE_TEXTURE_UNK10 = 0x0;
-        const bool HARDCODE_TEXTURE_UNK11 = false;
+        const byte HARDCODE_TEXTURE_UNK10 = 0x01;
+        const bool HARDCODE_TEXTURE_UNK11 = true;
 
         const bool ABSOLUTE_VERT_POSITIONS = true;
         public static readonly float GLOBAL_SCALE = 0.01f;
@@ -97,6 +97,7 @@ namespace PortJob {
 
                 /* Create face sets, split them if they are to big. */
                 int gc = 0;
+                int gxIndex = 0;
                 foreach (GeometryContent geometryNode in fbxMesh.Geometry) {
                     Log.Info(3, "Geometry #" + gc + " :: " + geometryNode.Name);
                     if (geometryNode is GeometryContent geometryContent) {
@@ -181,12 +182,20 @@ namespace PortJob {
                         flverMesh.MaterialIndex = flver.Materials.Count;
 
                         /* Write material to FLVER */
-                        FLVER2.Material mat = new(matName, mtdName + ".mtd", 0);
+                        FLVER2.Material mat = new(matName, mtdName + ".mtd", 0) {
+                            GXIndex = gxIndex
+                        };
+                        gxIndex++;
+
                         foreach (TextureKey t in matTextures) {
                             FLVER2.Texture tex = new(t.Key, t.Value, System.Numerics.Vector2.One, t.Unk10, t.Unk11, 0, 0, 0);
                             mat.Textures.Add(tex);
                         }
                         flver.Materials.Add(mat);
+
+                        /* Write GXList to FLVER */
+                        FLVER2.GXList gxinfo = MTD.getGXList(mtdName + ".mtd");
+                        flver.GXLists.Add(gxinfo);
 
                         /* Write position data to FLVER */
                         Log.Info(5, "Writing vertices");
@@ -228,7 +237,10 @@ namespace PortJob {
 
                             submeshVertexHighQualityBasePositions.Add(new Vector3(posVec3.X, posVec3.Y, posVec3.Z));
 
+
+
                         }
+
 
                         /* Write real vertex data to FLVER */
                         Log.Info(5, "Writing vertex data");

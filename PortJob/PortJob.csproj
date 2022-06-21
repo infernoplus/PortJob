@@ -11,11 +11,13 @@
 
   <ItemGroup>
     <None Remove="Resources\DS1_MTD_INFO.json" />
+    <None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
     <None Remove="Resources\DS3_MTD_INFO.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\DS1_MTD_INFO.json" />
+    <EmbeddedResource Include="Resources\DS3_GX_EXAMPLE_INFO.json" />
     <EmbeddedResource Include="Resources\DS3_MTD_INFO.json" />
   </ItemGroup>
 

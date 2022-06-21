@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace PortJob {
-    class Utility {
+    static class Utility {
 
         private static readonly char[] _dirSep = { '\\', '/' };
 
@@ -28,6 +28,13 @@ namespace PortJob {
         /* EX: Normals3 returns 3 */
         public static int GetChannelIndex(string s) {
             return int.Parse(s.Substring(s.IndexOfAny(CHAR_NUMS)));
+        }
+
+        public static IEnumerable<IEnumerable<T>> Chunk<T>(this IEnumerable<T> source, int chunksize) {
+            while (source.Any()) {
+                yield return source.Take(chunksize);
+                source = source.Skip(chunksize);
+            }
         }
     }
 }

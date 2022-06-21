@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.IO;
 using System.Text;
 using System.Numerics;
@@ -6,6 +7,7 @@ using System.Linq;
 
 using SoulsFormats;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace PortJob {
     class PortJob {
@@ -13,6 +15,7 @@ namespace PortJob {
         public static string OutputPath = "G:\\test\\";
         static void Main(string[] args) {
             Convert();
+            Directory.Delete(OutputPath + "map\\tx");
         }
 
         private static void Convert() {
@@ -44,7 +47,7 @@ namespace PortJob {
                 return nextEnv++;
             }
 
-            int CELLS = 2;
+            int CELLS = 3;
 
             /* Precalculate draw group information for each cell */
             Dictionary<string, uint> drawGroupGrid = new();
@@ -198,6 +201,49 @@ namespace PortJob {
             string msbPath = OutputPath + "map\\MapStudio\\m" + area + "_0" + block + "_00_00.msb";
             Log.Info(0, "Writing MSB to: " + msbPath);
             msb.Write(msbPath);
+
+            PackTextures(area);
+        }
+
+        private static void PackTextures(int area) {
+            string[] textures = Directory.GetFiles(OutputPath + "map\\tx\\", "*.tpf.dcx");
+
+            int CHUNK_AMOUNT = textures.Length / 4; //get the amount of textures per BXF3.
+
+            for (int i = 0; i < 4; i++) {
+
+                BXF4 bxf = new();
+                var chunk = textures.Skip(CHUNK_AMOUNT * i).Take(CHUNK_AMOUNT).ToArray(); //We skip the ones we already processed and move to the next set
+
+                for (int j = 0; j < chunk.Length; j++) {
+                    string file = chunk[j];
+                    byte[] tpf = File.ReadAllBytes(file);
+                    string name = Path.GetFileName(file);
+                    bxf.Files.Add(new BinderFile(Binder.FileFlags.Flag1, j, name, tpf));
+                }
+
+                string texPath = OutputPath + "map\\m" + area + "\\" + "m" + area + "_" + i.ToString("D4");
+
+                bxf.Write(texPath + ".bhd", texPath + ".bdt");
+            }
+
+            var excess = textures.Skip(CHUNK_AMOUNT * 4).Take(CHUNK_AMOUNT).ToArray();
+
+            if (excess.Length > 0) {
+                TPF tpf = new();
+                foreach (string file in excess) {
+                    TPF tpfF = TPF.Read(File.ReadAllBytes(file));
+                    foreach (TPF.Texture texture in tpfF) {
+                        tpf.Textures.Add(texture);
+                    }
+                }
+
+                tpf.Write(OutputPath + "map\\m" + area + "\\" + "m" + area + "_9999.tpf.dcx");
+            }
+
+            foreach (string texPath in textures) {
+                File.Delete(texPath);
+            }
         }
 
         private static int nextCollisionID = 0;

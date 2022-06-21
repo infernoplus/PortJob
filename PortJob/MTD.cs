@@ -4,7 +4,7 @@ using System.Text;
 using MBT = SoulsFormats.FLVER.LayoutType;
 using MBS = SoulsFormats.FLVER.LayoutSemantic;
 using Newtonsoft.Json.Linq;
-
+using SoulsFormats;
 using System.IO;
 using System.Reflection;
 using System.Diagnostics;
@@ -14,22 +14,23 @@ using System.Linq;
 namespace PortJob {
     public class MTD {
         private static JArray MTD_INFO_LIST;
+        private static JObject GX_INFO_LIST;
 
-        public static SoulsFormats.FLVER2.BufferLayout getLayout(string MTDName, bool isStatic) {
+        public static FLVER2.BufferLayout getLayout(string MTDName, bool isStatic) {
 
             if (MTD_INFO_LIST == null) {
                 loadMTDInfoList();
             }
 
             JObject MTD_INFO = getMTDInfo(MTDName);
-            JArray MTD_LAYOUT_MEMBERS = (JArray)MTD_INFO["LayoutMembers"];
-
+            JToken[] MTD_LAYOUT_MEMBERS = MTD_INFO["AcceptableVertexBufferDeclarations"].ToArray();
             SoulsFormats.FLVER2.BufferLayout BL = new();
-            for (int i = 0; i < MTD_LAYOUT_MEMBERS.Count; i++) {
-                MBT mbt = (MBT)uint.Parse(MTD_LAYOUT_MEMBERS[i]["Type"].ToString());
-                MBS mbs = (MBS)uint.Parse(MTD_LAYOUT_MEMBERS[i]["Semantic"].ToString());
+            JArray buffers = (JArray)MTD_LAYOUT_MEMBERS.First()["Buffers"].First;
+            for (int i = 0; i < buffers.Count; i++) {
+                MBT mbt = (MBT)uint.Parse(buffers[i]["Type"].ToString());
+                MBS mbs = (MBS)uint.Parse(buffers[i]["Semantic"].ToString());
                 if (isStatic && mbs == MBS.BoneWeights) { continue; }
-                BL.Add(new SoulsFormats.FLVER.LayoutMember(mbt, mbs));
+                BL.Add(new FLVER.LayoutMember(mbt, mbs));
             }
 
             return BL;
@@ -46,7 +47,7 @@ namespace PortJob {
             for (int i = 0; i < MTD_TEXTURE_MEMBERS.Length; i++) {
                 string TexMem = MTD_TEXTURE_MEMBERS[i].First.ToString();
                 switch (TexMem) {
-                    case "g_Diffuse": TM.Add(new TextureKey("Texture", TexMem, 0x1, true)); break;
+                    case "g_DiffuseTexture": TM.Add(new TextureKey("Texture", TexMem, 0x1, true)); break;
                     case "g_Diffuse_2": TM.Add(new TextureKey("SpecularFactor", TexMem, 0x1, true)); break;
                     case "g_Specular": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
                     case "g_Specular_2": TM.Add(new TextureKey("SpecularPower", TexMem, 0x1, true)); break;
@@ -60,12 +61,34 @@ namespace PortJob {
             return TM;
         }
 
+        public static FLVER2.GXList getGXList(string MTDName) {
+            if (GX_INFO_LIST == null) {
+                loadGXInfoList();
+            }
+
+            JArray GX_INFO = getGXInfo(MTDName);
+            JArray MTD_INFO = (JArray)getMTDInfo(MTDName)["GXItems"];
+            if (MTD_INFO.Count != GX_INFO.Count)
+                throw new Exception($"Missing example for {MTDName} items. GXItems count and GX_INFO count do not match {nameof(MTD_INFO)}{MTD_INFO.Count} {nameof(GX_INFO)}{GX_INFO.Count}");
+
+            FLVER2.GXList gxList = new();
+
+            for (int i = 0; i < MTD_INFO.Count; i++) {
+                gxList.Add(new FLVER2.GXItem() {
+                    ID = MTD_INFO[i]["GXID"].ToString(),
+                    Unk04 = int.Parse(MTD_INFO[i]["Unk04"].ToString()),
+                    Data = Convert.FromBase64String(GX_INFO[i].ToString())
+                });
+            }
+
+            return gxList;
+        }
+
         public static List<TextureKey> getHardcodedTextureMap() {
             List<TextureKey> TM = new();
             TM.Add(new TextureKey("g_DetailBumpmap", "", 0x0, false));
             return TM;
         }
-
 
         private static JObject getMTDInfo(string MTDName) {
             JToken[] mtd_info = MTD_INFO_LIST[0].ToArray();
@@ -90,6 +113,27 @@ namespace PortJob {
 
             JObject json = JObject.Parse(data);
             MTD_INFO_LIST = (JArray)json["mtds"];
+        }
+
+        private static JArray getGXInfo(string MTDName) {
+            JObject gx_info = GX_INFO_LIST;
+            return (JArray)gx_info[MTDName.ToLower()] ?? throw new NullReferenceException($"JObject returned null for {MTDName}");
+            ///* This is bad times if this happens */
+            //throw new Exception("MTD Info not found");
+        }
+
+        private static void loadGXInfoList() {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string resourceName = "PortJob.Resources.DS3_GX_EXAMPLE_INFO.json";
+            string data;
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new(stream)) {
+                data = reader.ReadToEnd();
+            }
+
+            JObject json = JObject.Parse(data);
+            GX_INFO_LIST = json;
         }
     }
 

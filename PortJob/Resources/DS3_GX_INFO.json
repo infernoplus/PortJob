@@ -1,0 +1,2256 @@
+{
+  "GX00": [
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown3",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown4",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown5",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown6",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX04": [
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown2",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown3",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown4",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown5",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown6",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown7",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown8",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown9",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown10",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown11",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX20": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX22": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX24": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX26": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX30": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GXMD": [
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown3",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown4",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown5",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown6",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown7",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown8",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown9",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown10",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown11",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown12",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown13",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown14",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown15",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown16",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown17",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown18",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown19",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown20",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown21",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown22",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown23",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown24",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown25",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown26",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown27",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown28",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown29",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown30",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown31",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown32",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown33",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown34",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown35",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown36",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown37",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown38",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown39",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown40",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown41",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown42",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown43",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown44",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown45",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown46",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown47",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown48",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown49",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown50",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown51",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown52",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": true,
+      "Tag": null
+    }
+  ],
+  "GX03": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX32": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX80": [
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown0",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX81": [
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown0",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown2",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown3",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown4",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown5",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown6",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown7",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown8",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown9",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX05": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX15": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown2",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown3",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown4",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX36": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown3",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown4",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown5",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown6",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown7",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown8",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX37": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown3",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown4",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown5",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown6",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown7",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown8",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX09": [
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown0",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown3",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown4",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown5",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown6",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown7",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown8",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX21": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX23": [
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown0",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX25": [
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown0",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX27": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX33": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX01": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown3",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown4",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown5",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown6",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX34": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX14": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown2",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown3",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown4",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown5",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX35": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX06": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX07": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown2",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown3",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown4",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown5",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown6",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown7",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown8",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown9",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown10",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown11",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown12",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown13",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown14",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown15",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown16",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown17",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown18",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown19",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown20",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown21",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown22",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown23",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown24",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown25",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown26",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown27",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX02": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown2",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown3",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown4",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown5",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown6",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX12": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown3",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown4",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown5",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown6",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX13": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown1",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown3",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown4",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown5",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown6",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown7",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ],
+  "GX39": [
+    {
+      "ValueType": "f32",
+      "Name": "_f32_Unknown0",
+      "AssertValue": null,
+      "IsAssert": false,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown1",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    },
+    {
+      "ValueType": "s32",
+      "Name": "_s32_Unknown2",
+      "AssertValue": 0,
+      "IsAssert": true,
+      "IsXmlAttribute": false,
+      "IsNodeFlattened": false,
+      "IsOptional": false,
+      "Tag": null
+    }
+  ]
+}
