@@ -213,7 +213,7 @@ namespace PortJob {
             for (int i = 0; i < 4; i++) {
 
                 BXF4 bxf = new();
-                var chunk = textures.Skip(CHUNK_AMOUNT * i).Take(CHUNK_AMOUNT).ToArray(); //We skip the ones we already processed and move to the next set
+                string[] chunk = textures.Skip(CHUNK_AMOUNT * i).Take(CHUNK_AMOUNT).ToArray(); //We skip the ones we already processed and move to the next set
 
                 for (int j = 0; j < chunk.Length; j++) {
                     string file = chunk[j];
@@ -227,8 +227,7 @@ namespace PortJob {
                 bxf.Write(texPath + ".bhd", texPath + ".bdt");
             }
 
-            var excess = textures.Skip(CHUNK_AMOUNT * 4).Take(CHUNK_AMOUNT).ToArray();
-
+            string[] excess = textures.Skip(CHUNK_AMOUNT * 4).Take(CHUNK_AMOUNT).ToArray();
             if (excess.Length > 0) {
                 TPF tpf = new();
                 foreach (string file in excess) {
