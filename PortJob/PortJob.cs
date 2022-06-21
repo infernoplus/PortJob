@@ -42,10 +42,11 @@ namespace PortJob {
             const int area = 30;
             const int block = 0;
 
-            int nextEnv = 0;
-            int NewEnvID() {
-                return nextEnv++;
-            }
+            //I think this got moved to the bottom.  
+            //int nextEnv = 0;
+            //int NewEnvID() {
+            //    return nextEnv++;
+            //}
 
             int CELLS = 3;
 
