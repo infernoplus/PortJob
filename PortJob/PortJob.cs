@@ -16,6 +16,7 @@ namespace PortJob {
         static void Main(string[] args) {
             Convert();
             Directory.Delete(OutputPath + "map\\tx");
+            Utility.PackTestCol(OutputPath);
         }
 
         private static void Convert() {
@@ -79,7 +80,7 @@ namespace PortJob {
                     drawGroup += drawGroupGrid.GetValueOrDefault((gx - 1) + "," + (gy + 1));
                     drawGroup += drawGroupGrid.GetValueOrDefault((gx + 1) + "," + (gy - 1));
 
-                    string cModel = "h0000B0";
+                    string cModel = "h000000";
                     string cName;
                     if (partMap.ContainsKey(cModel)) {
                         cName = "_" + (partMap[cModel]++.ToString("D4"));
@@ -199,9 +200,9 @@ namespace PortJob {
 
 
             /* Write to file */
-            string msbPath = OutputPath + "map\\MapStudio\\m" + area + "_0" + block + "_00_00.msb";
+            string msbPath = OutputPath + "map\\MapStudio\\m" + area + "_0" + block + "_00_00.msb.dcx";
             Log.Info(0, "Writing MSB to: " + msbPath);
-            msb.Write(msbPath);
+            msb.Write(msbPath, DCX.Type.DCX_DFLT_10000_44_9);
 
             PackTextures(area);
         }

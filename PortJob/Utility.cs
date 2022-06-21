@@ -1,5 +1,7 @@
-﻿using System;
+﻿using SoulsFormats;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +37,20 @@ namespace PortJob {
                 yield return source.Take(chunksize);
                 source = source.Skip(chunksize);
             }
+        }
+
+        /* Temporary code for packing up hkxs */
+        public static void PackTestCol(string outputPath) { 
+            string pathH = outputPath + @"col\h30_00_00_00_000000.hkx";
+            string pathL = outputPath + @"col\l30_00_00_00_000000.hkx";
+            BXF4 bxfH = new();
+            BXF4 bxfL = new();
+
+            bxfH.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathH) + ".dcx", File.ReadAllBytes(pathH)) { CompressionType = DCX.Type.Zlib });
+            bxfH.Write(pathH.Replace("col\\", "map\\") + "bhd", pathH.Replace("col\\", "map\\") + "bdt");
+
+            bxfL.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathL) + ".dcx", File.ReadAllBytes(pathL)) { CompressionType = DCX.Type.Zlib });
+            bxfL.Write(pathL.Replace("col\\", "map\\") + "bhd", pathL.Replace("col\\", "map\\") + "bdt");
         }
     }
 }
