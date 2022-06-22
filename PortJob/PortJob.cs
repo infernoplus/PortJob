@@ -14,9 +14,9 @@ namespace PortJob {
         public static string MorrowindPath = "G:\\Steam\\steamapps\\common\\Morrowind\\";
         public static string OutputPath = "G:\\test\\";
         static void Main(string[] args) {
+            Utility.PackTestCol(OutputPath);
             Convert();
             Directory.Delete(OutputPath + "map\\tx");
-            Utility.PackTestCol(OutputPath);
         }
 
         private static void Convert() {

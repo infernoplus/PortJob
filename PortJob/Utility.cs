@@ -41,18 +41,18 @@ namespace PortJob {
 
         /* Temporary code for packing up hkxs */
         public static void PackTestCol(string outputPath) { 
-            string pathH = outputPath + @"col\h30_00_00_00_000000.hkx";
-            string pathL = outputPath + @"col\l30_00_00_00_000000.hkx";
+            string pathH = Environment.CurrentDirectory + @"..\..\..\..\TestCol\h30_00_00_00_000000.hkx";
+            string pathL = Environment.CurrentDirectory + @"..\..\..\..\TestCol\l30_00_00_00_000000.hkx";
             BXF4 bxfH = new();
             BXF4 bxfL = new();
 
             bxfH.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathH) + ".dcx", File.ReadAllBytes(pathH)) { CompressionType = DCX.Type.Zlib });
-            bxfH.Write(pathH.Replace("col\\", "map\\m30_00_00_00\\").Replace("_000000", "") + "bhd", //this is a unreadable huge meme right now
-                pathH.Replace("col\\", "map\\m30_00_00_00\\").Replace("_000000", "") + "bdt"); //but this isn't really the proper place to do this.
+            bxfH.Write(outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathH).Replace("_000000", "") + "bhd", //this is a unreadable huge meme right now
+                outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathH).Replace("_000000", "") + "bdt"); //but this isn't really the proper place to do this.
 
             bxfL.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathL) + ".dcx", File.ReadAllBytes(pathL)) { CompressionType = DCX.Type.Zlib });
-            bxfL.Write(pathL.Replace("col\\", "map\\m30_00_00_00\\").Replace("_000000", "") + "bhd", //this is a huge unreadable meme right now
-                pathL.Replace("col\\", "map\\m30_00_00_00\\").Replace("_000000", "") + "bdt"); //but this isn't really the proper place to do this.
+            bxfL.Write(outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathL).Replace("_000000", "") + "bhd", //this is a unreadable huge meme right now
+                outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathL).Replace("_000000", "") + "bdt");//but this isn't really the proper place to do this.
         }
     }
 }

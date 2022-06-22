@@ -24,7 +24,7 @@ namespace PortJob {
 
             JObject MTD_INFO = getMTDInfo(MTDName);
             JToken[] MTD_LAYOUT_MEMBERS = MTD_INFO["AcceptableVertexBufferDeclarations"].ToArray();
-            SoulsFormats.FLVER2.BufferLayout BL = new();
+            FLVER2.BufferLayout BL = new();
             JArray buffers = (JArray)MTD_LAYOUT_MEMBERS.First()["Buffers"].First;
             for (int i = 0; i < buffers.Count; i++) {
                 MBT mbt = (MBT)uint.Parse(buffers[i]["Type"].ToString());
