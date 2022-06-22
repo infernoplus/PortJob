@@ -106,7 +106,9 @@ namespace PortJob {
                         int numFacesets = numTriangles / FACESET_MAX_TRIANGLES;
 
                         {
-                            FLVER2.FaceSet faceSet = new();
+                            FLVER2.FaceSet faceSet = new() {
+                                Unk06 = 1
+                            };
 
                             faceSet.CullBackfaces = geometryNode.Material.Name.StartsWith("!");
 

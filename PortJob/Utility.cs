@@ -46,11 +46,11 @@ namespace PortJob {
             BXF4 bxfH = new();
             BXF4 bxfL = new();
 
-            bxfH.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathH) + ".dcx", File.ReadAllBytes(pathH)) { CompressionType = DCX.Type.Zlib });
+            bxfH.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathH) + ".dcx", DCX.Compress(File.ReadAllBytes(pathH), DCX.Type.DCX_DFLT_10000_44_9) ) { CompressionType = DCX.Type.Zlib });
             bxfH.Write(outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathH).Replace("_000000", "") + "bhd", //this is a unreadable huge meme right now
                 outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathH).Replace("_000000", "") + "bdt"); //but this isn't really the proper place to do this.
 
-            bxfL.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathL) + ".dcx", File.ReadAllBytes(pathL)) { CompressionType = DCX.Type.Zlib });
+            bxfL.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathL) + ".dcx", DCX.Compress(File.ReadAllBytes(pathL), DCX.Type.DCX_DFLT_10000_44_9) ) { CompressionType = DCX.Type.Zlib });
             bxfL.Write(outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathL).Replace("_000000", "") + "bhd", //this is a unreadable huge meme right now
                 outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathL).Replace("_000000", "") + "bdt");//but this isn't really the proper place to do this.
         }

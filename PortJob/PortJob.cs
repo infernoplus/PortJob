@@ -14,6 +14,7 @@ namespace PortJob {
         public static string MorrowindPath = "G:\\Steam\\steamapps\\common\\Morrowind\\";
         public static string OutputPath = "G:\\test\\";
         static void Main(string[] args) {
+            
             Utility.PackTestCol(OutputPath);
             Convert();
             Directory.Delete(OutputPath + "map\\tx");
@@ -95,6 +96,7 @@ namespace PortJob {
                     flat.ModelName = cModel;
                     flat.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\layout\\h_layout.SIB";
                     flat.Position = cell.center;
+                    flat.MapStudioLayer = uint.MaxValue;
                     flat.DrawGroups[0] = drawGroup;
                     flat.DrawGroups[1] = 0;
                     flat.DrawGroups[2] = 0;
@@ -150,7 +152,7 @@ namespace PortJob {
                     //msb.Events.Environments.Add(env);
 
                     /* Process content */
-                    ESM.Type[] VALID_MAP_PIECE_TYPES = new[] { ESM.Type.Static, ESM.Type.Door, ESM.Type.Container };
+                    ESM.Type[] VALID_MAP_PIECE_TYPES = { ESM.Type.Static, ESM.Type.Door, ESM.Type.Container };
 
                     foreach (Content content in cell.content) {
                         if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
@@ -183,6 +185,7 @@ namespace PortJob {
                         mp.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\layout\\layout.SIB";
                         mp.Position = content.position;
                         mp.Rotation = content.rotation;
+                        mp.MapStudioLayer = uint.MaxValue;
                         mp.DrawGroups[0] = drawGroup;
                         mp.DrawGroups[1] = 0;
                         mp.DrawGroups[2] = 0;
