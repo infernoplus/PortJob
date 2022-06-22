@@ -78,7 +78,7 @@ namespace PortJob {
 
             /* Add root bone */
             FLVER.Bone rb = new();
-            rb.Name = "root";
+            rb.Name = Path.GetFileNameWithoutExtension(flverPath);
             flver.Bones.Add(rb);
 
             /* Read FBX mesh data */
@@ -174,7 +174,7 @@ namespace PortJob {
                             }
 
                             /* Add hardcoded detail bump texture data */
-                            //matTextures.Add(new TextureKey(HARDCODE_TEXTURE_KEY, HARDCODE_TEXTURE_VAL, HARDCODE_TEXTURE_UNK10, HARDCODE_TEXTURE_UNK11));
+                            matTextures.Add(new TextureKey(HARDCODE_TEXTURE_KEY, HARDCODE_TEXTURE_VAL, HARDCODE_TEXTURE_UNK10, HARDCODE_TEXTURE_UNK11));
                         } else {
                             Log.Error(5, "Missing material data for this mesh");
                         }
@@ -182,7 +182,7 @@ namespace PortJob {
                         flverMesh.MaterialIndex = flver.Materials.Count;
 
                         /* Write material to FLVER */
-                        FLVER2.Material mat = new(matName, mtdName + ".mtd", 0) {
+                        FLVER2.Material mat = new(matName, mtdName + ".mtd", 232) {
                             GXIndex = gxIndex
                         };
 
@@ -417,9 +417,9 @@ namespace PortJob {
             };
 
             string flverName = Path.GetFileNameWithoutExtension(flverPath);
-            string mapName = Path.GetFileName(flverPath.Substring(0, flverPath.LastIndexOf('_'))); //file name is just the top level directory, here. There is no GetTopLevelDirectory :(
+            //string mapName = Path.GetFileName(flverPath.Substring(0, flverPath.LastIndexOf('_'))); //file name is just the top level directory, here. There is no GetTopLevelDirectory :(
 
-            string internalFlverPath = "N:\\FDP\\data\\INTERROOT_win64\\map\\" + mapName + "\\" + flverName + "\\Model\\" + flverName + ".flver";
+            string internalFlverPath = flverName + ".flver"; //"N:\\FDP\\data\\INTERROOT_win64\\map\\" + mapName + "\\" + flverName + "\\Model\\" + flverName + ".flver" //full internal path
             bnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, internalFlverPath, flver.Write()));
             bnd.Write(flverPath.Replace("flver", "mapbnd.dcx"), DCX.Type.DCX_DFLT_10000_44_9);
             //flver.Write(flverPath, DCX.Type.DCX_DFLT_10000_24_9);

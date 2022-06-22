@@ -36,6 +36,31 @@ namespace PortJob {
             return BL;
         }
 
+        public static List<FLVER2.BufferLayout> getAllLayouts(string MTDName, bool isStatic) {
+            if (MTD_INFO_LIST == null) {
+                loadMTDInfoList();
+            }
+
+            JObject MTD_INFO = getMTDInfo(MTDName);
+            JArray MTD_LAYOUT_MEMBERS = (JArray)MTD_INFO["AcceptableVertexBufferDeclarations"];
+            //JArray buffers = (JArray)MTD_LAYOUT_MEMBERS.First()["Buffers"];
+            List<FLVER2.BufferLayout> layouts = new();
+
+            for (int i = 0; i < MTD_LAYOUT_MEMBERS.Count; i++) {
+                FLVER2.BufferLayout BL = new();
+                JArray buffers = (JArray)MTD_LAYOUT_MEMBERS[i]["Buffers"][0];
+                foreach (JObject buffer in buffers) {
+                    MBT mbt = (MBT)uint.Parse(buffer["Type"].ToString());
+                    MBS mbs = (MBS)uint.Parse(buffer["Semantic"].ToString());
+                    if (isStatic && mbs == MBS.BoneWeights) { continue; }
+                    BL.Add(new FLVER.LayoutMember(mbt, mbs));
+                }
+                layouts.Add(BL);
+            }
+
+            return layouts;
+        }
+
         public static List<TextureKey> getTextureMap(string MTDName) {
             if (MTD_INFO_LIST == null) {
                 loadMTDInfoList();
@@ -66,7 +91,7 @@ namespace PortJob {
                 loadGXInfoList();
             }
 
-            JArray GX_INFO = getGXInfo(MTDName);
+            JArray GX_INFO = getGXExampleInfo(MTDName);
             JArray MTD_INFO = (JArray)getMTDInfo(MTDName)["GXItems"];
             if (MTD_INFO.Count != GX_INFO.Count)
                 throw new Exception($"Missing example for {MTDName} items. GXItems count and GX_INFO count do not match {nameof(MTD_INFO)}{MTD_INFO.Count} {nameof(GX_INFO)}{GX_INFO.Count}");
@@ -97,8 +122,8 @@ namespace PortJob {
                     return (JObject)mtd_info[i].First;
                 }
             }
-            /* This is bad times if this happens */
-            throw new Exception("MTD Info not found");
+            /* This is bad times if this happens so throw an exception that gives better info than a null reference */
+            throw new Exception($"MTD Info not found for {MTDName}");
         }
 
         private static void loadMTDInfoList() {
@@ -115,11 +140,9 @@ namespace PortJob {
             MTD_INFO_LIST = (JArray)json["mtds"];
         }
 
-        private static JArray getGXInfo(string MTDName) {
-            JObject gx_info = GX_INFO_LIST;
-            return (JArray)gx_info[MTDName.ToLower()] ?? throw new NullReferenceException($"JObject returned null for {MTDName}");
-            ///* This is bad times if this happens */
-            //throw new Exception("MTD Info not found");
+        private static JArray getGXExampleInfo(string MTDName) {
+            JObject gx_example_info = GX_INFO_LIST;
+            return (JArray)gx_example_info[MTDName.ToLower()] ?? throw new Exception($"JObject returned null for {MTDName}"); //return the GXInfo, or throw
         }
 
         private static void loadGXInfoList() {

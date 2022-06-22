@@ -47,10 +47,12 @@ namespace PortJob {
             BXF4 bxfL = new();
 
             bxfH.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathH) + ".dcx", File.ReadAllBytes(pathH)) { CompressionType = DCX.Type.Zlib });
-            bxfH.Write(pathH.Replace("col\\", "map\\") + "bhd", pathH.Replace("col\\", "map\\") + "bdt");
+            bxfH.Write(pathH.Replace("col\\", "map\\m30_00_00_00\\").Replace("_000000", "") + "bhd", //this is a unreadable huge meme right now
+                pathH.Replace("col\\", "map\\m30_00_00_00\\").Replace("_000000", "") + "bdt"); //but this isn't really the proper place to do this.
 
             bxfL.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathL) + ".dcx", File.ReadAllBytes(pathL)) { CompressionType = DCX.Type.Zlib });
-            bxfL.Write(pathL.Replace("col\\", "map\\") + "bhd", pathL.Replace("col\\", "map\\") + "bdt");
+            bxfL.Write(pathL.Replace("col\\", "map\\m30_00_00_00\\").Replace("_000000", "") + "bhd", //this is a huge unreadable meme right now
+                pathL.Replace("col\\", "map\\m30_00_00_00\\").Replace("_000000", "") + "bdt"); //but this isn't really the proper place to do this.
         }
     }
 }

@@ -9,7 +9,7 @@ using SoulsFormats;
 namespace PortJob.Solvers {
     /* Code by Meowmartius, borrowed from FBX2FLVER <3 */
     public class OrientationSolver {
-        public static void SolveOrientation(SoulsFormats.FLVER2 flver) {
+        public static void SolveOrientation(FLVER2 flver) {
             foreach (FLVER2.Mesh flverMesh in flver.Meshes) {
                 for (int i = 0; i < flverMesh.Vertices.Count; i++) {
 
@@ -35,7 +35,7 @@ namespace PortJob.Solvers {
     }
 
     public static class ExtensionMethods {
-        public static System.Numerics.Vector3 ToNumerics(this Microsoft.Xna.Framework.Vector3 v) {
+        public static System.Numerics.Vector3 ToNumerics(this Vector3 v) {
             return new System.Numerics.Vector3(v.X, v.Y, v.Z);
         }
     }

@@ -99,10 +99,28 @@ namespace PortJob {
                     flat.DrawGroups[1] = 0;
                     flat.DrawGroups[2] = 0;
                     flat.DrawGroups[3] = 0;
+                    flat.DrawGroups[4] = 0;
+                    flat.DrawGroups[5] = 0;
+                    flat.DrawGroups[6] = 0;
+                    flat.DrawGroups[7] = 0;
                     flat.DispGroups[0] = drawGroup;
                     flat.DispGroups[1] = 0;
                     flat.DispGroups[2] = 0;
                     flat.DispGroups[3] = 0;
+                    flat.DispGroups[3] = 0;
+                    flat.DispGroups[4] = 0;
+                    flat.DispGroups[5] = 0;
+                    flat.DispGroups[6] = 0;
+                    flat.DispGroups[7] = 0;
+                    flat.BackreadGroups[0] = drawGroup;
+                    flat.BackreadGroups[1] = 0;
+                    flat.BackreadGroups[2] = 0;
+                    flat.BackreadGroups[3] = 0;
+                    flat.BackreadGroups[3] = 0;
+                    flat.BackreadGroups[4] = 0;
+                    flat.BackreadGroups[5] = 0;
+                    flat.BackreadGroups[6] = 0;
+                    flat.BackreadGroups[7] = 0;
                     //flat.NvmGroups[0] = 0;
                     //flat.NvmGroups[1] = 0;
                     //flat.NvmGroups[2] = 0;
@@ -181,10 +199,21 @@ namespace PortJob {
                         mp.DispGroups[5] = 0;
                         mp.DispGroups[6] = 0;
                         mp.DispGroups[7] = 0;
+                        mp.BackreadGroups[0] = drawGroup;
+                        mp.BackreadGroups[1] = 0;
+                        mp.BackreadGroups[2] = 0;
+                        mp.BackreadGroups[3] = 0;
+                        mp.BackreadGroups[3] = 0;
+                        mp.BackreadGroups[4] = 0;
+                        mp.BackreadGroups[5] = 0;
+                        mp.BackreadGroups[6] = 0;
+                        mp.BackreadGroups[7] = 0;
                         //mp.IsShadowDest = 0x1;
                         mp.DrawByReflectCam = true;
-                        mp.Name = mpModel + mpName;
+                        mp.Name = "m" + mpModel + mpName;
                         mpRes.Name = mp.ModelName;
+                        mp.UnkE0E = -1;
+                        mp.LodParamID = -1;
                         mpRes.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\" + mpModel + ".sib";
                         msb.Models.MapPieces.Add(mpRes);
                         msb.Parts.MapPieces.Add(mp);
@@ -226,7 +255,7 @@ namespace PortJob {
 
                 string texPath = OutputPath + "map\\m" + area + "\\" + "m" + area + "_" + i.ToString("D4");
 
-                bxf.Write(texPath + ".bhd", texPath + ".bdt");
+                bxf.Write(texPath + ".tpfbhd", texPath + ".tpfbdt");
             }
 
             string[] excess = textures.Skip(CHUNK_AMOUNT * 4).Take(CHUNK_AMOUNT).ToArray();
@@ -239,7 +268,7 @@ namespace PortJob {
                     }
                 }
 
-                tpf.Write(OutputPath + "map\\m" + area + "\\" + "m" + area + "_9999.tpf.dcx");
+                tpf.Write(OutputPath + "map\\m" + area + "\\" + "m" + area + "_9999.tpf.dcx", DCX.Type.DCX_DFLT_10000_44_9);
             }
 
             foreach (string texPath in textures) {
