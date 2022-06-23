@@ -49,7 +49,7 @@ namespace PortJob {
             //    return nextEnv++;
             //}
 
-            int CELLS = 9;
+            int CELLS = 3;
 
             /* Precalculate draw group information for each cell */
             Dictionary<string, uint> drawGroupGrid = new();
@@ -215,7 +215,7 @@ namespace PortJob {
                         mp.Name = "m" + mpModel + mpName;
                         mpRes.Name = mp.ModelName;
                         mp.UnkE0E = -1;
-                        mp.LodParamID = -1;
+                        mp.LodParamID = 19;
                         mpRes.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\" + mpModel + ".sib";
                         msb.Models.MapPieces.Add(mpRes);
                         msb.Parts.MapPieces.Add(mp);

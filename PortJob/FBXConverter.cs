@@ -145,9 +145,9 @@ namespace PortJob {
                         if (geometryContent.Material != null) {
                             mtdName = "M[A]";
                             matName = geometryContent.Material.Name;
-                            int ind = matName.IndexOf("|") + 1;
-                            //@TODO - Change the way the materials are named in NIF2FBX and then change this god awful trimming code
-                            matName = matName.Substring(ind, matName.Length - (ind + 1)).Trim(); //Cursed. I should change the material names in the conversion process. 
+                            //int ind = matName.IndexOf("|") + 1;
+                            ////@TODO - Change the way the materials are named in NIF2FBX and then change this god awful trimming code
+                            //matName = matName.Substring(ind, matName.Length - (ind + 1)).Trim(); //Cursed. I should change the material names in the conversion process. 
 
                             //if (flverMaterials.ContainsKey(matName)) continue;
 
@@ -164,7 +164,7 @@ namespace PortJob {
                                     if (boop.Key.Equals(TEX.Key)) { texKvp = boop; break; }
                                 }
 
-                                if (texKvp.Key == null) { Log.Error(6, "Missing key: " + TEX.Value); }
+                                if (texKvp.Key == null) { Log.Error(6, "Missing key: " + TEX.Value); continue;                                }
 
                                 string shortTexName = "mw_" + Utility.PathToFileName(texKvp.Value.Filename);
                                 matTextures.Add(new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11));
