@@ -215,7 +215,7 @@ namespace PortJob {
                         mp.Name = "m" + mpModel + mpName;
                         mpRes.Name = mp.ModelName;
                         mp.UnkE0E = -1;
-                        mp.LodParamID = 19;
+                        mp.LodParamID = 19; //Param for: Don't switch to LOD models 
                         mpRes.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\" + mpModel + ".sib";
                         msb.Models.MapPieces.Add(mpRes);
                         msb.Parts.MapPieces.Add(mp);
