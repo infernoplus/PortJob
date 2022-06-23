@@ -25,12 +25,15 @@ namespace PortJob {
             JObject MTD_INFO = getMTDInfo(MTDName);
             JToken[] MTD_LAYOUT_MEMBERS = MTD_INFO["AcceptableVertexBufferDeclarations"].ToArray();
             FLVER2.BufferLayout BL = new();
-            JArray buffers = (JArray)MTD_LAYOUT_MEMBERS.First()["Buffers"].First;
+            JArray buffers = (JArray)MTD_LAYOUT_MEMBERS.Last()["Buffers"].First;
             for (int i = 0; i < buffers.Count; i++) {
                 MBT mbt = (MBT)uint.Parse(buffers[i]["Type"].ToString());
                 MBS mbs = (MBS)uint.Parse(buffers[i]["Semantic"].ToString());
+                int index = int.Parse(buffers[i]["Index"].ToString());
+                int unk00 = int.Parse(buffers[i]["Unk00"].ToString());
+                //int size = int.Parse(buffers[i]["Size"].ToString());
                 if (isStatic && mbs == MBS.BoneWeights) { continue; }
-                BL.Add(new FLVER.LayoutMember(mbt, mbs));
+                BL.Add(new FLVER.LayoutMember(mbt, mbs, index, unk00));
             }
 
             return BL;

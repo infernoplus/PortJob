@@ -15,9 +15,8 @@ namespace PortJob {
         public static string OutputPath = "G:\\test\\";
         static void Main(string[] args) {
             
-            Utility.PackTestCol(OutputPath);
             Convert();
-            Directory.Delete(OutputPath + "map\\tx");
+            Utility.PackTestCol(OutputPath);
         }
 
         private static void Convert() {
@@ -50,7 +49,7 @@ namespace PortJob {
             //    return nextEnv++;
             //}
 
-            int CELLS = 3;
+            int CELLS = 9;
 
             /* Precalculate draw group information for each cell */
             Dictionary<string, uint> drawGroupGrid = new();
@@ -274,9 +273,11 @@ namespace PortJob {
                 tpf.Write(OutputPath + "map\\m" + area + "\\" + "m" + area + "_9999.tpf.dcx", DCX.Type.DCX_DFLT_10000_44_9);
             }
 
-            foreach (string texPath in textures) {
-                File.Delete(texPath);
-            }
+            //foreach (string texPath in textures) {
+            //    File.Delete(texPath);
+            //}
+
+            Directory.Delete(OutputPath + "map\\tx", true);
         }
 
         private static int nextCollisionID = 0;

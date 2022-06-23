@@ -23,7 +23,7 @@ namespace PortJob {
         const byte FLVER_UNK_0x5C = 0;
         const int FLVER_UNK_0x68 = 4;
 
-        const string HARDCODE_TEXTURE_KEY = "g_detailBumpmap";
+        const string HARDCODE_TEXTURE_KEY = "g_DetailBumpmap";
         const string HARDCODE_TEXTURE_VAL = "";
         const byte HARDCODE_TEXTURE_UNK10 = 0x01;
         const bool HARDCODE_TEXTURE_UNK11 = true;
@@ -53,6 +53,9 @@ namespace PortJob {
             /* Grab all mesh content from FBX */
             Dictionary<FLVER2.Mesh, MeshContent> FBX_Meshes = new();
             Vector3 rootPosition = fbx.Transform.Translation;
+
+            /* Buffer Layout dictionary */
+            Dictionary<string, int> flverMaterials = new();
 
 
             void FBXHierarchySearch(NodeContent node) {
@@ -142,6 +145,11 @@ namespace PortJob {
                         if (geometryContent.Material != null) {
                             mtdName = "M[A]";
                             matName = geometryContent.Material.Name;
+                            int ind = matName.IndexOf("|") + 1;
+                            //@TODO - Change the way the materials are named in NIF2FBX and then change this god awful trimming code
+                            matName = matName.Substring(ind, matName.Length - (ind + 1)).Trim(); //Cursed. I should change the material names in the conversion process. 
+
+                            //if (flverMaterials.ContainsKey(matName)) continue;
 
                             Log.Info(5, "[MTD: " + mtdName + ", Material: " + matName + "]");
 
@@ -160,6 +168,7 @@ namespace PortJob {
 
                                 string shortTexName = "mw_" + Utility.PathToFileName(texKvp.Value.Filename);
                                 matTextures.Add(new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11));
+                                //flverMaterials.Add(matName, 0);
 
                                 // Writes every texture to a seperate file.
                                 // This is how From handles their enviroment textures so I'm just following their pattern.
@@ -176,7 +185,7 @@ namespace PortJob {
                             }
 
                             /* Add hardcoded detail bump texture data */
-                            matTextures.Add(new TextureKey(HARDCODE_TEXTURE_KEY, HARDCODE_TEXTURE_VAL, HARDCODE_TEXTURE_UNK10, HARDCODE_TEXTURE_UNK11));
+                            //matTextures.Add(new TextureKey(HARDCODE_TEXTURE_KEY, HARDCODE_TEXTURE_VAL, HARDCODE_TEXTURE_UNK10, HARDCODE_TEXTURE_UNK11));
                         } else {
                             Log.Error(5, "Missing material data for this mesh");
                         }
@@ -378,9 +387,10 @@ namespace PortJob {
                     }
                 }
 
-                flverMesh.VertexBuffers.Add(new FLVER2.VertexBuffer(layoutIndex: flverMesh.MaterialIndex));
 
+                flverMesh.VertexBuffers.Add(new FLVER2.VertexBuffer(layoutIndex: flverMesh.MaterialIndex));
                 flver.Meshes.Add(flverMesh);
+
             }
 
             /* Orientation Solver */
