@@ -130,16 +130,8 @@ namespace PortJob {
         }
 
         private static void loadMTDInfoList() {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = "PortJob.Resources.DS3_MTD_INFO.json";
-            string data;
-
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new(stream)) {
-                data = reader.ReadToEnd();
-            }
-
-            JObject json = JObject.Parse(data);
+            string jsonString = Utility.GetEmbededResource("PortJob.Resources.DS3_MTD_INFO.json");
+            JObject json = JObject.Parse(jsonString);
             MTD_INFO_LIST = (JArray)json["mtds"];
         }
 
@@ -149,18 +141,11 @@ namespace PortJob {
         }
 
         private static void loadGXInfoList() {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = "PortJob.Resources.DS3_GX_EXAMPLE_INFO.json";
-            string data;
-
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new(stream)) {
-                data = reader.ReadToEnd();
-            }
-
-            JObject json = JObject.Parse(data);
+            string jsonString = Utility.GetEmbededResource("PortJob.Resources.DS3_GX_EXAMPLE_INFO.json");
+            JObject json = JObject.Parse(jsonString);
             GX_INFO_LIST = json;
         }
+
     }
 
     public class TextureKey {

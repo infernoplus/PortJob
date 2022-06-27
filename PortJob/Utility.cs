@@ -1,10 +1,13 @@
 ﻿using SoulsFormats;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Binder = SoulsFormats.Binder;
 
 namespace PortJob {
     static class Utility {
@@ -53,6 +56,29 @@ namespace PortJob {
             bxfL.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathL) + ".dcx", DCX.Compress(File.ReadAllBytes(pathL), DCX.Type.DCX_DFLT_10000_44_9) ) { CompressionType = DCX.Type.Zlib });
             bxfL.Write(outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathL).Replace("_000000", "") + "bhd", //this is a unreadable huge meme right now
                 outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathL).Replace("_000000", "") + "bdt");//but this isn't really the proper place to do this.
+        }
+        public static int DeleteFromEnd(int num, int n) {
+            for (int i = 1; num != 0; i++) {
+                num = num / 10;
+
+                if (i == n)
+                    return num;
+            }
+
+            return 0;
+        }
+
+        public static string GetEmbededResource(string item) {
+            Assembly assembly = Assembly.GetCallingAssembly();
+            using (Stream? stream = assembly.GetManifestResourceStream(item)) {
+                if (stream == null)
+                    throw new NullReferenceException($"Could not find embedded resource: {item} in the {Assembly.GetCallingAssembly().GetName()} assembly");
+
+                using (StreamReader reader = new StreamReader(stream)) {
+                    return reader.ReadToEnd();
+                }
+            }
+
         }
     }
 }

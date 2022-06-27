@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.Text;
@@ -11,12 +12,26 @@ using System.Runtime.CompilerServices;
 
 namespace PortJob {
     class PortJob {
-        public static string MorrowindPath = "G:\\Steam\\steamapps\\common\\Morrowind\\";
-        public static string OutputPath = "G:\\test\\";
+        public static string MorrowindPath { get; set; }
+        public static string OutputPath { get; set; }
         static void Main(string[] args) {
-            
+
+            SetupPaths();
             Convert();
             Utility.PackTestCol(OutputPath);
+        }
+
+        private static void SetupPaths()
+        {
+            string jsonString = Utility.GetEmbededResource("PortJob.Resources.settings.json");
+            JObject settings = JObject.Parse(jsonString);
+            MorrowindPath = settings["morrowind"].ToString();
+            OutputPath = settings["output"].ToString();
+            if (!MorrowindPath.EndsWith("\\"))
+                MorrowindPath += "\\";
+
+            if (!OutputPath.EndsWith("\\"))
+                OutputPath += "\\";
         }
 
         private static void Convert() {
@@ -185,7 +200,7 @@ namespace PortJob {
                         MSB3.Model.MapPiece mpRes = new();
                         mp.ModelName = "m" + mpModel;
                                    //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\sib\\layout_70.SIB"
-                        mp.SibPath = "N:\\FDP\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\layout_" + 70 + ".SIB";//put the right number here
+                        mp.SibPath = "N:\\FDP\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\layout_" + Utility.DeleteFromEnd(int.Parse(mpName.Split("_")[1]), 2).ToString("D2") + ".SIB";//put the right number here
                         mp.Position = content.position;
                         mp.Rotation = content.rotation;
                         mp.MapStudioLayer = uint.MaxValue;
