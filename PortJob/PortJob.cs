@@ -32,7 +32,8 @@ namespace PortJob {
             player.Position = new Vector3(0.0f, 0.1f, 0.0f);
             player.Name = "c0000_0000";
             playerRes.Name = player.ModelName;
-            playerRes.SibPath = "N:\\FRPG\\data\\Model\\chr\\c0000\\sib\\c0000.SIB";
+                              //"N:\\FDP\\data\\Model\\chr\\c0000\\sib\\c0000.SIB"
+            playerRes.SibPath = "N:\\FDP\\data\\Model\\chr\\c0000\\sib\\c0000.SIB";
             msb.Models.Players.Add(playerRes);
             msb.Parts.Players.Add(player);
 
@@ -93,7 +94,8 @@ namespace PortJob {
                     MSB3.Model.Collision flatRes = new();
                     flat.HitFilterID = 8;
                     flat.ModelName = cModel;
-                    flat.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\layout\\h_layout.SIB";
+                                 //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\sib\\h_layout.SIB"
+                    flat.SibPath = "N:\\FDP\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\h_layout.SIB";
                     flat.Position = cell.center;
                     flat.MapStudioLayer = uint.MaxValue;
                     flat.DrawGroups[0] = drawGroup;
@@ -128,7 +130,8 @@ namespace PortJob {
                     //flat.NvmGroups[3] = 0;
                     flat.Name = cModel + cName;
                     flatRes.Name = flat.ModelName;
-                    flatRes.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\hkxwin\\" + cModel + ".hkxwin";
+                                    //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\hkt\\h000100.hkt"
+                    flatRes.SibPath = "N:\\FDP\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\hkt\\" + cModel + ".hkt";
                     msb.Models.Collisions.Add(flatRes);
                     msb.Parts.Collisions.Add(flat);
 
@@ -181,7 +184,8 @@ namespace PortJob {
                         MSB3.Part.MapPiece mp = new();
                         MSB3.Model.MapPiece mpRes = new();
                         mp.ModelName = "m" + mpModel;
-                        mp.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\layout\\layout.SIB";
+                                   //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\sib\\layout_70.SIB"
+                        mp.SibPath = "N:\\FDP\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\layout_" + 70 + ".SIB";//put the right number here
                         mp.Position = content.position;
                         mp.Rotation = content.rotation;
                         mp.MapStudioLayer = uint.MaxValue;
@@ -216,7 +220,8 @@ namespace PortJob {
                         mpRes.Name = mp.ModelName;
                         mp.UnkE0E = -1;
                         mp.LodParamID = 19; //Param for: Don't switch to LOD models 
-                        mpRes.SibPath = "N:\\FRPG\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\" + mpModel + ".sib";
+                                      //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\sib\\m000080.sib"
+                        mpRes.SibPath = "N:\\FDP\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\" + mpModel + ".sib";
                         msb.Models.MapPieces.Add(mpRes);
                         msb.Parts.MapPieces.Add(mp);
                     }
