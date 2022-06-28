@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DirectXTexNet;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using MBT = SoulsFormats.FLVER.LayoutType;
@@ -12,7 +13,7 @@ using System.Collections;
 using System.Linq;
 
 namespace PortJob {
-    public class MTD {
+    public static class MTD {
         private static JArray MTD_INFO_LIST;
         private static JObject GX_INFO_LIST;
 
@@ -144,6 +145,24 @@ namespace PortJob {
             string jsonString = Utility.GetEmbededResource("PortJob.Resources.DS3_GX_EXAMPLE_INFO.json");
             JObject json = JObject.Parse(jsonString);
             GX_INFO_LIST = json;
+        }
+
+        public static byte[] GetSRGBTexture(string imagePath) {
+            ScratchImage sImage = TexHelper.Instance.LoadFromDDSFile(imagePath, DDS_FLAGS.NONE);
+            Image image = sImage.GetImage(0);
+            sImage = sImage.Decompress(0, image.Format);
+
+            string newFormat = $"{image.Format}_SRGB";
+            DXGI_FORMAT format = (DXGI_FORMAT)Enum.Parse(typeof(DXGI_FORMAT), newFormat);
+            TEX_COMPRESS_FLAGS texCompFlag = TEX_COMPRESS_FLAGS.SRGB;
+
+            sImage = sImage.Compress(format, texCompFlag, 0.5f);
+            sImage.OverrideFormat(format);
+
+            UnmanagedMemoryStream stream = sImage.SaveToDDSMemory(DDS_FLAGS.FORCE_DX10_EXT);
+            byte[] bytes = new byte[stream.Length];
+            stream.Read(bytes);
+            return bytes;
         }
 
     }

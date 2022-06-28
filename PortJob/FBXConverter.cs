@@ -177,7 +177,7 @@ namespace PortJob {
                                 nuTpf.Flag2 = TPF_FLAG_2;
                                 byte[] texBytes = File.ReadAllBytes(texKvp.Value.Filename);
                                 int texFormat = DDS.GetTpfFormatFromDdsBytes(texBytes);
-                                mtdName += texFormat == 3 ? "_al" : "";
+                                if (texFormat == 3) mtdName += "_al";
 
                                 if (texFormat == 0) { Log.Error(6, "Texture is an unrecognized format [" + shortTexName + "::" + texFormat + "]"); } else { Log.Info(6, "Texure [" + shortTexName + "::" + texFormat + "]"); }
 

@@ -33,16 +33,16 @@ namespace PortJob {
                     case DXGIFormat.BC7_UNorm_SRGB:
                         return 38;
                     //DS3:
-                    //case DXGIFormat.B5G5R5A1_UNorm:
-                    //    return 6;
-                    //case DXGIFormat.B8G8R8A8_UNorm:
-                    //case DXGIFormat.B8G8R8A8_UNorm_SRGB:
-                    //    return 9;
-                    //case DXGIFormat.B8G8R8X8_UNorm:
-                    //case DXGIFormat.B8G8R8X8_UNorm_SRGB:
-                    //    return 10;
-                    //case DXGIFormat.R16G16B16A16_Float:
-                    //    return 22;
+                    case DXGIFormat.B5G5R5A1_UNorm:
+                        return 6;
+                    case DXGIFormat.B8G8R8A8_UNorm:
+                    case DXGIFormat.B8G8R8A8_UNorm_SRGB:
+                        return 9;
+                    case DXGIFormat.B8G8R8X8_UNorm:
+                    case DXGIFormat.B8G8R8X8_UNorm_SRGB:
+                        return 10;
+                    case DXGIFormat.R16G16B16A16_Float:
+                        return 22;
                     default:
                         return 0;
                 }

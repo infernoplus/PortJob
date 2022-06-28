@@ -1,4 +1,5 @@
-﻿using SoulsFormats;
+﻿using DirectXTexNet;
+using SoulsFormats;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -80,5 +81,6 @@ namespace PortJob {
             }
 
         }
+
     }
 }
