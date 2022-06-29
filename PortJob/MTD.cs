@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Collections;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace PortJob {
     public static class MTD {
@@ -148,9 +149,13 @@ namespace PortJob {
         }
 
         public static byte[] GetSRGBTexture(string imagePath) {
-            ScratchImage sImage = TexHelper.Instance.LoadFromDDSFile(imagePath, DDS_FLAGS.NONE);
+
+            byte[] tex = File.ReadAllBytes(imagePath);
+            GCHandle pinnedArray = GCHandle.Alloc(tex, GCHandleType.Pinned);
+
+            ScratchImage sImage = TexHelper.Instance.LoadFromDDSMemory(pinnedArray.AddrOfPinnedObject(), tex.Length, DDS_FLAGS.NONE);
             Image image = sImage.GetImage(0);
-            sImage = sImage.Decompress(0, image.Format);
+            sImage = sImage.Decompress(DXGI_FORMAT.B8G8R8A8_UNORM);
 
             string newFormat = $"{image.Format}_SRGB";
             DXGI_FORMAT format = (DXGI_FORMAT)Enum.Parse(typeof(DXGI_FORMAT), newFormat);

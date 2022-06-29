@@ -175,7 +175,7 @@ namespace PortJob {
                                 TPF nuTpf = new();
                                 nuTpf.Encoding = TPF_ENCODING;
                                 nuTpf.Flag2 = TPF_FLAG_2;
-                                byte[] texBytes = File.ReadAllBytes(texKvp.Value.Filename);
+                                byte[] texBytes = MTD.GetSRGBTexture(texKvp.Value.Filename);
                                 int texFormat = DDS.GetTpfFormatFromDdsBytes(texBytes);
                                 if (texFormat == 3) mtdName += "_al";
 

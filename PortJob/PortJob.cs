@@ -229,6 +229,7 @@ namespace PortJob {
                         mp.BackreadGroups[5] = 0;
                         mp.BackreadGroups[6] = 0;
                         mp.BackreadGroups[7] = 0;
+                        mp.ShadowSource = true;
                         //mp.IsShadowDest = 0x1;
                         mp.DrawByReflectCam = true;
                         mp.Name = "m" + mpModel + mpName;
