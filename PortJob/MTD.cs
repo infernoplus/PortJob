@@ -166,6 +166,7 @@ namespace PortJob {
 
             UnmanagedMemoryStream stream = sImage.SaveToDDSMemory(DDS_FLAGS.FORCE_DX10_EXT);
             byte[] bytes = new byte[stream.Length];
+            pinnedArray.Free();
             stream.Read(bytes);
             return bytes;
         }
