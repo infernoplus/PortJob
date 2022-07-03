@@ -15,9 +15,11 @@ namespace PortJob {
         public static string MorrowindPath { get; set; }
         public static string OutputPath { get; set; }
         static void Main(string[] args) {
-
+            DateTime startTime = DateTime.Now;
             SetupPaths();
             Convert();
+            TimeSpan length = DateTime.Now - startTime;
+            Console.WriteLine(length);
         }
 
         private static void SetupPaths()
@@ -31,6 +33,8 @@ namespace PortJob {
 
             if (!OutputPath.EndsWith("\\"))
                 OutputPath += "\\";
+
+            Log.SetupLogStream(OutputPath);
         }
 
         private static void Convert() {
@@ -55,8 +59,8 @@ namespace PortJob {
             Dictionary<string, string> modelMap = new();
             Dictionary<string, int> partMap = new();
 
-            const int area = 34;
-            const int block = 1;
+            const int area = 30;
+            const int block = 0;
 
             //I think this got moved to the bottom.  
             //int nextEnv = 0;
@@ -109,7 +113,7 @@ namespace PortJob {
                     flat.HitFilterID = 8;
                     flat.ModelName = cModel;
                                  //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\sib\\h_layout.SIB"
-                    flat.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_0{block:D2}_00_00\\sib\\h_layout.SIB";
+                    flat.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
                     flat.Position = cell.center;
                     flat.MapStudioLayer = uint.MaxValue;
                     flat.DrawGroups[0] = drawGroup;
@@ -180,7 +184,7 @@ namespace PortJob {
                         } else {
                             mpModel = NewMapPieceID();
                             string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
-                            string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_0{block:D2}_00_00_{mpModel}.flver";
+                            string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
                             string tpfDir = OutputPath + "map\\tx\\";
                             FBXConverter.convert(fbxPath, flverPath, tpfDir);
 
