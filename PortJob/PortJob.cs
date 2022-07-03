@@ -18,7 +18,6 @@ namespace PortJob {
 
             SetupPaths();
             Convert();
-            Utility.PackTestCol(OutputPath);
         }
 
         private static void SetupPaths()
@@ -56,8 +55,8 @@ namespace PortJob {
             Dictionary<string, string> modelMap = new();
             Dictionary<string, int> partMap = new();
 
-            const int area = 30;
-            const int block = 0;
+            const int area = 34;
+            const int block = 1;
 
             //I think this got moved to the bottom.  
             //int nextEnv = 0;
@@ -257,7 +256,9 @@ namespace PortJob {
             msb.Write(msbPath, DCX.Type.DCX_DFLT_10000_44_9);
 
             PackTextures(area);
+            Utility.PackTestCol(OutputPath, area, block);
         }
+
 
         private static void PackTextures(int area) {
             string[] textures = Directory.GetFiles(OutputPath + "map\\tx\\", "*.tpf.dcx");
@@ -297,7 +298,6 @@ namespace PortJob {
             //foreach (string texPath in textures) {
             //    File.Delete(texPath);
             //}
-
             Directory.Delete(OutputPath + "map\\tx", true);
         }
 

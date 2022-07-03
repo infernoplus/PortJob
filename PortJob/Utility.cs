@@ -44,19 +44,24 @@ namespace PortJob {
         }
 
         /* Temporary code for packing up hkxs */
-        public static void PackTestCol(string outputPath) { 
+        public static void PackTestCol(string outputPath, int area, int block) {
+
+
             string pathH = Environment.CurrentDirectory + @"..\..\..\..\TestCol\h30_00_00_00_000000.hkx";
             string pathL = Environment.CurrentDirectory + @"..\..\..\..\TestCol\l30_00_00_00_000000.hkx";
+
+            string area_block = $"{area:D2}_{block:D2}";
+
             BXF4 bxfH = new();
             BXF4 bxfL = new();
 
-            bxfH.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathH) + ".dcx", DCX.Compress(File.ReadAllBytes(pathH), DCX.Type.DCX_DFLT_10000_44_9) ) { CompressionType = DCX.Type.Zlib });
-            bxfH.Write(outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathH).Replace("_000000", "") + "bhd", //this is a unreadable huge meme right now
-                outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathH).Replace("_000000", "") + "bdt"); //but this isn't really the proper place to do this.
+            bxfH.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, $"m{area_block}_00_00\\h{area_block}_00_00_000000.hkx.dcx", DCX.Compress(File.ReadAllBytes(pathH), DCX.Type.DCX_DFLT_10000_44_9) ) { CompressionType = DCX.Type.Zlib });
+            bxfH.Write($"{outputPath}map\\m{area_block}_00_00\\h{area_block}_00_00.hkxbhd", //this is a unreadable huge meme right now
+                $"{outputPath}map\\m{area_block}_00_00\\h{area_block}_00_00.hkxbdt"); //but this isn't really the proper place to do this.
 
-            bxfL.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, "m30_00_00_00\\" + Path.GetFileName(pathL) + ".dcx", DCX.Compress(File.ReadAllBytes(pathL), DCX.Type.DCX_DFLT_10000_44_9) ) { CompressionType = DCX.Type.Zlib });
-            bxfL.Write(outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathL).Replace("_000000", "") + "bhd", //this is a unreadable huge meme right now
-                outputPath + "map\\m30_00_00_00\\" + Path.GetFileName(pathL).Replace("_000000", "") + "bdt");//but this isn't really the proper place to do this.
+            bxfL.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 0, $"m{area_block}_00_00\\l{area_block}_00_00_000000.hkx.dcx", DCX.Compress(File.ReadAllBytes(pathL), DCX.Type.DCX_DFLT_10000_44_9) ) { CompressionType = DCX.Type.Zlib });
+            bxfL.Write($"{outputPath}map\\m{area_block}_00_00\\l{area_block}_00_00.hkxbhd", //this is a unreadable huge meme right now
+                $"{outputPath}map\\m{area_block}_00_00\\l{area_block}_00_00.hkxbdt");//but this isn't really the proper place to do this.
         }
         public static int DeleteFromEnd(int num, int n) {
             for (int i = 1; num != 0; i++) {
