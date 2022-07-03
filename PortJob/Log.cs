@@ -10,6 +10,9 @@ namespace PortJob {
         public static int last = 0;
         private static StreamWriter _writer { get; set; }
         public static void SetupLogStream(string outputPath) {
+            if (!Directory.Exists($"{outputPath}port_logs\\"))
+                Directory.CreateDirectory($"{outputPath}port_logs\\");
+
             _writer = new StreamWriter($"{outputPath}port_logs\\main_log.log", true);
             _writer.WriteLine($"");
             _writer.WriteLine($"=========={DateTime.Now}==========");

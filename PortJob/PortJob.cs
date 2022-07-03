@@ -19,7 +19,7 @@ namespace PortJob {
             SetupPaths();
             Convert();
             TimeSpan length = DateTime.Now - startTime;
-            Console.WriteLine($"Porting took: {length}");
+            Console.WriteLine($"Porting time: {length}");
         }
 
         private static void SetupPaths()
