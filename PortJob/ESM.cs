@@ -12,6 +12,7 @@ namespace PortJob {
     public class ESM {
         private JArray json; // Full unfiltered json of the morrowind.json
         private Dictionary<Type, List<JObject>> recordsMap;
+        public List<Cell> exteriorCells, interiorCells;
 
         public enum Type {
             Header, GameSetting, GlobalVariable, Class, Faction, Race, Sound, Skill, MagicEffect, Script, Region, Birthsign, LandscapeTexture, Spell, Static, Door,
@@ -44,9 +45,42 @@ namespace PortJob {
                 Enum.TryParse(name, out Type type);
                 Console.WriteLine(name + ": " + recordsMap[type].Count);
             }
+
+            LoadCells();
         }
 
-        public Cell GetCell(int x, int y) {
+        const int EXTERIOR_BOUNDS = 40; // +/- Bounds of the cell grid we consider to be the 'Exterior'
+
+        private void LoadCells() {
+            exteriorCells = new();
+            interiorCells = new();
+
+            List<JObject> cells = recordsMap[Type.Cell];
+            foreach (JObject cell in cells) {
+                int xx = int.Parse(cell["data"]["grid"][0].ToString());
+                int yy = int.Parse(cell["data"]["grid"][1].ToString());
+                Cell genCell = new Cell(this, cell);
+                if(genCell.content.Count < 1) { continue; } // Cull cells with nothing in them. Removes most blank ocean cells which we really don't need.
+                if (
+                    xx >= -EXTERIOR_BOUNDS &&
+                    xx <= EXTERIOR_BOUNDS &&
+                    yy >= -EXTERIOR_BOUNDS &&
+                    yy <= EXTERIOR_BOUNDS
+                ) {
+                    exteriorCells.Add(genCell);
+                }
+                else {
+                    interiorCells.Add(genCell);
+                }
+            }
+        }
+
+        public List<Cell> GetExteriorCells() {
+            return exteriorCells;
+        }
+
+        /* Deprecated!!! */
+        /*public Cell GetCell(int x, int y) {
             List<JObject> cells = recordsMap[Type.Cell];
             foreach (JObject cell in cells) {
                 int xx = int.Parse(cell["data"]["grid"][0].ToString());
@@ -56,7 +90,7 @@ namespace PortJob {
                 }
             }
             return null; // Out of bounds
-        }
+        }*/
 
         /* List of types that we should search for references */
         public readonly Type[] VALID_CONTENT_TYPES = {
@@ -86,24 +120,32 @@ namespace PortJob {
 
         public readonly string name;
         public readonly string region;
-        public readonly Grid grid;
+        public readonly Int2 position;  // Position on the cell grid
 
-        public readonly Vector3 center;
+        public readonly Vector3 center; // Float center point of cell
 
         public readonly int flag;
         public readonly int[] flags;
 
         public readonly List<Content> content;
 
+
+        /* These fields are used by Layout for stuff */
+        public Layout layout;         // Parent layout
+        public int drawId;            // Drawgroup ID, value also correponds to the bitwise (1 << id)
+        public int[] drawGroups;
+        public List<Cell> pairs;      // Cells that it borders in other msbs, these will have 'paired draw ids'
+        public List<Layout> connects; // Connect collisions we need to generate
+
         public Cell(ESM esm, JObject data) {
             name = data["id"].ToString();
-            region = data["region"].ToString();
+            region = data["region"] != null ? data["region"].ToString() : "null";
 
             int x = int.Parse(data["data"]["grid"][0].ToString());
             int y = int.Parse(data["data"]["grid"][1].ToString());
-            grid = new Grid(x, y);
+            position = new Int2(x, y);
 
-            center = new Vector3((CELL_SIZE * grid.x) + (CELL_SIZE * 0.5f), 0.0f, (CELL_SIZE * grid.y) + (CELL_SIZE * 0.5f));
+            center = new Vector3((CELL_SIZE * position.x) + (CELL_SIZE * 0.5f), 0.0f, (CELL_SIZE * position.y) + (CELL_SIZE * 0.5f));
 
             flag = int.Parse(data["data"]["flags"].ToString());
 
@@ -120,6 +162,13 @@ namespace PortJob {
                 JObject reference = (JObject)(refc[i]);
                 content.Add(new Content(esm, reference));
             }
+
+            /* These fields are used by Layout for stuff */
+            layout = null;
+            drawId = -1;
+            drawGroups = null;
+            pairs = null;
+            connects = null;
         }
     }
 
@@ -152,10 +201,10 @@ namespace PortJob {
         }
     }
 
-    public class Grid {
+    public class Int2 {
         public readonly int x, y;
-        public Grid(int xx, int yy) {
-            x = xx; y = yy;
+        public Int2(int x, int y) {
+            this.x = x; this.y = y;
         }
     }
 
