@@ -15,9 +15,12 @@ namespace PortJob {
         public static string MorrowindPath { get; set; }
         public static string OutputPath { get; set; }
         static void Main(string[] args) {
-
+            DateTime startTime = DateTime.Now;
             SetupPaths();
             Convert();
+            TimeSpan length = DateTime.Now - startTime;
+            Log.Info(0,$"Porting time: {length}");
+            Log.CloseWriter();
         }
 
         private static void SetupPaths()
@@ -31,6 +34,8 @@ namespace PortJob {
 
             if (!OutputPath.EndsWith("\\"))
                 OutputPath += "\\";
+
+            Log.SetupLogStream();
         }
 
         private static void Convert() {
@@ -60,8 +65,10 @@ namespace PortJob {
             Dictionary<string, string> modelMap = new();
             Dictionary<string, int> partMap = new();
 
+
             const int area = 54;
             const int block = 9;
+
 
             //I think this got moved to the bottom.  
             //int nextEnv = 0;
@@ -86,8 +93,10 @@ namespace PortJob {
             //int c = 0; // Cell count for this MSB
             for (int gx = -CELLS; gx <= CELLS; gx++) {
                 for (int gy = -CELLS; gy <= CELLS; gy++) {
-                    Log.Info(0, "Processing Cell [" + gx + ", " + gy + "]");
+
+                    Log.Info(0, "Processing Cell [" + gx + ", " + gy + "]", "test");
                     Cell cell = null; // esm.GetCell(gx, gy);
+
 
                     /* Set drawgroup for this cell and adjacent cells */
                     uint drawGroup = drawGroupGrid[gx + "," + gy];
@@ -114,7 +123,7 @@ namespace PortJob {
                     flat.HitFilterID = 8;
                     flat.ModelName = cModel;
                                  //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\sib\\h_layout.SIB"
-                    flat.SibPath = "N:\\FDP\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\h_layout.SIB";
+                    flat.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
                     flat.Position = cell.center;
                     flat.MapStudioLayer = uint.MaxValue;
                     flat.DrawGroups[0] = drawGroup;
@@ -150,7 +159,7 @@ namespace PortJob {
                     flat.Name = cModel + cName;
                     flatRes.Name = flat.ModelName;
                                     //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\hkt\\h000100.hkt"
-                    flatRes.SibPath = "N:\\FDP\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\hkt\\" + cModel + ".hkt";
+                    flatRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{cModel}.hkt";
                     msb.Models.Collisions.Add(flatRes);
                     msb.Parts.Collisions.Add(flat);
 
@@ -185,7 +194,7 @@ namespace PortJob {
                         } else {
                             mpModel = NewMapPieceID();
                             string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
-                            string flverPath = OutputPath + "map\\m" + area + "_0" + block + "_00_00\\m" + area + "_0" + block + "_00_00_" + mpModel + ".flver";
+                            string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
                             string tpfDir = OutputPath + "map\\tx\\";
                             FBXConverter.convert(fbxPath, flverPath, tpfDir);
 
@@ -204,7 +213,7 @@ namespace PortJob {
                         MSB3.Model.MapPiece mpRes = new();
                         mp.ModelName = "m" + mpModel;
                                    //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\sib\\layout_70.SIB"
-                        mp.SibPath = "N:\\FDP\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\layout_" + Utility.DeleteFromEnd(int.Parse(mpName.Split("_")[1]), 2).ToString("D2") + ".SIB";//put the right number here
+                        mp.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{Utility.DeleteFromEnd(int.Parse(mpName.Split("_")[1]), 2).ToString("D2")}.SIB";//put the right number here
                         mp.Position = content.position;
                         mp.Rotation = content.rotation;
                         mp.MapStudioLayer = uint.MaxValue;
@@ -241,7 +250,7 @@ namespace PortJob {
                         mp.UnkE0E = -1;
                         mp.LodParamID = 19; //Param for: Don't switch to LOD models 
                                       //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\sib\\m000080.sib"
-                        mpRes.SibPath = "N:\\FDP\\data\\Model\\map\\m" + area + "_0" + block + "_00_00\\sib\\" + mpModel + ".sib";
+                        mpRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\{mpModel}.sib";
                         msb.Models.MapPieces.Add(mpRes);
                         msb.Parts.MapPieces.Add(mp);
                     }
@@ -256,7 +265,8 @@ namespace PortJob {
 
 
             /* Write to file */
-            string msbPath = OutputPath + "map\\MapStudio\\m" + area + "_0" + block + "_00_00.msb.dcx";
+            string msbPath = $"{OutputPath}map\\MapStudio\\m{area:D2}_{block:D2}_00_00.msb.dcx";
+            Log.Info(0, "Writing MSB to: " + msbPath);
             Log.Info(0, "Writing MSB to: " + msbPath);
             msb.Write(msbPath, DCX.Type.DCX_DFLT_10000_44_9);
 
