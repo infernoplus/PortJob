@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
@@ -22,8 +23,19 @@ namespace PortJob {
         }
 
         public ESM(string path) {
-            string data = File.ReadAllTextAsync(path).Result;
-            json = JArray.Parse(data);
+            DateTime startParse = DateTime.Now;
+            JsonSerializer serializer = new();
+            using (FileStream s = File.Open(path, FileMode.Open))
+            using (StreamReader sr = new StreamReader(s))
+            using (JsonReader reader = new JsonTextReader(sr)) {
+                while (!sr.EndOfStream) {
+                    json = serializer.Deserialize<JArray>(reader);
+                }
+            }
+
+            //string data = File.ReadAllTextAsync(path).Result;
+            //json = JArray.Parse(data);
+            Log.Info(0, $"Parse Json time: {DateTime.Now - startParse}");
 
             recordsMap = new Dictionary<Type, List<JObject>>();
             foreach (string name in Enum.GetNames(typeof(Type))) {
@@ -33,7 +45,6 @@ namespace PortJob {
 
             for (int i = 0; i < json.Count; i++) {
                 JObject record = (JObject)json[i];
-
                 foreach (string name in Enum.GetNames(typeof(Type))) {
                     if (record["type"].ToString() == name) {
                         Enum.TryParse(name, out Type type);
@@ -47,9 +58,9 @@ namespace PortJob {
                 Console.WriteLine(name + ": " + recordsMap[type].Count);
             }
 
-            DateTime start = DateTime.Now;
+            DateTime startLoadCells = DateTime.Now;
             LoadCells();
-            Log.Info(0, $"Load Cells time: {DateTime.Now - start}");
+            Log.Info(0, $"Load Cells time: {DateTime.Now - startLoadCells}");
         }
 
         const int EXTERIOR_BOUNDS = 40; // +/- Bounds of the cell grid we consider to be the 'Exterior'
