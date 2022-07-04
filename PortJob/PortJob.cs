@@ -19,7 +19,8 @@ namespace PortJob {
             SetupPaths();
             Convert();
             TimeSpan length = DateTime.Now - startTime;
-            Console.WriteLine($"Porting time: {length}");
+            Log.Info(0,$"Porting time: {length}");
+            Log.CloseWriter();
         }
 
         private static void SetupPaths()
@@ -256,8 +257,8 @@ namespace PortJob {
 
             /* Write to file */
             string msbPath = $"{OutputPath}map\\MapStudio\\m{area:D2}_{block:D2}_00_00.msb.dcx";
-            Log.Info(0, "Writing MSB to: " + msbPath, "test");
-            Log.Info(0, "Writing MSB to: " + msbPath, "test2");
+            Log.Info(0, "Writing MSB to: " + msbPath);
+            Log.Info(0, "Writing MSB to: " + msbPath);
             msb.Write(msbPath, DCX.Type.DCX_DFLT_10000_44_9);
 
             PackTextures(area);
