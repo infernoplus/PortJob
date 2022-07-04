@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using System.Numerics;
 using SoulsFormats;
+using System.Threading;
 
 namespace PortJob {
     /* Loads and handles the JSON file of the morrowind.esm that tes3conv outputs */
@@ -21,7 +22,7 @@ namespace PortJob {
         }
 
         public ESM(string path) {
-            string data = File.ReadAllText(path);
+            string data = File.ReadAllTextAsync(path).Result;
             json = JArray.Parse(data);
 
             recordsMap = new Dictionary<Type, List<JObject>>();
@@ -46,7 +47,9 @@ namespace PortJob {
                 Console.WriteLine(name + ": " + recordsMap[type].Count);
             }
 
+            DateTime start = DateTime.Now;
             LoadCells();
+            Log.Info(0, $"Load Cells time: {DateTime.Now - start}");
         }
 
         const int EXTERIOR_BOUNDS = 40; // +/- Bounds of the cell grid we consider to be the 'Exterior'
@@ -56,22 +59,52 @@ namespace PortJob {
             interiorCells = new();
 
             List<JObject> cells = recordsMap[Type.Cell];
-            foreach (JObject cell in cells) {
-                int xx = int.Parse(cell["data"]["grid"][0].ToString());
-                int yy = int.Parse(cell["data"]["grid"][1].ToString());
-                Cell genCell = new Cell(this, cell);
-                if(genCell.content.Count < 1) { continue; } // Cull cells with nothing in them. Removes most blank ocean cells which we really don't need.
-                if (
-                    xx >= -EXTERIOR_BOUNDS &&
-                    xx <= EXTERIOR_BOUNDS &&
-                    yy >= -EXTERIOR_BOUNDS &&
-                    yy <= EXTERIOR_BOUNDS
-                ) {
-                    exteriorCells.Add(genCell);
+            int partitionSize = (int)Math.Ceiling(cells.Count / 16f);
+            List<CellFactory> cellFactories = new();
+
+            for (int i = 0; i < 16; i++) {
+                int start = i * partitionSize;
+                int end = start + partitionSize;
+                CellFactory cellFactory = new(this,cells, start, end);
+                cellFactories.Add(cellFactory);
+                cellFactory.Start();
+            }
+
+
+            while (true) {
+                bool workerThreadsDone = true;
+                foreach (CellFactory factory in cellFactories) {
+                    workerThreadsDone &= factory.IsDone;
                 }
-                else {
-                    interiorCells.Add(genCell);
+
+                if (workerThreadsDone)
+                    break;
+            }
+
+            int count = 0;
+            foreach (CellFactory cellFactory in cellFactories) {
+                foreach (Cell cell in cellFactory.ProcessedCells) {
+                    AddCell(cell);
+                    count++;
                 }
+            }
+
+            Log.Info(0,$"Processed: {count} == Json: {cells.Count}");
+        }
+
+        private void AddCell(Cell genCell) {
+            if (genCell.content.Count < 1) return; // Cull cells with nothing in them. Removes most blank ocean cells which we really don't need.
+
+            if (genCell.position.x >= -EXTERIOR_BOUNDS &&
+                genCell.position.x <= EXTERIOR_BOUNDS &&
+                genCell.position.y >= -EXTERIOR_BOUNDS &&
+                genCell.position.y <= EXTERIOR_BOUNDS)
+            {
+                exteriorCells.Add(genCell);
+            }
+            else
+            {
+                interiorCells.Add(genCell);
             }
         }
 
@@ -156,6 +189,47 @@ namespace PortJob {
             drawGroups = null;
             pairs = null;
             connects = null;
+        }
+    }
+
+    public class CellFactory {
+        public bool IsDone { get; private set; }
+        private ESM _esm { get; }
+        private List<JObject> _cells { get; }
+        private int _start { get; }
+        private int _end { get; }
+        private Thread _thread { get; }
+        private List<Cell> _processedCells { get; }
+        public List<Cell> ProcessedCells {
+            get {
+                _thread.Join();
+                return _processedCells;
+            }
+        }
+
+        public CellFactory(ESM esm, List<JObject> cells, int start, int end) {
+            _processedCells = new();
+            _esm = esm;
+            _cells = cells;
+            _start = start;
+            _end = end;
+            _thread = new(ProcessCell);
+
+        }
+
+        public void Start() {
+            _thread.Start();
+        }
+
+        private void ProcessCell()
+        {
+            for (int i = _start; i < _cells.Count && i < _end; i++)
+            {
+                Cell genCell = new(_esm, _cells[i]);
+                _processedCells.Add(genCell);
+            }
+
+            IsDone = true;
         }
     }
 
