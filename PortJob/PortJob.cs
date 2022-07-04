@@ -15,6 +15,11 @@ namespace PortJob {
         public static string MorrowindPath { get; set; }
         public static string OutputPath { get; set; }
         static void Main(string[] args) {
+            /*MSB3 msb31 = MSB3.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\map\\mapstudio\\m31_00_00_00.msb.dcx");
+            MSB3 msb33 = MSB3.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\map\\mapstudio\\m31_00_00_00.msb.dcx");
+            MSB3 msb54 = MSB3.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\mod\\map\\MapStudio\\m54_03_00_00.msb.dcx");
+            Console.WriteLine("bruh");*/
+
             DateTime startTime = DateTime.Now;
             SetupPaths();
             Log.SetupLogStream();
@@ -95,9 +100,13 @@ namespace PortJob {
                         flat.BackreadGroups[k] = cell.drawGroups[k];
                     }
                     flat.Name = cModel + cName;
+                    flat.LodParamID = -1;
+                    flat.UnkE0E = -1;
+
                     flatRes.Name = flat.ModelName;
                     flatRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{cModel}.hkt";
-                    msb.Models.Collisions.Add(flatRes);
+
+                    AddResource(msb, flatRes);
                     msb.Parts.Collisions.Add(flat);
 
                     /* Flat connect collision for testing */
@@ -114,25 +123,28 @@ namespace PortJob {
                         MSB3.Part.ConnectCollision con = new();
                         MSB3.Model.Collision conRes = new();
 
-                        con.CollisionName = ccModel;
-                        con.MapID[0] = area;
+                        con.CollisionName = flat.Name;
+                        con.MapID[0] = (byte)area;
                         con.MapID[1] = (byte)(cell.connects[k].id);
                         con.MapID[2] = 0;
-                        con.MapID[0] = 3;
-                        con.Name = ccName;
-                        con.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
+                        con.MapID[3] = 0;
+                        con.Name = ccModel + ccName;
+                        //con.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB"; // Looks like connnect collision does not ever use sibs
                         con.ModelName = ccModel;
                         con.Position = cell.center;
+                        con.MapStudioLayer = 4294967295;                                 // Not a clue what this does... Should probably ask about it
                         for (int l = 0; l < cell.drawGroups.Length; l++) {
-                            flat.DrawGroups[l] = cell.drawGroups[l];
-                            flat.DispGroups[l] = cell.drawGroups[l];
-                            flat.BackreadGroups[l] = cell.drawGroups[l];
+                            con.DrawGroups[l] = cell.drawGroups[l];
+                            con.DispGroups[l] = cell.drawGroups[l];
+                            con.BackreadGroups[l] = cell.drawGroups[l];
                         }
+                        con.LodParamID = -1;
+                        con.UnkE0E = -1;
 
                         conRes.Name = con.ModelName;
                         conRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{ccModel}.hkt";
 
-                        msb.Models.Collisions.Add(conRes);
+                        AddResource(msb, conRes);
                         msb.Parts.ConnectCollisions.Add(con);
                     }
 
@@ -143,6 +155,7 @@ namespace PortJob {
                         if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
                         if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
 
+                        /* Name and model name stuff */
                         string mpModel;
                         if (modelMap.ContainsKey(content.mesh)) {
                             mpModel = modelMap[content.mesh];
@@ -164,6 +177,7 @@ namespace PortJob {
                             partMap.Add(mpModel, 1);
                         }
 
+                        /* Create map piece */
                         MSB3.Part.MapPiece mp = new();
                         MSB3.Model.MapPiece mpRes = new();
                         mp.ModelName = "m" + mpModel;
@@ -183,7 +197,8 @@ namespace PortJob {
                         mp.UnkE0E = -1;
                         mp.LodParamID = 19; //Param for: Don't switch to LOD models 
                         mpRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\{mpModel}.sib";
-                        msb.Models.MapPieces.Add(mpRes);
+
+                        AddResource(msb, mpRes);
                         msb.Parts.MapPieces.Add(mp);
                     }
                 }
@@ -264,6 +279,26 @@ namespace PortJob {
             //    File.Delete(texPath);
             //}
             //Directory.Delete(OutputPath + "map\\tx", true); // Don't delete temp tpf folder because if you delete this we can't re-use it. program is a lot faster without recreating every tpf every time
+        }
+
+        /* Function add collision model resources, avoids adding duplicates */
+        private static void AddResource(MSB3 msb, MSB3.Model.Collision res) {
+            foreach (MSB3.Model.Collision collision in msb.Models.Collisions) {
+                if (collision.Name == res.Name) {
+                    return;
+                }
+            }
+            msb.Models.Collisions.Add(res);
+        }
+
+        /* Function top add map piece model resources, avoids adding duplicates */
+        private static void AddResource(MSB3 msb, MSB3.Model.MapPiece res) {
+            foreach (MSB3.Model.MapPiece map in msb.Models.MapPieces) {
+                if (map.Name == res.Name) {
+                    return;
+                }
+            }
+            msb.Models.MapPieces.Add(res);
         }
 
         private static int nextCollisionID = 0;
