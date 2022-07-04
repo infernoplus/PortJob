@@ -41,6 +41,11 @@ namespace PortJob {
             /* Load ESM */
             ESM esm = new(MorrowindPath + "morrowind.json");
 
+            /* Call Layout to calculate data we will use to create all exterior MSBs. */
+            List<Layout> layout = Layout.CalculateLayout(esm);
+
+            /* Generate MSBs from all of the generated layouts */
+
             /* Generate a new MSB and fill out required default data */
             MSB3 msb = new();
 
@@ -59,8 +64,10 @@ namespace PortJob {
             Dictionary<string, string> modelMap = new();
             Dictionary<string, int> partMap = new();
 
-            const int area = 30;
-            const int block = 0;
+
+            const int area = 54;
+            const int block = 9;
+
 
             //I think this got moved to the bottom.  
             //int nextEnv = 0;
@@ -85,8 +92,10 @@ namespace PortJob {
             //int c = 0; // Cell count for this MSB
             for (int gx = -CELLS; gx <= CELLS; gx++) {
                 for (int gy = -CELLS; gy <= CELLS; gy++) {
+
                     Log.Info(0, "Processing Cell [" + gx + ", " + gy + "]", "test");
-                    Cell cell = esm.GetCell(gx, gy);
+                    Cell cell = null; // esm.GetCell(gx, gy);
+
 
                     /* Set drawgroup for this cell and adjacent cells */
                     uint drawGroup = drawGroupGrid[gx + "," + gy];
