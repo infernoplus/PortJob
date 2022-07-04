@@ -17,6 +17,7 @@ namespace PortJob {
         static void Main(string[] args) {
             DateTime startTime = DateTime.Now;
             SetupPaths();
+            Log.SetupLogStream();
             Convert();
             TimeSpan length = DateTime.Now - startTime;
             Log.Info(0,$"Porting time: {length}");
@@ -34,8 +35,6 @@ namespace PortJob {
 
             if (!OutputPath.EndsWith("\\"))
                 OutputPath += "\\";
-
-            Log.SetupLogStream();
         }
 
         private static void Convert() {
@@ -258,7 +257,6 @@ namespace PortJob {
             /* Write to file */
             string msbPath = $"{OutputPath}map\\MapStudio\\m{area:D2}_{block:D2}_00_00.msb.dcx";
             Log.Info(0, "Writing MSB to: " + msbPath);
-            Log.Info(0, "Writing MSB to: " + msbPath);
             msb.Write(msbPath, DCX.Type.DCX_DFLT_10000_44_9);
 
             PackTextures(area);
@@ -301,9 +299,6 @@ namespace PortJob {
                 tpf.Write(OutputPath + "map\\m" + area + "\\" + "m" + area + "_9999.tpf.dcx", DCX.Type.DCX_DFLT_10000_44_9);
             }
 
-            //foreach (string texPath in textures) {
-            //    File.Delete(texPath);
-            //}
             Directory.Delete(OutputPath + "map\\tx", true);
         }
 
