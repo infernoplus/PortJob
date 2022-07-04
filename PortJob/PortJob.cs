@@ -17,6 +17,7 @@ namespace PortJob {
         static void Main(string[] args) {
             DateTime startTime = DateTime.Now;
             SetupPaths();
+            Log.SetupLogStream();
             Convert();
             TimeSpan length = DateTime.Now - startTime;
             Log.Info(0,$"Porting time: {length}");
@@ -34,8 +35,6 @@ namespace PortJob {
 
             if (!OutputPath.EndsWith("\\"))
                 OutputPath += "\\";
-
-            Log.SetupLogStream();
         }
 
         private static void Convert() {
