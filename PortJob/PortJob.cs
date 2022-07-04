@@ -43,72 +43,36 @@ namespace PortJob {
             ESM esm = new(MorrowindPath + "morrowind.json");
 
             /* Call Layout to calculate data we will use to create all exterior MSBs. */
-            List<Layout> layout = Layout.CalculateLayout(esm);
+            List<Layout> layouts = Layout.CalculateLayout(esm);
 
-            /* Generate MSBs from all of the generated layouts */
-
-            /* Generate a new MSB and fill out required default data */
-            MSB3 msb = new();
-
-            MSB3.Part.Player player = new(); // Player default spawn point
-            MSB3.Model.Player playerRes = new();
-            player.ModelName = "c0000";
-            player.Position = new Vector3(0.0f, 0.1f, 0.0f);
-            player.Name = "c0000_0000";
-            playerRes.Name = player.ModelName;
-                              //"N:\\FDP\\data\\Model\\chr\\c0000\\sib\\c0000.SIB"
-            playerRes.SibPath = "N:\\FDP\\data\\Model\\chr\\c0000\\sib\\c0000.SIB";
-            msb.Models.Players.Add(playerRes);
-            msb.Parts.Players.Add(player);
-
-            /* Write a cell to the MSB */
-            Dictionary<string, string> modelMap = new();
-            Dictionary<string, int> partMap = new();
-
-
+            /* Generate MSBs from layouts */
             const int area = 54;
-            const int block = 9;
+            List<MSBData> msbs = new();
 
+            int i = 0;
+            foreach (Layout layout in layouts) {
+                /* Generate a new MSB and fill out required default data */
+                int block = i++;
+                MSB3 msb = new();
 
-            //I think this got moved to the bottom.  
-            //int nextEnv = 0;
-            //int NewEnvID() {
-            //    return nextEnv++;
-            //}
+                MSB3.Part.Player player = new(); // Player default spawn point
+                MSB3.Model.Player playerRes = new();
+                player.ModelName = "c0000";
+                player.Position = layout.cells[0].center + new Vector3(0.0f, 0.1f, 0.0f);
+                player.Name = "c0000_0000";
+                playerRes.Name = player.ModelName;
+                playerRes.SibPath = "N:\\FDP\\data\\Model\\chr\\c0000\\sib\\c0000.SIB";
+                msb.Models.Players.Add(playerRes);
+                msb.Parts.Players.Add(player);
 
-            int CELLS = 3;
+                /* Write cells in this layout to the MSB */
+                Dictionary<string, string> modelMap = new();
+                Dictionary<string, int> partMap = new();
 
-            /* Precalculate draw group information for each cell */
-            Dictionary<string, uint> drawGroupGrid = new();
-            int c = 0;
-            for (int gx = -CELLS; gx <= CELLS; gx++) {
-                for (int gy = -CELLS; gy <= CELLS; gy++) {
-                    uint drawGroup = 0;
-                    drawGroup |= (uint)(1) << c++;
-
-                    drawGroupGrid.Add(gx + "," + gy, drawGroup);
-                }
-            }
-
-            //int c = 0; // Cell count for this MSB
-            for (int gx = -CELLS; gx <= CELLS; gx++) {
-                for (int gy = -CELLS; gy <= CELLS; gy++) {
-
-                    Log.Info(0, "Processing Cell [" + gx + ", " + gy + "]", "test");
-                    Cell cell = null; // esm.GetCell(gx, gy);
-
+                foreach (Cell cell in layout.cells) {
+                    Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
 
                     /* Set drawgroup for this cell and adjacent cells */
-                    uint drawGroup = drawGroupGrid[gx + "," + gy];
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx + 1) + "," + (gy));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx - 1) + "," + (gy));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx) + "," + (gy + 1));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx) + "," + (gy - 1));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx + 1) + "," + (gy + 1));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx - 1) + "," + (gy - 1));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx - 1) + "," + (gy + 1));
-                    drawGroup += drawGroupGrid.GetValueOrDefault((gx + 1) + "," + (gy - 1));
-
                     string cModel = "h000000";
                     string cName;
                     if (partMap.ContainsKey(cModel)) {
@@ -122,64 +86,19 @@ namespace PortJob {
                     MSB3.Model.Collision flatRes = new();
                     flat.HitFilterID = 8;
                     flat.ModelName = cModel;
-                                 //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\sib\\h_layout.SIB"
                     flat.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
                     flat.Position = cell.center;
                     flat.MapStudioLayer = uint.MaxValue;
-                    flat.DrawGroups[0] = drawGroup;
-                    flat.DrawGroups[1] = 0;
-                    flat.DrawGroups[2] = 0;
-                    flat.DrawGroups[3] = 0;
-                    flat.DrawGroups[4] = 0;
-                    flat.DrawGroups[5] = 0;
-                    flat.DrawGroups[6] = 0;
-                    flat.DrawGroups[7] = 0;
-                    flat.DispGroups[0] = drawGroup;
-                    flat.DispGroups[1] = 0;
-                    flat.DispGroups[2] = 0;
-                    flat.DispGroups[3] = 0;
-                    flat.DispGroups[3] = 0;
-                    flat.DispGroups[4] = 0;
-                    flat.DispGroups[5] = 0;
-                    flat.DispGroups[6] = 0;
-                    flat.DispGroups[7] = 0;
-                    flat.BackreadGroups[0] = drawGroup;
-                    flat.BackreadGroups[1] = 0;
-                    flat.BackreadGroups[2] = 0;
-                    flat.BackreadGroups[3] = 0;
-                    flat.BackreadGroups[3] = 0;
-                    flat.BackreadGroups[4] = 0;
-                    flat.BackreadGroups[5] = 0;
-                    flat.BackreadGroups[6] = 0;
-                    flat.BackreadGroups[7] = 0;
-                    //flat.NvmGroups[0] = 0;
-                    //flat.NvmGroups[1] = 0;
-                    //flat.NvmGroups[2] = 0;
-                    //flat.NvmGroups[3] = 0;
+                    for (int k = 0; k < cell.drawGroups.Length; k++) {
+                        flat.DrawGroups[k] = cell.drawGroups[k];
+                        flat.DispGroups[k] = cell.drawGroups[k];
+                        flat.BackreadGroups[k] = cell.drawGroups[k];
+                    }
                     flat.Name = cModel + cName;
                     flatRes.Name = flat.ModelName;
-                                    //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\hkt\\h000100.hkt"
                     flatRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{cModel}.hkt";
                     msb.Models.Collisions.Add(flatRes);
                     msb.Parts.Collisions.Add(flat);
-
-                    //MSB3.Region envRegion = new(); // Environment region and event
-                    //envRegion.Name = "GI" + NewEnvID().ToString("D2");
-                    //envRegion.Shape = new MSB.Shape.Point();
-                    //envRegion.Position = cell.center + new Vector3(0.0f, 5.0f, 0.0f);
-                    //MSB1.Event.Environment env = new();
-                    //env.UnkT00 = 0;
-                    //env.UnkT04 = 50f;
-                    //env.UnkT08 = 300f;
-                    //env.UnkT0C = 200f;
-                    //env.UnkT10 = 100f;
-                    //env.UnkT14 = 50f;
-                    //env.EventID = NewEventID();
-                    //env.PartName = flat.Name;
-                    //env.RegionName = envRegion.Name;
-                    //env.Name = "evt " + envRegion.Name;
-                    //msb.Regions.Add(envRegion);
-                    //msb.Events.Environments.Add(env);
 
                     /* Process content */
                     ESM.Type[] VALID_MAP_PIECE_TYPES = { ESM.Type.Static, ESM.Type.Door, ESM.Type.Container };
@@ -212,66 +131,61 @@ namespace PortJob {
                         MSB3.Part.MapPiece mp = new();
                         MSB3.Model.MapPiece mpRes = new();
                         mp.ModelName = "m" + mpModel;
-                                   //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\sib\\layout_70.SIB"
-                        mp.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{Utility.DeleteFromEnd(int.Parse(mpName.Split("_")[1]), 2).ToString("D2")}.SIB";//put the right number here
+                        mp.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{Utility.DeleteFromEnd(int.Parse(mpName.Split("_")[1]), 2).ToString("D2")}.SIB"; //put the right number here
                         mp.Position = content.position;
                         mp.Rotation = content.rotation;
                         mp.MapStudioLayer = uint.MaxValue;
-                        mp.DrawGroups[0] = drawGroup;
-                        mp.DrawGroups[1] = 0;
-                        mp.DrawGroups[2] = 0;
-                        mp.DrawGroups[3] = 0;
-                        mp.DrawGroups[4] = 0;
-                        mp.DrawGroups[5] = 0;
-                        mp.DrawGroups[6] = 0;
-                        mp.DrawGroups[7] = 0;
-                        mp.DispGroups[0] = drawGroup;
-                        mp.DispGroups[1] = 0;
-                        mp.DispGroups[2] = 0;
-                        mp.DispGroups[3] = 0;
-                        mp.DispGroups[4] = 0;
-                        mp.DispGroups[5] = 0;
-                        mp.DispGroups[6] = 0;
-                        mp.DispGroups[7] = 0;
-                        mp.BackreadGroups[0] = drawGroup;
-                        mp.BackreadGroups[1] = 0;
-                        mp.BackreadGroups[2] = 0;
-                        mp.BackreadGroups[3] = 0;
-                        mp.BackreadGroups[3] = 0;
-                        mp.BackreadGroups[4] = 0;
-                        mp.BackreadGroups[5] = 0;
-                        mp.BackreadGroups[6] = 0;
-                        mp.BackreadGroups[7] = 0;
+                        for (int k = 0; k < cell.drawGroups.Length; k++) {
+                            mp.DrawGroups[k] = cell.drawGroups[k];
+                            mp.DispGroups[k] = cell.drawGroups[k];
+                            mp.BackreadGroups[k] = cell.drawGroups[k];
+                        }
                         mp.ShadowSource = true;
-                        //mp.IsShadowDest = 0x1;
                         mp.DrawByReflectCam = true;
                         mp.Name = "m" + mpModel + mpName;
                         mpRes.Name = mp.ModelName;
                         mp.UnkE0E = -1;
                         mp.LodParamID = 19; //Param for: Don't switch to LOD models 
-                                      //"N:\\FDP\\data\\Model\\map\\m31_00_00_00\\sib\\m000080.sib"
                         mpRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\{mpModel}.sib";
                         msb.Models.MapPieces.Add(mpRes);
                         msb.Parts.MapPieces.Add(mp);
                     }
-                    c++;
                 }
+
+                Log.Info(0, $"MSB: m{area:D2}_{block:D2}_00_00");
+                Log.Info(1, "MapPieces: " + msb.Parts.MapPieces.Count);
+                Log.Info(1, "Collisions: " + msb.Parts.Collisions.Count);
+
+                msbs.Add(new MSBData(area, block, msb));
             }
 
-            Log.Info(0, "Generated MSB:");
-            Log.Info(1, "MapPieces: " + msb.Parts.MapPieces.Count);
-            Log.Info(1, "Collisions: " + msb.Parts.Collisions.Count);
-            //Log.Info(1, "Regions: " + msb.Regions.Regions.Count);
+            /* Write msbs to file and build packages */
+            foreach (MSBData msb in msbs) {
+                string msbPath = $"{OutputPath}map\\MapStudio\\m{msb.area:D2}_{msb.block:D2}_00_00.msb.dcx";
+                Log.Info(0, "Writing MSB to: " + msbPath);
+                msb.msb.Write(msbPath, DCX.Type.DCX_DFLT_10000_44_9);
 
+                Utility.PackTestCol(OutputPath, msb.area, msb.block);
+            }
 
-            /* Write to file */
-            string msbPath = $"{OutputPath}map\\MapStudio\\m{area:D2}_{block:D2}_00_00.msb.dcx";
-            Log.Info(0, "Writing MSB to: " + msbPath);
-            Log.Info(0, "Writing MSB to: " + msbPath);
-            msb.Write(msbPath, DCX.Type.DCX_DFLT_10000_44_9);
+            PackTextures(area); // This should be run once per area, currently needs to be reworked to support some like area division stuff but not important right now
 
-            PackTextures(area);
-            Utility.PackTestCol(OutputPath, area, block);
+            /* Generate and write loadlists */
+            string mapViewListPath = $"{OutputPath}map\\mapviewlist.loadlistlist";
+            string worldMsbListPath = $"{OutputPath}map\\worldmsblist.worldloadlistlist";
+            string mapViewList = "", worldMsbList = "";
+            foreach(MSBData msb in msbs) {
+                mapViewList += $"map:/MapStudio/m{msb.area:D2}_{msb.block:D2}_00_00.msb #m{msb.area:D2}B0【ナビメッシュテスト】\r\n";
+                worldMsbList += $"map:/MapStudio/m{msb.area:D2}_{msb.block:D2}_00_00.msb	#m{msb.area:D2}B1yI‚Ì‰¤é_1z 0\r\n";
+            }
+            mapViewList += "\0\0\0\0\0\0\0\0\0\0\0\0"; // Buncha fucking \0 idk why
+            worldMsbList += "\0\0\0\0\0\0\0\0\0\0\0\0";
+
+            if(File.Exists(mapViewListPath)) { File.Delete(mapViewListPath); }
+            if(File.Exists(worldMsbListPath)) { File.Delete(worldMsbListPath); }
+
+            File.WriteAllText(mapViewListPath, mapViewList);
+            File.WriteAllText(worldMsbListPath, worldMsbList);
         }
 
 
@@ -313,7 +227,7 @@ namespace PortJob {
             //foreach (string texPath in textures) {
             //    File.Delete(texPath);
             //}
-            Directory.Delete(OutputPath + "map\\tx", true);
+            //Directory.Delete(OutputPath + "map\\tx", true); // Don't delete temp tpf folder because if you delete this we can't re-use it. program is a lot faster without recreating every tpf every time
         }
 
         private static int nextCollisionID = 0;
@@ -329,6 +243,17 @@ namespace PortJob {
         private static int nextEventID = 1;
         private static int NewEventID() {
             return nextEventID++;
+        }
+    }
+
+    public class MSBData {
+        public int area, block;
+        public MSB3 msb;
+
+        public MSBData(int area, int block, MSB3 msb) {
+            this.area = area;
+            this.block = block;
+            this.msb = msb;
         }
     }
 }

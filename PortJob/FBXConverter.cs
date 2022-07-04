@@ -35,6 +35,9 @@ namespace PortJob {
 
         // Return an object containing the flver, tpfs, and generated ids and names stuff later
         public static void convert(string fbxPath, string flverPath, string tpfDir) {
+            /* Skip if file already exists */
+            if(File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) { return; }
+
             /* Create a blank FLVER */
             FLVER2 flver = new();
             flver.Header.Version = FLVER_VERSION;
@@ -438,6 +441,7 @@ namespace PortJob {
             //flver.Write(flverPath, DCX.Type.DCX_DFLT_10000_24_9);
             foreach (TPF tpf in tpfs) {
                 string tpfPath = tpfDir + tpf.Textures[0].Name + ".tpf.dcx";
+                if(File.Exists(tpfPath)) { continue; } // Skip if file already exists
                 Log.Info(2, "Writing TPF to: " + tpfPath);
                 tpf.Write(tpfPath, DCX.Type.DCX_DFLT_10000_24_9);
             }

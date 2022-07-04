@@ -65,7 +65,7 @@ namespace PortJob {
             /* Initialize cell fields */
             for (int i = 0; i < cells.Count; i++) {
                 Cell cell = cells[i];
-                cell.drawGroups = new int[NUM_DRAW_GROUPS];
+                cell.drawGroups = new uint[NUM_DRAW_GROUPS];
                 cell.pairs = new();
                 cell.connects = new();
             }
@@ -254,7 +254,8 @@ namespace PortJob {
                 for (int j = 0; j < layout.cells.Count; j++) {
                     Cell cell = layout.cells[j];
 
-                    cell.drawGroups[cell.drawId / 32] |= 1 << (cell.drawId % 32);
+                    if(cell.drawId < 0) { Log.Error(0, "Invalid drawId found during drawgroup solving!"); }
+                    cell.drawGroups[cell.drawId / 32] |= (uint)1 << (cell.drawId % 32);
 
                     for (int k = 0; k < CELL_BORDER_OFFSETS.Length; k++) {
                         Int2 offset = CELL_BORDER_OFFSETS[k];
@@ -262,7 +263,7 @@ namespace PortJob {
 
                         Cell border = getCellByPosition(position);
                         if (border != null) {
-                            cell.drawGroups[border.drawId / 32] |= 1 << (border.drawId % 32);
+                            cell.drawGroups[border.drawId / 32] |= (uint)1 << (border.drawId % 32);
                         }
                     }
                 }

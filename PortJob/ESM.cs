@@ -79,19 +79,6 @@ namespace PortJob {
             return exteriorCells;
         }
 
-        /* Deprecated!!! */
-        /*public Cell GetCell(int x, int y) {
-            List<JObject> cells = recordsMap[Type.Cell];
-            foreach (JObject cell in cells) {
-                int xx = int.Parse(cell["data"]["grid"][0].ToString());
-                int yy = int.Parse(cell["data"]["grid"][1].ToString());
-                if (x == xx && y == yy) {
-                    return new Cell(this, cell);
-                }
-            }
-            return null; // Out of bounds
-        }*/
-
         /* List of types that we should search for references */
         public readonly Type[] VALID_CONTENT_TYPES = {
             Type.Sound, Type.Skill, Type.Region, Type.Static, Type.Door, Type.MiscItem, Type.Weapon, Type.Container, Type.Creature, Type.Bodypart, Type.Light, Type.Npc,
@@ -133,7 +120,7 @@ namespace PortJob {
         /* These fields are used by Layout for stuff */
         public Layout layout;         // Parent layout
         public int drawId;            // Drawgroup ID, value also correponds to the bitwise (1 << id)
-        public int[] drawGroups;
+        public uint[] drawGroups;
         public List<Cell> pairs;      // Cells that it borders in other msbs, these will have 'paired draw ids'
         public List<Layout> connects; // Connect collisions we need to generate
 
