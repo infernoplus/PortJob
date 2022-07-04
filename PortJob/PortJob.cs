@@ -34,7 +34,7 @@ namespace PortJob {
             if (!OutputPath.EndsWith("\\"))
                 OutputPath += "\\";
 
-            Log.SetupLogStream(OutputPath);
+            Log.SetupLogStream();
         }
 
         private static void Convert() {
@@ -85,7 +85,7 @@ namespace PortJob {
             //int c = 0; // Cell count for this MSB
             for (int gx = -CELLS; gx <= CELLS; gx++) {
                 for (int gy = -CELLS; gy <= CELLS; gy++) {
-                    Log.Info(0, "Processing Cell [" + gx + ", " + gy + "]");
+                    Log.Info(0, "Processing Cell [" + gx + ", " + gy + "]", "test");
                     Cell cell = esm.GetCell(gx, gy);
 
                     /* Set drawgroup for this cell and adjacent cells */
@@ -256,7 +256,8 @@ namespace PortJob {
 
             /* Write to file */
             string msbPath = $"{OutputPath}map\\MapStudio\\m{area:D2}_{block:D2}_00_00.msb.dcx";
-            Log.Info(0, "Writing MSB to: " + msbPath);
+            Log.Info(0, "Writing MSB to: " + msbPath, "test");
+            Log.Info(0, "Writing MSB to: " + msbPath, "test2");
             msb.Write(msbPath, DCX.Type.DCX_DFLT_10000_44_9);
 
             PackTextures(area);
