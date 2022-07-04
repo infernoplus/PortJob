@@ -71,7 +71,7 @@ namespace PortJob {
                 foreach (Cell cell in layout.cells) {
                     Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
 
-                    /* Set drawgroup for this cell and adjacent cells */
+                    /* Name and model name stuff */
                     string cModel = "h000000";
                     string cName;
                     if (partMap.ContainsKey(cModel)) {
@@ -81,7 +81,8 @@ namespace PortJob {
                         partMap.Add(cModel, 1);
                     }
 
-                    MSB3.Part.Collision flat = new(); // Flat ground for testing
+                    /* Flat ground for testing */
+                    MSB3.Part.Collision flat = new();
                     MSB3.Model.Collision flatRes = new();
                     flat.HitFilterID = 8;
                     flat.ModelName = cModel;
@@ -98,6 +99,42 @@ namespace PortJob {
                     flatRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{cModel}.hkt";
                     msb.Models.Collisions.Add(flatRes);
                     msb.Parts.Collisions.Add(flat);
+
+                    /* Flat connect collision for testing */
+                    for (int k = 0; k < cell.connects.Count; k++) {
+                        string ccModel = "h000000";
+                        string ccName;
+                        if (partMap.ContainsKey(ccModel)) {
+                            ccName = "_" + (partMap[ccModel]++.ToString("D4"));
+                        } else {
+                            ccName = "_0000";
+                            partMap.Add(ccModel, 1);
+                        }
+
+                        MSB3.Part.ConnectCollision con = new();
+                        MSB3.Model.Collision conRes = new();
+
+                        con.CollisionName = ccModel;
+                        con.MapID[0] = area;
+                        con.MapID[1] = (byte)(cell.connects[k].id);
+                        con.MapID[2] = 0;
+                        con.MapID[0] = 3;
+                        con.Name = ccName;
+                        con.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
+                        con.ModelName = ccModel;
+                        con.Position = cell.center;
+                        for (int l = 0; l < cell.drawGroups.Length; l++) {
+                            flat.DrawGroups[l] = cell.drawGroups[l];
+                            flat.DispGroups[l] = cell.drawGroups[l];
+                            flat.BackreadGroups[l] = cell.drawGroups[l];
+                        }
+
+                        conRes.Name = con.ModelName;
+                        conRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{ccModel}.hkt";
+
+                        msb.Models.Collisions.Add(conRes);
+                        msb.Parts.ConnectCollisions.Add(con);
+                    }
 
                     /* Process content */
                     ESM.Type[] VALID_MAP_PIECE_TYPES = { ESM.Type.Static, ESM.Type.Door, ESM.Type.Container };
@@ -174,7 +211,7 @@ namespace PortJob {
             string worldMsbListPath = $"{OutputPath}map\\worldmsblist.worldloadlistlist";
             string mapViewList = "", worldMsbList = "";
             foreach(MSBData msb in msbs) {
-                mapViewList += $"map:/MapStudio/m{msb.area:D2}_{msb.block:D2}_00_00.msb #m{msb.area:D2}B0【ナビメッシュテスト】\r\n";
+                mapViewList += $"map:/MapStudio/m{msb.area:D2}_{msb.block:D2}_00_00.msb #m{msb.area:D2}B0【Layout {msb.block}】\r\n";
                 worldMsbList += $"map:/MapStudio/m{msb.area:D2}_{msb.block:D2}_00_00.msb	#m{msb.area:D2}B1yI‚Ì‰¤é_1z 0\r\n";
             }
             mapViewList += "\0\0\0\0\0\0\0\0\0\0\0\0"; // Buncha fucking \0 idk why

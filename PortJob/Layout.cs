@@ -326,6 +326,13 @@ namespace PortJob {
                     Console.WriteLine("Cell with more than 2 connections: [" + cell.position.x + ", " + cell.position.y + "]");
                 }
             }
+
+            /* Recalculate ID to match block ID */
+            for(int i=1;i<layouts.Count;i++) {
+                Layout layout = layouts[i];
+                layout.id = i;
+            }
+
             return layouts;
         }
            
