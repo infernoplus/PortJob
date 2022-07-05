@@ -73,6 +73,7 @@ namespace PortJob {
                 Dictionary<string, string> modelMap = new();
                 Dictionary<string, int> partMap = new();
 
+                int c = 0;
                 foreach (Cell cell in layout.cells) {
                     Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
 
@@ -132,11 +133,11 @@ namespace PortJob {
                         //con.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB"; // Looks like connnect collision does not ever use sibs
                         con.ModelName = ccModel;
                         con.Position = cell.center;
-                        con.MapStudioLayer = 4294967295;                                 // Not a clue what this does... Should probably ask about it
+                        con.MapStudioLayer = 4294967295;                          // Not a clue what this does... Should probably ask about it
                         for (int l = 0; l < cell.drawGroups.Length; l++) {
                             con.DrawGroups[l] = cell.drawGroups[l];
                             con.DispGroups[l] = cell.drawGroups[l];
-                            con.BackreadGroups[l] = cell.drawGroups[l];
+                            con.BackreadGroups[l] = 0;                            // Seems like DS3 doesn't use this for collision at all
                         }
                         con.LodParamID = -1;
                         con.UnkE0E = -1;
@@ -147,6 +148,41 @@ namespace PortJob {
                         AddResource(msb, conRes);
                         msb.Parts.ConnectCollisions.Add(con);
                     }
+
+                    /* Enemy for testing */
+                    string eModel = "c1100";
+                    string eName = $"_{c++:D4}";
+
+                    MSB3.Part.Enemy enemy = new();
+                    MSB3.Model.Enemy enemyRes = new();
+
+                    enemy.CollisionName = flat.Name;
+                    enemy.ThinkParamID = 110050;
+                    enemy.NPCParamID = 110010;
+                    enemy.TalkID = 0;
+                    enemy.CharaInitID = -1;
+                    enemy.UnkT78 = 128;
+                    enemy.UnkT84 = 1;
+                    enemy.Name = eModel + eName;
+                    enemy.SibPath = "";
+                    enemy.ModelName = eModel;
+                    enemy.Position = cell.center;
+                    enemy.MapStudioLayer = 4294967295;
+
+                    for (int k = 0; k < cell.drawGroups.Length; k++) {
+                        enemy.DrawGroups[k] = 0;
+                        enemy.DispGroups[k] = 0;
+                        enemy.BackreadGroups[k] = 0;
+                    }
+
+                    enemy.LodParamID = -1;
+                    enemy.UnkE0E = -1;
+
+                    enemyRes.Name = enemy.ModelName;
+                    enemyRes.SibPath = "";
+
+                    AddResource(msb, enemyRes);
+                    msb.Parts.Enemies.Add(enemy);
 
                     /* Process content */
                     ESM.Type[] VALID_MAP_PIECE_TYPES = { ESM.Type.Static, ESM.Type.Door, ESM.Type.Container };
@@ -188,7 +224,7 @@ namespace PortJob {
                         for (int k = 0; k < cell.drawGroups.Length; k++) {
                             mp.DrawGroups[k] = cell.drawGroups[k];
                             mp.DispGroups[k] = cell.drawGroups[k];
-                            mp.BackreadGroups[k] = cell.drawGroups[k];
+                            mp.BackreadGroups[k] = 0;                          // Seems like DS3 doesn't use this for collision at all
                         }
                         mp.ShadowSource = true;
                         mp.DrawByReflectCam = true;
@@ -299,6 +335,16 @@ namespace PortJob {
                 }
             }
             msb.Models.MapPieces.Add(res);
+        }
+
+        /* Function top add enemy model resources, avoids adding duplicates */
+        private static void AddResource(MSB3 msb, MSB3.Model.Enemy res) {
+            foreach (MSB3.Model.Enemy enemy in msb.Models.Enemies) {
+                if (enemy.Name == res.Name) {
+                    return;
+                }
+            }
+            msb.Models.Enemies.Add(res);
         }
 
         private static int nextCollisionID = 0;
