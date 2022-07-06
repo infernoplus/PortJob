@@ -47,40 +47,43 @@ namespace PortJob {
         public static void PackTestCol(int area, int block) {
 
             /* Setup area_block and output path*/
-            string area_block = $"{area:D2}_{block:D2}";
             string outputPath = PortJob.OutputPath;
+            string area_block = $"{area:D2}_{block:D2}";
             string mapName = $"m{area_block}_00_00";
 
             /* Write the high col bhd/bdt pair */
-            string hDonorPath = Environment.CurrentDirectory + @"..\..\..\..\TestCol\h30_00_00_00_000000.hkx";
+            int hModelID = 0;
+            string hDonorPath = Environment.CurrentDirectory + $@"..\..\..\..\TestCol\h30_00_00_00_{hModelID:D6}.hkx";
             string hPath = $"{mapName}\\h{area_block}_00_00";
             BXF4 hBXF = new();
             byte[] hBytes = File.ReadAllBytes(hDonorPath);
             hBytes = DCX.Compress(hBytes, DCX.Type.DCX_DFLT_10000_44_9); //File is compressed inside the bdt.
             int hStartId = 0; // h col binder file IDs start here and increment by 1
-            BinderFile hBinder = new(Binder.FileFlags.Flag1, hStartId, $"{hPath}_000000.hkx.dcx", hBytes);
+            BinderFile hBinder = new(Binder.FileFlags.Flag1, hStartId, $"{hPath}_{hModelID:D6}.hkx.dcx", hBytes);
             hBXF.Files.Add(hBinder);
             hBXF.Write($"{outputPath}map\\{hPath}.hkxbhd", $"{outputPath}map\\{hPath}.hkxbdt");
 
             /* Write the low col bhd/bdt pair */
-            string lDonorPath = Environment.CurrentDirectory + @"..\..\..\..\TestCol\l30_00_00_00_000000.hkx"; //:fatcat:
+            int lModelID = 0;
+            string lDonorPath = Environment.CurrentDirectory + @$"..\..\..\..\TestCol\l30_00_00_00_{lModelID:D6}.hkx"; //:fatcat:
             string lPath = $"{mapName}\\l{area_block}_00_00";
             BXF4 lBXF = new();
             byte[] lBytes = File.ReadAllBytes(lDonorPath);
             lBytes = DCX.Compress(lBytes, DCX.Type.DCX_DFLT_10000_44_9);  //File is compressed inside the bdt.
             int lStartId = 0; // l col binder file IDs start here and increment by 1
-            BinderFile lBinder = new(Binder.FileFlags.Flag1, lStartId, $"{lPath}_000000.hkx.dcx", lBytes);
+            BinderFile lBinder = new(Binder.FileFlags.Flag1, lStartId, $"{lPath}_{lModelID:D6}.hkx.dcx", lBytes);
             lBXF.Files.Add(lBinder);
             lBXF.Write($"{outputPath}map\\{lPath}.hkxbhd",$"{outputPath}map\\{lPath}.hkxbdt");
 
             /* Write the nav mesh bnd */
-            string nDonorPath = Environment.CurrentDirectory + @"..\..\..\..\TestCol\n30_00_00_00_000000.hkx"; //:fatcat:
+            int nModelID = 1;
+            string nDonorPath = Environment.CurrentDirectory + @$"..\..\..\..\TestCol\n30_00_00_00_{nModelID:D6}.hkx"; //:fatcat:
             string nName = $"{area_block}_00_00"; //Have to seperate the name here, cause the path is long AF
             string nPath = $"N:\\FDP\\data\\INTERROOT_win64\\map\\{mapName}\\navimesh\\bind6\\n{nName}";
             BND4 nvmBND = new();
             byte[] nBytes = File.ReadAllBytes(nDonorPath);
             int nStartId = 1000; // navmesh binder file IDs start here and increment by 1
-            BinderFile nBinder = new(Binder.FileFlags.Flag1, nStartId, $"{nPath}_000000.hkx", nBytes);
+            BinderFile nBinder = new(Binder.FileFlags.Flag1, nStartId, $"{nPath}_{nModelID:D6}.hkx", nBytes);
             nvmBND.Files.Add(nBinder);
             nvmBND.Write($"{outputPath}map\\{mapName}\\m{nName}.nvmhktbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9); //Whole bnd is compressed. 
         }

@@ -116,15 +116,15 @@ namespace PortJob {
 
                     AddResource(msb, flatRes);
                     msb.Parts.Collisions.Add(flat);
-                    int cModelID = int.Parse(cModel.Replace("h", ""));
+                    int nModelID = 1;
                     //int noo = 2147483647;
                     //int lol = 5610000000;
 
-                    if (int.TryParse($"{area}{block}{cModelID:D6}", out int id)) //This is just for testing.
+                    if (int.TryParse($"{area}{block}{nModelID:D6}", out int id)) //This is just for testing.
                     {
                         nva.Navmeshes.Add(new NVA.Navmesh() {
                             NameID = id,
-                            ModelID = 0,
+                            ModelID = nModelID,
                             Position = cell.center + new Vector3(-20, 33, 50),
                             VertexCount = 203,
                             Unk38 = 12399,
