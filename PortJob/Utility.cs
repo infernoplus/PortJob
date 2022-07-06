@@ -36,13 +36,6 @@ namespace PortJob {
             return int.Parse(s.Substring(s.IndexOfAny(CHAR_NUMS)));
         }
 
-        public static IEnumerable<IEnumerable<T>> Chunk<T>(this IEnumerable<T> source, int chunksize) {
-            while (source.Any()) {
-                yield return source.Take(chunksize);
-                source = source.Skip(chunksize);
-            }
-        }
-
         /* Temporary code for packing up hkxs */
         public static void PackTestCol(int area, int block) {
 
@@ -59,7 +52,7 @@ namespace PortJob {
             byte[] hBytes = File.ReadAllBytes(hDonorPath);
             hBytes = DCX.Compress(hBytes, DCX.Type.DCX_DFLT_10000_44_9); //File is compressed inside the bdt.
             int hStartId = 0; // h col binder file IDs start here and increment by 1
-            BinderFile hBinder = new(Binder.FileFlags.Flag1, hStartId, $"{hPath}_{hModelID:D6}.hkx.dcx", hBytes);
+            BinderFile hBinder = new(flags:Binder.FileFlags.Flag1, id:hStartId, name:$"{hPath}_{hModelID:D6}.hkx.dcx", bytes:hBytes); //in-line parameter names help here to tell what is going on, but are not necessary.
             hBXF.Files.Add(hBinder);
             hBXF.Write($"{outputPath}map\\{hPath}.hkxbhd", $"{outputPath}map\\{hPath}.hkxbdt");
 
@@ -71,7 +64,7 @@ namespace PortJob {
             byte[] lBytes = File.ReadAllBytes(lDonorPath);
             lBytes = DCX.Compress(lBytes, DCX.Type.DCX_DFLT_10000_44_9);  //File is compressed inside the bdt.
             int lStartId = 0; // l col binder file IDs start here and increment by 1
-            BinderFile lBinder = new(Binder.FileFlags.Flag1, lStartId, $"{lPath}_{lModelID:D6}.hkx.dcx", lBytes);
+            BinderFile lBinder = new(flags:Binder.FileFlags.Flag1, id:lStartId, name:$"{lPath}_{lModelID:D6}.hkx.dcx", bytes:lBytes);
             lBXF.Files.Add(lBinder);
             lBXF.Write($"{outputPath}map\\{lPath}.hkxbhd",$"{outputPath}map\\{lPath}.hkxbdt");
 
@@ -83,7 +76,7 @@ namespace PortJob {
             BND4 nvmBND = new();
             byte[] nBytes = File.ReadAllBytes(nDonorPath);
             int nStartId = 1000; // navmesh binder file IDs start here and increment by 1
-            BinderFile nBinder = new(Binder.FileFlags.Flag1, nStartId, $"{nPath}_{nModelID:D6}.hkx", nBytes);
+            BinderFile nBinder = new(flags: Binder.FileFlags.Flag1, id:nStartId, name:$"{nPath}_{nModelID:D6}.hkx", bytes:nBytes);
             nvmBND.Files.Add(nBinder);
             nvmBND.Write($"{outputPath}map\\{mapName}\\m{nName}.nvmhktbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9); //Whole bnd is compressed. 
         }

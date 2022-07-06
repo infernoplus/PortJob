@@ -79,7 +79,8 @@ namespace PortJob {
                 Vector3 OFFSET = new(0, 0, 0);
                 Vector3 ROTATION = new (0, 0, 0);
 
-                NVA nva = new();
+                NVA nva = new(); //One nva per msb. I put this up here so you can easily add the navmeshes in the loop.  
+
                 foreach (Cell cell in layout.cells) {
                     Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
 
@@ -116,22 +117,6 @@ namespace PortJob {
 
                     AddResource(msb, flatRes);
                     msb.Parts.Collisions.Add(flat);
-                    int nModelID = 1;
-                    //int noo = 2147483647;
-                    //int lol = 5610000000;
-
-                    if (int.TryParse($"{area}{block}{nModelID:D6}", out int id)) //This is just for testing.
-                    {
-                        nva.Navmeshes.Add(new NVA.Navmesh() {
-                            NameID = id,
-                            ModelID = nModelID,
-                            Position = cell.center + new Vector3(-20, 33, 50),
-                            VertexCount = 203,
-                            Unk38 = 12399,
-                            Unk4C = true
-                        });
-                    }
-               
 
                     /* Flat connect collision for testing */
                     for (int k = 0; k < cell.connects.Count; k++) {
@@ -260,6 +245,27 @@ namespace PortJob {
 
                         AddResource(msb, mpRes);
                         msb.Parts.MapPieces.Add(mp);
+                    }
+                }
+
+                /* Just add one Navmesh to each nva. Model and Name are not a string, so no '_0000' format, and we have to use a unique ID here. */
+                int nModelID = 1;
+                if (int.TryParse($"{area}{block}{nModelID:D6}", out int id)) //This is just for testing so we don't go over int.MaxValue.
+                {
+                    nva.Navmeshes.Add(new NVA.Navmesh() {
+                        NameID = id,
+                        ModelID = nModelID,
+                        Position = player.Position + new Vector3(-20, 33, 50), //using player position, here. Change this to cell.center in loop.
+                        VertexCount = 203,
+                        Unk38 = 12399,
+                        Unk4C = true
+                    });
+                }
+
+                /* There has to be an entry for each vertex in each navmesh in nav.Navmashes */
+                foreach (NVA.Navmesh navmesh in nva.Navmeshes) {
+                    for (int j = 0; j < navmesh.VertexCount; j++) {
+                        nva.Entries1.Add(new NVA.Entry1());
                     }
                 }
 
