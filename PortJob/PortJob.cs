@@ -52,6 +52,7 @@ namespace PortJob {
             /* Generate MSBs from layouts */
             const int area = 54;
             List<MSBData> msbs = new();
+            List<NVAData> nvas = new();
 
             int i = 0;
             foreach (Layout layout in layouts) {
@@ -74,6 +75,11 @@ namespace PortJob {
                 Dictionary<string, int> partMap = new();
 
                 int c = 0;
+                /* This offset and rotation will be applies to all collision below this. Left for testing purposes */
+                Vector3 OFFSET = new(0, 0, 0);
+                Vector3 ROTATION = new (0, 0, 0);
+
+                NVA nva = new();
                 foreach (Cell cell in layout.cells) {
                     Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
 
@@ -93,7 +99,8 @@ namespace PortJob {
                     flat.HitFilterID = 8;
                     flat.ModelName = cModel;
                     flat.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
-                    flat.Position = cell.center;
+                    flat.Position = cell.center + OFFSET;
+                    flat.Rotation = ROTATION;
                     flat.MapStudioLayer = uint.MaxValue;
                     for (int k = 0; k < cell.drawGroups.Length; k++) {
                         flat.DrawGroups[k] = cell.drawGroups[k];
@@ -109,6 +116,22 @@ namespace PortJob {
 
                     AddResource(msb, flatRes);
                     msb.Parts.Collisions.Add(flat);
+                    int cModelID = int.Parse(cModel.Replace("h", ""));
+                    //int noo = 2147483647;
+                    //int lol = 5610000000;
+
+                    if (int.TryParse($"{area}{block}{cModelID:D6}", out int id)) //This is just for testing.
+                    {
+                        nva.Navmeshes.Add(new NVA.Navmesh() {
+                            NameID = id,
+                            ModelID = 0,
+                            Position = cell.center + new Vector3(-20, 33, 50),
+                            VertexCount = 203,
+                            Unk38 = 12399,
+                            Unk4C = true
+                        });
+                    }
+               
 
                     /* Flat connect collision for testing */
                     for (int k = 0; k < cell.connects.Count; k++) {
@@ -132,7 +155,8 @@ namespace PortJob {
                         con.Name = ccModel + ccName;
                         //con.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB"; // Looks like connnect collision does not ever use sibs
                         con.ModelName = ccModel;
-                        con.Position = cell.center;
+                        con.Position = cell.center + OFFSET;
+                        con.Rotation = ROTATION;
                         con.MapStudioLayer = 4294967295;                          // Not a clue what this does... Should probably ask about it
                         for (int l = 0; l < cell.drawGroups.Length; l++) {
                             con.DrawGroups[l] = cell.drawGroups[l];
@@ -244,6 +268,7 @@ namespace PortJob {
                 Log.Info(1, "Collisions: " + msb.Parts.Collisions.Count);
 
                 msbs.Add(new MSBData(area, block, msb));
+                nvas.Add(new NVAData(area, block, nva));
             }
 
             /* Write msbs to file and build packages */
@@ -252,7 +277,15 @@ namespace PortJob {
                 Log.Info(0, "Writing MSB to: " + msbPath);
                 msb.msb.Write(msbPath, DCX.Type.DCX_DFLT_10000_44_9);
 
-                Utility.PackTestCol(OutputPath, msb.area, msb.block);
+                Utility.PackTestCol(msb.area, msb.block);
+            }
+
+            foreach (NVAData nva in nvas) {
+                string nvaPath = $"{OutputPath}map\\m{nva.area:D2}_{nva.block:D2}_00_00\\m{nva.area:D2}_{nva.block:D2}_00_00.nva.dcx";
+                Log.Info(0, "Writing MSB to: " + nvaPath);
+                nva.nva.Write(nvaPath, DCX.Type.DCX_DFLT_10000_44_9);
+
+                Utility.PackTestCol(nva.area, nva.block);
             }
 
             PackTextures(area); // This should be run once per area, currently needs to be reworked to support some like area division stuff but not important right now
@@ -262,6 +295,7 @@ namespace PortJob {
             string worldMsbListPath = $"{OutputPath}map\\worldmsblist.worldloadlistlist";
             string mapViewList = "", worldMsbList = "";
             foreach(MSBData msb in msbs) {
+
                 mapViewList += $"map:/MapStudio/m{msb.area:D2}_{msb.block:D2}_00_00.msb #m{msb.area:D2}B0【Layout {msb.block}】\r\n";
                 worldMsbList += $"map:/MapStudio/m{msb.area:D2}_{msb.block:D2}_00_00.msb	#m{msb.area:D2}B1yI‚Ì‰¤é_1z 0\r\n";
             }
@@ -310,10 +344,6 @@ namespace PortJob {
 
                 tpf.Write(OutputPath + "map\\m" + area + "\\" + "m" + area + "_9999.tpf.dcx", DCX.Type.DCX_DFLT_10000_44_9);
             }
-
-            //foreach (string texPath in textures) {
-            //    File.Delete(texPath);
-            //}
             //Directory.Delete(OutputPath + "map\\tx", true); // Don't delete temp tpf folder because if you delete this we can't re-use it. program is a lot faster without recreating every tpf every time
         }
 
@@ -371,6 +401,18 @@ namespace PortJob {
             this.area = area;
             this.block = block;
             this.msb = msb;
+        }
+
+     
+    }
+
+    public class NVAData {
+        public int area, block;
+        public NVA nva;
+        public NVAData(int area, int block, NVA nva) {
+            this.area = area;
+            this.block = block;
+            this.nva = nva;
         }
     }
 }

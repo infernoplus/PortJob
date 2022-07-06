@@ -8,13 +8,18 @@ namespace PortJob {
     /* This class takes the list of exterior cells that ESM generates and calculates the layout for MSBs to use */
     /* Calculates information for which msbs contain which cells, what connect collisions to put in which cells, and what drawgroups each cell will have */
     public class Layout {
+        static readonly Box GRID_SIZE = new (-18, -17, 24, 28);
+        static readonly Int2 MSB_SIZE = new (8, 8);
+        static readonly int LAYOUT_CELL_BUDGET = MSB_SIZE.x * MSB_SIZE.y;
+        static readonly int LAYOUT_CELL_BUDGET_MAX = (int)(LAYOUT_CELL_BUDGET * 1.25);
+
         public static List<Layout> CalculateLayout(ESM esm) {
             /* Const settings */
             // Nord how the fuck do I make these actual const class values it keeps giving me errors reeeeeeeeeeeeeeeeeeeeeeeeeee
-            Box GRID_SIZE = new Box(-18, -17, 24, 28);
-            Int2 MSB_SIZE = new Int2(8, 8);
-            int LAYOUT_CELL_BUDGET = MSB_SIZE.x * MSB_SIZE.y;
-            int LAYOUT_CELL_BUDGET_MAX = (int)(LAYOUT_CELL_BUDGET * 1.25);
+
+            // re: moved them into the class as static readonly. I think this is what you want? In C# Const is compile time, so you can't initialize any classes
+            // and it doesn't like doing any math with non const or read-only properties. We can use static readonly, instead, but they have to be class fields.
+            // So we just have to move them outside of this method. 
 
             Box MSB_GRID_SIZE = new Box(
                 (int)Math.Floor((float)GRID_SIZE.x1 / (float)MSB_SIZE.x),

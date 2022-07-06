@@ -160,7 +160,6 @@ namespace PortJob {
 
         public readonly List<Content> content;
 
-
         /* These fields are used by Layout for stuff */
         public Layout layout;         // Parent layout
         public int drawId;            // Drawgroup ID, value also correponds to the bitwise (1 << id)
@@ -239,7 +238,6 @@ namespace PortJob {
                 Cell genCell = new(_esm, _cells[i]);
                 _processedCells.Add(genCell);
             }
-
             IsDone = true;
         }
     }
