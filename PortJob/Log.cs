@@ -17,7 +17,7 @@ namespace PortJob {
             if (Directory.Exists($"{PortJob.OutputPath}port_logs\\sub_logs\\"))
                 Directory.Delete($"{PortJob.OutputPath}port_logs\\sub_logs\\", true);
 
-            _writer = new($"{PortJob.OutputPath}port_logs\\main_log.{EXT}", false) {
+            _writer = new StreamWriter($"{PortJob.OutputPath}port_logs\\main_log.{EXT}", false) {
                 AutoFlush = true
             };
         }

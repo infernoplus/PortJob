@@ -111,7 +111,7 @@ namespace PortJob {
                 if (stream == null)
                     throw new NullReferenceException($"Could not find embedded resource: {item} in the {Assembly.GetCallingAssembly().GetName()} assembly");
 
-                using (StreamReader reader = new StreamReader(stream)) {
+                using (StreamReader reader = new(stream)) {
                     return reader.ReadToEnd();
                 }
             }

@@ -26,7 +26,7 @@ namespace PortJob {
             DateTime startParse = DateTime.Now;
             JsonSerializer serializer = new();
             using (FileStream s = File.Open(path, FileMode.Open))
-            using (StreamReader sr = new StreamReader(s))
+            using (StreamReader sr = new(s))
             using (JsonReader reader = new JsonTextReader(sr)) {
                 while (!sr.EndOfStream) {
                     json = serializer.Deserialize<JArray>(reader);
@@ -66,8 +66,8 @@ namespace PortJob {
         const int EXTERIOR_BOUNDS = 40; // +/- Bounds of the cell grid we consider to be the 'Exterior'
 
         private void LoadCells() {
-            exteriorCells = new();
-            interiorCells = new();
+            exteriorCells = new List<Cell>();
+            interiorCells = new List<Cell>();
 
             List<JObject> cells = recordsMap[Type.Cell];
             int partitionSize = (int)Math.Ceiling(cells.Count / 16f);
@@ -218,12 +218,12 @@ namespace PortJob {
         }
 
         public CellFactory(ESM esm, List<JObject> cells, int start, int end) {
-            _processedCells = new();
+            _processedCells = new List<Cell>();
             _esm = esm;
             _cells = cells;
             _start = start;
             _end = end;
-            _thread = new(ProcessCell);
+            _thread = new Thread(ProcessCell);
 
         }
 

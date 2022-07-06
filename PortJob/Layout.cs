@@ -21,22 +21,22 @@ namespace PortJob {
             // and it doesn't like doing any math with non const or read-only properties. We can use static readonly, instead, but they have to be class fields.
             // So we just have to move them outside of this method. 
 
-            Box MSB_GRID_SIZE = new Box(
+            Box MSB_GRID_SIZE = new(
                 (int)Math.Floor((float)GRID_SIZE.x1 / (float)MSB_SIZE.x),
                 (int)Math.Floor((float)GRID_SIZE.y1 / (float)MSB_SIZE.y),
                 ((int)Math.Floor((float)GRID_SIZE.x2 / (float)MSB_SIZE.x)) + ((GRID_SIZE.x2 - GRID_SIZE.x1) % (MSB_SIZE.x / 2) > 0?1:0),
                 ((int)Math.Floor((float)GRID_SIZE.y2 / (float)MSB_SIZE.y)) + ((GRID_SIZE.y2 - GRID_SIZE.y1) % (MSB_SIZE.y / 2) > 0?1:0)
             );
 
-            Int2[] CELL_BORDER_OFFSETS = new[] {
-                new Int2(1, 0),
-                new Int2(0, 1),
-                new Int2(-1, 0),
-                new Int2(0, -1),
-                new Int2(1, 1),
-                new Int2(-1, -1),
-                new Int2(-1, 1),
-                new Int2(1, -1)
+            Int2[] CELL_BORDER_OFFSETS = {
+                new(1, 0),
+                new(0, 1),
+                new(-1, 0),
+                new(0, -1),
+                new(1, 1),
+                new(-1, -1),
+                new(-1, 1),
+                new(1, -1)
             };
 
             int INT_SIZE = 32;
@@ -71,8 +71,8 @@ namespace PortJob {
             for (int i = 0; i < cells.Count; i++) {
                 Cell cell = cells[i];
                 cell.drawGroups = new uint[NUM_DRAW_GROUPS];
-                cell.pairs = new();
-                cell.connects = new();
+                cell.pairs = new List<Cell>();
+                cell.connects = new List<Layout>();
             }
 
             /* Generate msbs and add cells to msbs */
@@ -83,13 +83,13 @@ namespace PortJob {
                     int h = MSB_SIZE.y / 2;
                     int xoff = (Math.Abs(y % 2) > 0 ? MSB_SIZE.x / 2 : 0);
 
-                    Box bounds = new Box(
+                    Box bounds = new(
                         (x * MSB_SIZE.x) + w - xoff,
                         (y * MSB_SIZE.y) + h,
                         (x * MSB_SIZE.x) + (MSB_SIZE.x - 1) + w - xoff,
                         (y * MSB_SIZE.y) + (MSB_SIZE.y - 1) + h
                     );
-                    Layout layout = new Layout(nextId, bounds);
+                    Layout layout = new(nextId, bounds);
 
                     for (int i = 0; i < cells.Count; i++) {
                         Cell cell = cells[i];
@@ -123,7 +123,7 @@ namespace PortJob {
                     Cell cell = layout.cells[j];
                     for (int k = 0; k < CELL_BORDER_OFFSETS.Length; k++) {
                         Int2 offset = CELL_BORDER_OFFSETS[k];
-                        Int2 position = new Int2(cell.position.x + offset.x, cell.position.y + offset.y);
+                        Int2 position = new(cell.position.x + offset.x, cell.position.y + offset.y);
                         Cell border = getCellByPosition(position);
 
                         if (border != null && border.layout != layout && !(borders.Contains(border.layout))) {
@@ -176,7 +176,7 @@ namespace PortJob {
                     List<Layout> hits = new(); // MSBS we hit in this round of tests, 1 cell per msb, this gives us only direct adjacent cells AND solves corner cases
                     for (int k = 0; k < CELL_BORDER_OFFSETS.Length; k++) {
                         Int2 offset = CELL_BORDER_OFFSETS[k];
-                        Int2 position = new Int2(cell.position.x + offset.x, cell.position.y + offset.y);
+                        Int2 position = new(cell.position.x + offset.x, cell.position.y + offset.y);
 
                         Cell border = getCellByPosition(position);
 
@@ -264,7 +264,7 @@ namespace PortJob {
 
                     for (int k = 0; k < CELL_BORDER_OFFSETS.Length; k++) {
                         Int2 offset = CELL_BORDER_OFFSETS[k];
-                        Int2 position = new Int2(cell.position.x + offset.x, cell.position.y + offset.y);
+                        Int2 position = new(cell.position.x + offset.x, cell.position.y + offset.y);
 
                         Cell border = getCellByPosition(position);
                         if (border != null) {
@@ -348,8 +348,8 @@ namespace PortJob {
         public Layout(int id, Box bounds) {
             this.id = id;
             this.bounds = bounds;
-            cells = new();
-            connects = new();
+            cells = new List<Cell>();
+            connects = new List<Layout>();
         }
     }
     
