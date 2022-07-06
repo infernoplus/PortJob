@@ -3,7 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>AnyCPU;ARM32;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -24,6 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="gfoidl.Base64" Version="1.1.1" />
+    <PackageReference Include="ImpromptuNinjas.ZStd" Version="1.4.5.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="TeximpNet" Version="1.4.3" />
   </ItemGroup>

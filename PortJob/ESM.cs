@@ -9,6 +9,9 @@ using System.Numerics;
 using SoulsFormats;
 using System.Threading;
 
+using gfoidl.Base64;
+using ImpromptuNinjas.ZStd;
+
 namespace PortJob {
     /* Loads and handles the JSON file of the morrowind.esm that tes3conv outputs */
     public class ESM {
@@ -130,6 +133,18 @@ namespace PortJob {
             Type.LevelledCreature, Type.PathGrid, Type.SoundGen
         };
 
+        public JObject GetLandscapeByGrid(Int2 position) {
+            foreach (JObject landscape in recordsMap[Type.Landscape]) {
+                int x = int.Parse(landscape["grid"][0].ToString());
+                int y = int.Parse(landscape["grid"][1].ToString());
+
+                if(position.x == x && position.y == y) {
+                    return landscape;
+                }
+            }
+            return null;
+        }
+
         /* References don't contain any explicit 'type' data so... we just gotta go find it lol */
         public TypedRecord FindRecordByID(string id) {
             foreach (Type type in VALID_CONTENT_TYPES) {
@@ -147,7 +162,8 @@ namespace PortJob {
     }
 
     public class Cell {
-        public static readonly float CELL_SIZE = 81.92f;
+        public static readonly float CELL_SIZE = 8192f * FBXConverter.GLOBAL_SCALE;
+        public static readonly int GRID_SIZE = 64;
 
         public readonly string name;
         public readonly string region;
@@ -157,6 +173,8 @@ namespace PortJob {
 
         public readonly int flag;
         public readonly int[] flags;
+
+        public readonly TerrainData terrain;
 
         public readonly List<Content> content;
 
@@ -193,52 +211,82 @@ namespace PortJob {
                 content.Add(new Content(esm, reference));
             }
 
+            /* Decode and parse terrain data if it exists for this cell */
+            JObject landscape = esm.GetLandscapeByGrid(position);
+            if (landscape != null && landscape["vertex_heights"] != null) {
+                terrain = new TerrainData(region + ":"+ name, int.Parse(landscape["landscape_flags"].ToString()));
+
+                byte[] b64Height = Base64.Default.Decode(landscape["vertex_heights"].ToString());
+                byte[] b64Normal = Base64.Default.Decode(landscape["vertex_normals"].ToString());
+                //byte[] b64Texture = Base64.Default.Decode(landscape["texture_indices"].ToString());
+                ZStdDecompressor zstd = new();
+                byte[] zstdHeight = new byte[4 + 65 * 65 + 3]; zstd.Decompress(zstdHeight, b64Height);
+                byte[] zstdNormal = new byte[65 * 65 * 3]; zstd.Decompress(zstdNormal, b64Normal);
+                //byte[] zstdTexture = new byte[65 * 65 * 3]; zstd.Decompress(zstdTexture, b64Texture);
+
+                byte[] zstdColor = landscape["vertex_colors"] != null ? new byte[65 * 65 * 3] : null;
+                if (zstdColor != null) {
+                    byte[] b64Color = Base64.Default.Decode(landscape["vertex_colors"].ToString());
+                    zstd.Decompress(zstdColor, b64Color);
+                }
+
+
+                int bA = 0; // Buffer postion reading heights
+                int bB = 0; // Buffer position reading normals
+                int bC = 0; // Buffer position reading color
+                //int bD = 0; // Buffer position reading texture indices
+
+                float offset = BitConverter.ToSingle(new byte[] { zstdHeight[bA++], zstdHeight[bA++], zstdHeight[bA++], zstdHeight[bA++] }, 0);
+
+                /* Vertex Data */
+                float last = offset;
+                for (int yy = GRID_SIZE; yy >= 0; yy--) {
+                    for (int xx = 0; xx < GRID_SIZE + 1; xx++) {
+                        sbyte height = (sbyte)(zstdHeight[bA++]);
+                        last = last + height;
+
+                        float xxx = xx * (CELL_SIZE / (float)(GRID_SIZE + 1));
+                        float yyy = yy * (CELL_SIZE / (float)(GRID_SIZE + 1));
+                        float zzz = last * FBXConverter.GLOBAL_SCALE;
+
+                        float iii = (sbyte)zstdNormal[bB++];
+                        float jjj = (sbyte)zstdNormal[bB++];
+                        float kkk = (sbyte)zstdNormal[bB++];
+
+                        Vector3 color;
+                        if (zstdColor != null) {
+                            float rrr = (sbyte)zstdColor[bC++];
+                            float ggg = (sbyte)zstdColor[bC++];
+                            float bbb = (sbyte)zstdColor[bC++];
+                            color = new Vector3(rrr, ggg, bbb);
+                        }
+                        else { color = new Vector3(1f, 1f, 1f); }
+
+                        terrain.vertices.Add(new TerrainVertex(new Vector3(xxx, zzz, yyy), Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(x, y), color, "D:\\Steam\\steamapps\\common\\Morrowind\\Data Files\\textures\\tx_temple_block.dds"));
+                    }
+                }
+
+                /* Index Daata */
+                for (int yy = 0; yy < GRID_SIZE; yy++) {
+                    for (int xx = 0; xx < GRID_SIZE; xx++) {
+                        terrain.indices.Add((yy * (GRID_SIZE + 1)) + xx);
+                        terrain.indices.Add((yy * (GRID_SIZE + 1)) + xx + 1);
+                        terrain.indices.Add(((yy + 1) * (GRID_SIZE + 1)) + xx + 1);
+
+                        terrain.indices.Add((yy * (GRID_SIZE + 1)) + xx);
+                        terrain.indices.Add(((yy + 1) * (GRID_SIZE + 1)) + xx + 1);
+                        terrain.indices.Add(((yy + 1) * (GRID_SIZE + 1)) + xx);
+                    }
+                }
+            }
+            else { terrain = null; }
+
             /* These fields are used by Layout for stuff */
             layout = null;
             drawId = -1;
             drawGroups = null;
             pairs = null;
             connects = null;
-        }
-    }
-
-    public class CellFactory {
-        public bool IsDone { get; private set; }
-        private ESM _esm { get; }
-        private List<JObject> _cells { get; }
-        private int _start { get; }
-        private int _end { get; }
-        private Thread _thread { get; }
-        private List<Cell> _processedCells { get; }
-        public List<Cell> ProcessedCells {
-            get {
-                _thread.Join();
-                return _processedCells;
-            }
-        }
-
-        public CellFactory(ESM esm, List<JObject> cells, int start, int end) {
-            _processedCells = new List<Cell>();
-            _esm = esm;
-            _cells = cells;
-            _start = start;
-            _end = end;
-            _thread = new Thread(ProcessCell);
-
-        }
-
-        public void Start() {
-            _thread.Start();
-        }
-
-        private void ProcessCell()
-        {
-            for (int i = _start; i < _cells.Count && i < _end; i++)
-            {
-                Cell genCell = new(_esm, _cells[i]);
-                _processedCells.Add(genCell);
-            }
-            IsDone = true;
         }
     }
 
@@ -271,6 +319,36 @@ namespace PortJob {
         }
     }
 
+    public class TerrainData {
+        public string name;
+        public int flag;
+        public List<TerrainVertex> vertices;
+        public List<int> indices;
+        public TerrainData(string name, int flag) {
+            this.name = name;
+            this.flag = flag;
+            vertices = new();
+            indices = new();
+        }
+    }
+
+    public class TerrainVertex {
+        public Vector3 position;
+        public Vector3 normal;
+        public Vector2 coordinate;
+        public Vector3 color;
+
+        public string texture;
+
+        public TerrainVertex(Vector3 position, Vector3 normal, Vector2 coordinate, Vector3 color, string texture) {
+            this.position = position;
+            this.normal = normal;
+            this.coordinate = coordinate;
+            this.color = color;
+            this.texture = texture;
+        }
+    }
+
     public class Int2 {
         public readonly int x, y;
         public Int2(int x, int y) {
@@ -285,6 +363,44 @@ namespace PortJob {
         public TypedRecord(ESM.Type t, JObject r) {
             type = t;
             record = r;
+        }
+    }
+
+    public class CellFactory {
+        public bool IsDone { get; private set; }
+        private ESM _esm { get; }
+        private List<JObject> _cells { get; }
+        private int _start { get; }
+        private int _end { get; }
+        private Thread _thread { get; }
+        private List<Cell> _processedCells { get; }
+        public List<Cell> ProcessedCells {
+            get {
+                _thread.Join();
+                return _processedCells;
+            }
+        }
+
+        public CellFactory(ESM esm, List<JObject> cells, int start, int end) {
+            _processedCells = new List<Cell>();
+            _esm = esm;
+            _cells = cells;
+            _start = start;
+            _end = end;
+            _thread = new Thread(ProcessCell);
+
+        }
+
+        public void Start() {
+            _thread.Start();
+        }
+
+        private void ProcessCell() {
+            for (int i = _start; i < _cells.Count && i < _end; i++) {
+                Cell genCell = new(_esm, _cells[i]);
+                _processedCells.Add(genCell);
+            }
+            IsDone = true;
         }
     }
 }

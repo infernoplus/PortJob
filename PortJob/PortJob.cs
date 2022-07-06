@@ -20,10 +20,13 @@ namespace PortJob {
             MSB3 msb54 = MSB3.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\mod\\map\\MapStudio\\m54_03_00_00.msb.dcx");
             Console.WriteLine("bruh");*/
 
+
             DateTime startTime = DateTime.Now;
             SetupPaths();
             Log.SetupLogStream();
+
             Convert();
+
             TimeSpan length = DateTime.Now - startTime;
             Log.Info(0,$"Porting time: {length}");
             Log.CloseWriter();
@@ -54,11 +57,15 @@ namespace PortJob {
             List<MSBData> msbs = new();
             List<NVAData> nvas = new();
 
+            string tpfDir = OutputPath + "map\\tx\\";
+
             int i = 0;
             foreach (Layout layout in layouts) {
                 /* Generate a new MSB and fill out required default data */
                 int block = i++;
                 MSB3 msb = new();
+
+                if (block != 0) { continue; }
 
                 MSB3.Part.Player player = new(); // Player default spawn point
                 MSB3.Model.Player playerRes = new();
@@ -74,14 +81,14 @@ namespace PortJob {
                 Dictionary<string, string> modelMap = new();
                 Dictionary<string, int> partMap = new();
 
-                int c = 0;
                 /* This offset and rotation will be applies to all collision below this. Left for testing purposes */
                 Vector3 OFFSET = new(0, 0, 0);
                 Vector3 ROTATION = new (0, 0, 0);
 
                 NVA nva = new(); //One nva per msb. I put this up here so you can easily add the navmeshes in the loop.  
 
-                foreach (Cell cell in layout.cells) {
+                for(int c=0;c<layout.cells.Count;c++) {
+                    Cell cell = layout.cells[c];
                     Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
 
                     /* Name and model name stuff */
@@ -158,9 +165,39 @@ namespace PortJob {
                         msb.Parts.ConnectCollisions.Add(con);
                     }
 
+                    /* Generate cell terrain map piece */
+                    if (cell.terrain != null) {
+                        string terrainModel = (9000 + c).ToString("D6");
+                        string terrainName = "_0000";
+
+                        TerrainConverter.convert(cell, $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{terrainModel}.flver", tpfDir);
+
+                        MSB3.Part.MapPiece terrain = new();
+                        MSB3.Model.MapPiece terrainRes = new();
+                        terrain.ModelName = "m" + terrainModel;
+                        terrain.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{terrainModel}.SIB";
+                        terrain.Position = new Vector3(cell.position.x * Cell.CELL_SIZE, 0f, cell.position.y * Cell.CELL_SIZE);
+                        terrain.MapStudioLayer = uint.MaxValue;
+                        for (int k = 0; k < cell.drawGroups.Length; k++) {
+                            terrain.DrawGroups[k] = cell.drawGroups[k];
+                            terrain.DispGroups[k] = cell.drawGroups[k];
+                            terrain.BackreadGroups[k] = 0;
+                        }
+                        terrain.ShadowSource = true;
+                        terrain.DrawByReflectCam = true;
+                        terrain.Name = terrain.ModelName + terrainName;
+                        terrain.UnkE0E = -1;
+                        terrain.LodParamID = 19; //Param for: Don't switch to LOD models 
+                        terrainRes.Name = terrain.ModelName;
+                        terrainRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\{terrainModel}.sib";
+
+                        AddResource(msb, terrainRes);
+                        msb.Parts.MapPieces.Add(terrain);
+                    }
+
                     /* Enemy for testing */
                     string eModel = "c1100";
-                    string eName = $"_{c++:D4}";
+                    string eName = $"_{c:D4}";
 
                     MSB3.Part.Enemy enemy = new();
                     MSB3.Model.Enemy enemyRes = new();
@@ -208,7 +245,6 @@ namespace PortJob {
                             mpModel = NewMapPieceID();
                             string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
                             string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
-                            string tpfDir = OutputPath + "map\\tx\\";
                             FBXConverter.convert(fbxPath, flverPath, tpfDir);
 
                             modelMap.Add(content.mesh, mpModel);
@@ -233,7 +269,7 @@ namespace PortJob {
                         for (int k = 0; k < cell.drawGroups.Length; k++) {
                             mp.DrawGroups[k] = cell.drawGroups[k];
                             mp.DispGroups[k] = cell.drawGroups[k];
-                            mp.BackreadGroups[k] = 0;                          // Seems like DS3 doesn't use this for collision at all
+                            mp.BackreadGroups[k] = 0;
                         }
                         mp.ShadowSource = true;
                         mp.DrawByReflectCam = true;

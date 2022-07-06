@@ -116,7 +116,7 @@ namespace PortJob {
                                 Unk06 = 1
                             };
 
-                            faceSet.CullBackfaces = geometryNode.Material.Name.StartsWith("!");
+                            faceSet.CullBackfaces = false; // TODO: cull backfaces on opaque geometry, do not on alpha test or transparent
 
                             for (int i = 0; i < geometryContent.Indices.Count; i += 3) {
                                 if (faceSet.Indices.Count >= FACESET_MAX_TRIANGLES * 3) {
