@@ -266,7 +266,7 @@ namespace PortJob {
                     }
                 }
 
-                /* Index Daata */
+                /* Index Data */
                 for (int yy = 0; yy < GRID_SIZE; yy++) {
                     for (int xx = 0; xx < GRID_SIZE; xx++) {
                         terrain.indices.Add((yy * (GRID_SIZE + 1)) + xx);
