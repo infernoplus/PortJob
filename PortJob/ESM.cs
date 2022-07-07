@@ -239,15 +239,19 @@ namespace PortJob {
                 float offset = BitConverter.ToSingle(new byte[] { zstdHeight[bA++], zstdHeight[bA++], zstdHeight[bA++], zstdHeight[bA++] }, 0);
 
                 /* Vertex Data */
-                float last = offset;
+                Vector3 centerOffset = new Vector3((CELL_SIZE / 2f), 0f, -(CELL_SIZE / 2f));
+                float last = offset * 8;
+                float lastEdge = last;
                 for (int yy = GRID_SIZE; yy >= 0; yy--) {
                     for (int xx = 0; xx < GRID_SIZE + 1; xx++) {
                         sbyte height = (sbyte)(zstdHeight[bA++]);
-                        last = last + height;
+                        last = last + (height*8);
+                        if(xx == 0) { lastEdge = last; }
 
-                        float xxx = xx * (CELL_SIZE / (float)(GRID_SIZE + 1));
-                        float yyy = yy * (CELL_SIZE / (float)(GRID_SIZE + 1));
+                        float xxx = -xx * (CELL_SIZE / (float)(GRID_SIZE));
+                        float yyy = (GRID_SIZE - yy) * (CELL_SIZE / (float)(GRID_SIZE)); // I do not want to talk about this coordinate swap
                         float zzz = last * FBXConverter.GLOBAL_SCALE;
+                        Vector3 position = new Vector3(xxx, zzz, yyy) + centerOffset;
 
                         float iii = (sbyte)zstdNormal[bB++];
                         float jjj = (sbyte)zstdNormal[bB++];
@@ -262,8 +266,9 @@ namespace PortJob {
                         }
                         else { color = new Vector3(1f, 1f, 1f); }
 
-                        terrain.vertices.Add(new TerrainVertex(new Vector3(xxx, zzz, yyy), Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(x, y), color, "D:\\Steam\\steamapps\\common\\Morrowind\\Data Files\\textures\\tx_temple_block.dds"));
+                        terrain.vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(x, y), color, "D:\\Steam\\steamapps\\common\\Morrowind\\Data Files\\textures\\tx_temple_block.dds"));
                     }
+                    last = lastEdge;
                 }
 
                 /* Index Data */

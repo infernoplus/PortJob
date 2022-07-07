@@ -15,12 +15,6 @@ namespace PortJob {
         public static string MorrowindPath { get; set; }
         public static string OutputPath { get; set; }
         static void Main(string[] args) {
-            /*MSB3 msb31 = MSB3.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\map\\mapstudio\\m31_00_00_00.msb.dcx");
-            MSB3 msb33 = MSB3.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\map\\mapstudio\\m31_00_00_00.msb.dcx");
-            MSB3 msb54 = MSB3.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\mod\\map\\MapStudio\\m54_03_00_00.msb.dcx");
-            Console.WriteLine("bruh");*/
-
-
             DateTime startTime = DateTime.Now;
             SetupPaths();
             Log.SetupLogStream();
@@ -65,12 +59,12 @@ namespace PortJob {
                 int block = i++;
                 MSB3 msb = new();
 
-                if (block != 0) { continue; }
+                //if (block != 0) { continue; } for rapid debugging 
 
                 MSB3.Part.Player player = new(); // Player default spawn point
                 MSB3.Model.Player playerRes = new();
                 player.ModelName = "c0000";
-                player.Position = layout.cells[0].center + new Vector3(0.0f, 0.1f, 0.0f);
+                player.Position = layout.cells[0].center + new Vector3(0.0f, 5.1f, 0.0f);
                 player.Name = "c0000_0000";
                 playerRes.Name = player.ModelName;
                 playerRes.SibPath = "N:\\FDP\\data\\Model\\chr\\c0000\\sib\\c0000.SIB";
@@ -107,7 +101,7 @@ namespace PortJob {
                     flat.HitFilterID = 8;
                     flat.ModelName = cModel;
                     flat.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
-                    flat.Position = cell.center + OFFSET;
+                    flat.Position = cell.center + OFFSET + new Vector3(0f, 5f, 0f);
                     flat.Rotation = ROTATION;
                     flat.MapStudioLayer = uint.MaxValue;
                     for (int k = 0; k < cell.drawGroups.Length; k++) {
@@ -147,7 +141,7 @@ namespace PortJob {
                         con.Name = ccModel + ccName;
                         //con.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB"; // Looks like connnect collision does not ever use sibs
                         con.ModelName = ccModel;
-                        con.Position = cell.center + OFFSET;
+                        con.Position = cell.center + OFFSET + new Vector3(0f, 5f, 0f); ;
                         con.Rotation = ROTATION;
                         con.MapStudioLayer = 4294967295;                          // Not a clue what this does... Should probably ask about it
                         for (int l = 0; l < cell.drawGroups.Length; l++) {
@@ -176,7 +170,8 @@ namespace PortJob {
                         MSB3.Model.MapPiece terrainRes = new();
                         terrain.ModelName = "m" + terrainModel;
                         terrain.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{terrainModel}.SIB";
-                        terrain.Position = new Vector3(cell.position.x * Cell.CELL_SIZE, 0f, cell.position.y * Cell.CELL_SIZE);
+                        terrain.Position = cell.center;
+                        terrain.Rotation = new Vector3(0, 0, 0);
                         terrain.MapStudioLayer = uint.MaxValue;
                         for (int k = 0; k < cell.drawGroups.Length; k++) {
                             terrain.DrawGroups[k] = cell.drawGroups[k];
@@ -212,7 +207,7 @@ namespace PortJob {
                     enemy.Name = eModel + eName;
                     enemy.SibPath = "";
                     enemy.ModelName = eModel;
-                    enemy.Position = cell.center;
+                    enemy.Position = cell.center + new Vector3(0f, 5f, 0f); ;
                     enemy.MapStudioLayer = 4294967295;
 
                     for (int k = 0; k < cell.drawGroups.Length; k++) {
