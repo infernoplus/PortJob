@@ -242,7 +242,8 @@ namespace PortJob {
                             mpModel = NewMapPieceID();
                             string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
                             string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
-                            CallFBXConverter(fbxPath, flverPath, tpfDir);
+                            if (!File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) CallFBXConverter(fbxPath, flverPath, tpfDir);
+
                             //PortJob.convert(fbxPath, flverPath, tpfDir); //@TODO: Add call to 32 bit exe here.
 
                             modelMap.Add(content.mesh, mpModel);
@@ -350,21 +351,21 @@ namespace PortJob {
         }
 
         private static void CallFBXConverter(string fbxPath, string flverPath, string tpfDir) {
-            string cmdArgs = $@"""{fbxPath}"" ""{flverPath}"" ""{tpfDir}"""; //the double quotes here serve to provide double quotes to the arg paths, in case of spaces.
+            string cmdArgs = $"{fbxPath.Replace(" ", "%%")} | {flverPath.Replace(" ", "%%")} | {tpfDir.Replace(" ", "%%")} | {OutputPath.Replace(" ", "%%")} | {MorrowindPath.Replace(" ", "%%")} | {GLOBAL_SCALE}"; //the double quotes here serve to provide double quotes to the arg paths, in case of spaces.
             var proc = new Process {
                 StartInfo = new ProcessStartInfo {
-                    FileName = "\\FBXConverter\\FBXConverter.exe",
+                    FileName = $"{Environment.CurrentDirectory}\\FBXConverter\\FBXConverter.exe",
                     Arguments = cmdArgs,
-                    UseShellExecute = true,
+                    UseShellExecute = false,
                     CreateNoWindow = true,
+                    RedirectStandardOutput = true
                 }
             };
 
             proc.Start();
-            proc.WaitForExit();
-            Console.WriteLine(proc.StandardOutput);
+            //proc.WaitForExit();
+            //Console.WriteLine(proc.StandardOutput.ReadToEnd());
         }
-
 
         private static void PackTextures(int area) {
             string[] textures = Directory.GetFiles(OutputPath + "map\\tx\\", "*.tpf.dcx");

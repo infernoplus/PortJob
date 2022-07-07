@@ -3,7 +3,18 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
+    <None Remove="Resources\DS3_MTD_INFO.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\DS3_GX_EXAMPLE_INFO.json" />
+    <EmbeddedResource Include="Resources\DS3_MTD_INFO.json" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
@@ -31,6 +42,15 @@
     <Reference Include="Microsoft.Xna.Framework.Video">
       <HintPath>..\Lib\Microsoft.Xna.Framework.Video.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="x86\DirectXTexNetImpl.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="x86\Ijwhost.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

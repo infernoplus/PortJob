@@ -46,7 +46,7 @@ namespace PortJob {
 
             /* Write the high col bhd/bdt pair */
             int hModelID = 0;
-            string hDonorPath = Environment.CurrentDirectory + $@"..\..\..\..\TestCol\h30_00_00_00_{hModelID:D6}.hkx";
+            string hDonorPath = Environment.CurrentDirectory + $@"..\..\..\..\..\TestCol\h30_00_00_00_{hModelID:D6}.hkx";
             string hPath = $"{mapName}\\h{area_block}_00_00";
             BXF4 hBXF = new();
             byte[] hBytes = File.ReadAllBytes(hDonorPath);
@@ -58,7 +58,7 @@ namespace PortJob {
 
             /* Write the low col bhd/bdt pair */
             int lModelID = 0;
-            string lDonorPath = Environment.CurrentDirectory + @$"..\..\..\..\TestCol\l30_00_00_00_{lModelID:D6}.hkx"; //:fatcat:
+            string lDonorPath = Environment.CurrentDirectory + @$"..\..\..\..\..\TestCol\l30_00_00_00_{lModelID:D6}.hkx"; //:fatcat:
             string lPath = $"{mapName}\\l{area_block}_00_00";
             BXF4 lBXF = new();
             byte[] lBytes = File.ReadAllBytes(lDonorPath);
@@ -70,7 +70,7 @@ namespace PortJob {
 
             /* Write the nav mesh bnd */
             int nModelID = 1;
-            string nDonorPath = Environment.CurrentDirectory + @$"..\..\..\..\TestCol\n30_00_00_00_{nModelID:D6}.hkx"; //:fatcat:
+            string nDonorPath = Environment.CurrentDirectory + @$"..\..\..\..\..\TestCol\n30_00_00_00_{nModelID:D6}.hkx"; //:fatcat:
             string nName = $"{area_block}_00_00"; //Have to seperate the name here, cause the path is long AF
             string nPath = $"N:\\FDP\\data\\INTERROOT_win64\\map\\{mapName}\\navimesh\\bind6\\n{nName}";
             BND4 nvmBND = new();

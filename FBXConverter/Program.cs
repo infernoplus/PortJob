@@ -9,19 +9,18 @@ namespace FBXConverter {
     internal class Program {
         public static string MorrowindPath { get; set; }
         public static string OutputPath { get; set; }
-        public static void Main(string[] args) {
-            SetupPaths();
-        }
-        private static void SetupPaths() {
-            string jsonString = Utility.GetEmbededResource("PortJob.Resources.settings.json");
-            JObject settings = JObject.Parse(jsonString);
-            MorrowindPath = settings["morrowind"].ToString();
-            OutputPath = settings["output"].ToString();
-            if (!MorrowindPath.EndsWith("\\"))
-                MorrowindPath += "\\";
 
-            if (!OutputPath.EndsWith("\\"))
-                OutputPath += "\\";
+        public static float GLOBAL_SCALE { get; set; }
+        public static void Main(string[] args) {
+            string argString = string.Join("", args);
+            args = argString.Split('|');
+            //SetupPaths();
+            OutputPath = args[3].Replace("%%"," ");
+            MorrowindPath = args[4].Replace("%%", " ");
+
+            GLOBAL_SCALE = Convert.ToSingle(args[5]);
+
+            FBXConverter.convert(args[0].Replace("%%", " "), args[1].Replace("%%", " "), args[2].Replace("%%", " "));
         }
     }
 }

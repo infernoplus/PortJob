@@ -67,7 +67,7 @@ namespace PortJob {
         }
 
         const int EXTERIOR_BOUNDS = 40; // +/- Bounds of the cell grid we consider to be the 'Exterior'
-        const int CELL_THREADS = 4;
+        const int CELL_THREADS = 16;
 
         private void LoadCells() {
             exteriorCells = new List<Cell>();
@@ -289,7 +289,7 @@ namespace PortJob {
                             ltexId = (int)zstdTexture[Math.Min(yy * (GRID_SIZE + 1), GRID_SIZE) + Math.Min(xx, GRID_SIZE)]; //
                         }
 
-                        string texPath = "D:\\Steam\\steamapps\\common\\Morrowind\\Data Files\\textures\\";
+                        string texPath = $"{PortJob.MorrowindPath}\\Data Files\\textures\\";
                         string texName = "tx_dagoth_mask.dds";                                                // Default is something stupid so it's obvious there was an error
                         JObject ltexRecord = esm.FindRecordById(ESM.Type.LandscapeTexture, ltexId + "");
                         if(ltexRecord != null) {

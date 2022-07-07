@@ -33,14 +33,12 @@ namespace FBXConverter {
         const bool HARDCODE_TEXTURE_UNK11 = true;
 
         const bool ABSOLUTE_VERT_POSITIONS = true;
-        public static readonly float GLOBAL_SCALE = 0.01f;
 
         const int FACESET_MAX_TRIANGLES = 65535; // Max triangles in a mesh for the DS1 engine.
 
         // Return an object containing the flver, tpfs, and generated ids and names stuff later
         public static void convert(string fbxPath, string flverPath, string tpfDir) {
             /* Skip if file already exists */
-            if(File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) { return; }
 
             /* Create a blank FLVER */
             FLVER2 flver = new();
@@ -221,7 +219,7 @@ namespace FBXConverter {
                             Vector3 nextPosition = geometryContent.Vertices.Positions[i];
                             Vector3 posVec3 = Vector3.Transform(
                                 new Vector3(nextPosition.X, nextPosition.Y, nextPosition.Z)
-                                , (ABSOLUTE_VERT_POSITIONS ? fbxMesh.AbsoluteTransform : fbx.Transform) * Matrix.CreateScale(GLOBAL_SCALE)
+                                , (ABSOLUTE_VERT_POSITIONS ? fbxMesh.AbsoluteTransform : fbx.Transform) * Matrix.CreateScale(Program.GLOBAL_SCALE)
                                 );
 
                             posVec3.X = -posVec3.X; // Flip X after applying root transform, bugfix from FBX2FLVER

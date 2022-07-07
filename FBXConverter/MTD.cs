@@ -132,7 +132,7 @@ namespace FBXConverter {
         }
 
         private static void loadMTDInfoList() {
-            string jsonString = Utility.GetEmbededResource("PortJob.Resources.DS3_MTD_INFO.json");
+            string jsonString = Utility.GetEmbededResource("FBXConverter.Resources.DS3_MTD_INFO.json");
             JObject json = JObject.Parse(jsonString);
             MTD_INFO_LIST = (JArray)json["mtds"];
         }
@@ -143,7 +143,7 @@ namespace FBXConverter {
         }
 
         private static void loadGXInfoList() {
-            string jsonString = Utility.GetEmbededResource("PortJob.Resources.DS3_GX_EXAMPLE_INFO.json");
+            string jsonString = Utility.GetEmbededResource("FBXConverter.Resources.DS3_GX_EXAMPLE_INFO.json");
             JObject json = JObject.Parse(jsonString);
             GX_INFO_LIST = json;
         }
