@@ -67,19 +67,20 @@ namespace PortJob {
         }
 
         const int EXTERIOR_BOUNDS = 40; // +/- Bounds of the cell grid we consider to be the 'Exterior'
+        const int CELL_THREADS = 4;
 
         private void LoadCells() {
             exteriorCells = new List<Cell>();
             interiorCells = new List<Cell>();
 
             List<JObject> cells = recordsMap[Type.Cell];
-            int partitionSize = (int)Math.Ceiling(cells.Count / 16f);
+            int partitionSize = (int)Math.Ceiling(cells.Count / (float)CELL_THREADS);
             List<CellFactory> cellFactories = new();
 
-            for (int i = 0; i < 16; i++) {
+            for (int i = 0; i < CELL_THREADS; i++) {
                 int start = i * partitionSize;
                 int end = start + partitionSize;
-                CellFactory cellFactory = new(this,cells, start, end);
+                CellFactory cellFactory = new(this, cells, start, end);
                 cellFactories.Add(cellFactory);
                 cellFactory.Start();
             }
@@ -146,7 +147,8 @@ namespace PortJob {
         }
 
         /* References don't contain any explicit 'type' data so... we just gotta go find it lol */
-        public TypedRecord FindRecordByID(string id) {
+        /* @TODO: well actually i think the 'flags' int value in some records is useed as a 32bit boolean array and that may specify record types possibly. Look into it? */
+        public TypedRecord FindRecordById(string id) {
             foreach (Type type in VALID_CONTENT_TYPES) {
                 List<JObject> records = recordsMap[type];
 
@@ -155,6 +157,19 @@ namespace PortJob {
                     if (record["id"] != null && record["id"].ToString() == id) {
                         return new TypedRecord(type, record);
                     }
+                }
+            }
+            return null; // Not found!
+        }
+
+        /* Searches a specific set of records for one that has a matching 'id' */
+        public JObject FindRecordById(Type type, string id) {
+            List<JObject> records = recordsMap[type];
+
+            for (int i = 0; i < records.Count; i++) {
+                JObject record = records[i];
+                if (record["id"] != null && record["id"].ToString() == id) {
+                    return record;
                 }
             }
             return null; // Not found!
@@ -218,11 +233,9 @@ namespace PortJob {
 
                 byte[] b64Height = Base64.Default.Decode(landscape["vertex_heights"].ToString());
                 byte[] b64Normal = Base64.Default.Decode(landscape["vertex_normals"].ToString());
-                //byte[] b64Texture = Base64.Default.Decode(landscape["texture_indices"].ToString());
                 ZStdDecompressor zstd = new();
                 byte[] zstdHeight = new byte[4 + 65 * 65 + 3]; zstd.Decompress(zstdHeight, b64Height);
                 byte[] zstdNormal = new byte[65 * 65 * 3]; zstd.Decompress(zstdNormal, b64Normal);
-                //byte[] zstdTexture = new byte[65 * 65 * 3]; zstd.Decompress(zstdTexture, b64Texture);
 
                 byte[] zstdColor = landscape["vertex_colors"] != null ? new byte[65 * 65 * 3] : null;
                 if (zstdColor != null) {
@@ -230,43 +243,60 @@ namespace PortJob {
                     zstd.Decompress(zstdColor, b64Color);
                 }
 
+                byte[] zstdTexture = landscape["texture_indices"] != null ? new byte[16 * 16 * 2] : null;
+                if (zstdTexture != null) {
+                    byte[] b64Texture = Base64.Default.Decode(landscape["texture_indices"].ToString());
+                    zstd.Decompress(zstdTexture, b64Texture);
+                }
+
+                zstd.Dispose(); // Lol memory
 
                 int bA = 0; // Buffer postion reading heights
                 int bB = 0; // Buffer position reading normals
                 int bC = 0; // Buffer position reading color
-                //int bD = 0; // Buffer position reading texture indices
 
                 float offset = BitConverter.ToSingle(new byte[] { zstdHeight[bA++], zstdHeight[bA++], zstdHeight[bA++], zstdHeight[bA++] }, 0);
 
                 /* Vertex Data */
                 Vector3 centerOffset = new Vector3((CELL_SIZE / 2f), 0f, -(CELL_SIZE / 2f));
-                float last = offset * 8;
+                float last = offset;
                 float lastEdge = last;
                 for (int yy = GRID_SIZE; yy >= 0; yy--) {
                     for (int xx = 0; xx < GRID_SIZE + 1; xx++) {
                         sbyte height = (sbyte)(zstdHeight[bA++]);
-                        last = last + (height*8);
+                        last += height;
                         if(xx == 0) { lastEdge = last; }
 
                         float xxx = -xx * (CELL_SIZE / (float)(GRID_SIZE));
                         float yyy = (GRID_SIZE - yy) * (CELL_SIZE / (float)(GRID_SIZE)); // I do not want to talk about this coordinate swap
-                        float zzz = last * PortJob.GLOBAL_SCALE;
+                        float zzz = last * 8f * PortJob.GLOBAL_SCALE;
                         Vector3 position = new Vector3(xxx, zzz, yyy) + centerOffset;
 
                         float iii = (sbyte)zstdNormal[bB++];
                         float jjj = (sbyte)zstdNormal[bB++];
                         float kkk = (sbyte)zstdNormal[bB++];
 
-                        Vector3 color;
+                        Vector3 color = new Vector3(1f, 1f, 1f); // Default
                         if (zstdColor != null) {
                             float rrr = (sbyte)zstdColor[bC++];
                             float ggg = (sbyte)zstdColor[bC++];
                             float bbb = (sbyte)zstdColor[bC++];
                             color = new Vector3(rrr, ggg, bbb);
                         }
-                        else { color = new Vector3(1f, 1f, 1f); }
 
-                        terrain.vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(x, y), color, $"{PortJob.MorrowindPath}Files\\textures\\tx_temple_block.dds"));
+                        int ltexId = 0; // Default
+                        if (zstdTexture != null) {
+                            ltexId = (int)zstdTexture[Math.Min(yy * (GRID_SIZE + 1), GRID_SIZE) + Math.Min(xx, GRID_SIZE)]; //
+                        }
+
+                        string texPath = "D:\\Steam\\steamapps\\common\\Morrowind\\Data Files\\textures\\";
+                        string texName = "tx_dagoth_mask.dds";                                                // Default is something stupid so it's obvious there was an error
+                        JObject ltexRecord = esm.FindRecordById(ESM.Type.LandscapeTexture, ltexId + "");
+                        if(ltexRecord != null) {
+                            texName = ltexRecord["texture"].ToString().Replace(".tga", ".dds"); 
+                        }
+
+                        terrain.vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2((float)(xx%2), (float)((GRID_SIZE - yy)%2)), color, texPath + texName));
                     }
                     last = lastEdge;
                 }
@@ -274,13 +304,20 @@ namespace PortJob {
                 /* Index Data */
                 for (int yy = 0; yy < GRID_SIZE; yy++) {
                     for (int xx = 0; xx < GRID_SIZE; xx++) {
-                        terrain.indices.Add((yy * (GRID_SIZE + 1)) + xx);
-                        terrain.indices.Add((yy * (GRID_SIZE + 1)) + xx + 1);
-                        terrain.indices.Add(((yy + 1) * (GRID_SIZE + 1)) + xx + 1);
+                        int[] quad = {
+                             (yy * (GRID_SIZE + 1)) + xx,
+                            (yy * (GRID_SIZE + 1)) + xx,
+                            (yy * (GRID_SIZE + 1)) + xx,
+                            (yy * (GRID_SIZE + 1)) + xx
+                        };
 
-                        terrain.indices.Add((yy * (GRID_SIZE + 1)) + xx);
-                        terrain.indices.Add(((yy + 1) * (GRID_SIZE + 1)) + xx + 1);
-                        terrain.indices.Add(((yy + 1) * (GRID_SIZE + 1)) + xx);
+                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2)) % 4]);
+                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2) + 1) % 4]);
+                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2) + 2) % 4]);
+
+                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2) + 3) % 4]);
+                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2)) % 4]);
+                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2) + 1) % 4]);
                     }
                 }
             }
@@ -306,7 +343,7 @@ namespace PortJob {
         public Content(ESM esm, JObject data) {
             id = data["id"].ToString();
 
-            TypedRecord tr = esm.FindRecordByID(id);
+            TypedRecord tr = esm.FindRecordById(id);
             type = tr.type;
 
             if (tr.record["mesh"] != null) { mesh = tr.record["mesh"].ToString(); }
@@ -402,8 +439,18 @@ namespace PortJob {
 
         private void ProcessCell() {
             for (int i = _start; i < _cells.Count && i < _end; i++) {
-                Cell genCell = new(_esm, _cells[i]);
-                _processedCells.Add(genCell);
+                // TEMP DEBUG!!! WE ARE NOT USING INTERIOR CELLS SO JUST DISCARD THEM FOR NOW!
+                int x = int.Parse(_cells[i]["data"]["grid"][0].ToString());
+                int y = int.Parse(_cells[i]["data"]["grid"][1].ToString());
+                if (
+                    x >= -40 &&
+                    x <= 40 &&
+                    y >= -40 &&
+                    y <= 40
+                ) {
+                    Cell genCell = new(_esm, _cells[i]);
+                    _processedCells.Add(genCell);
+                }
             }
             IsDone = true;
         }
