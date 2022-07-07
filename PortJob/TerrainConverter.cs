@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 using SoulsFormats;
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content.Pipeline;
-using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using System.IO;
+using System.Numerics;
 
 
 namespace PortJob {
@@ -209,7 +207,7 @@ namespace PortJob {
                     TerrainVertex vert = terrainMesh.vertices[i];
 
                     // Normal
-                    Matrix normalRotMatrix = Matrix.CreateRotationX(-MathHelper.PiOver2);
+                    Matrix4x4 normalRotMatrix = Matrix4x4.CreateRotationX((float)-(Math.PI / 2));
                     Vector3 normalInputVector = new(-vert.normal.X, vert.normal.Y, vert.normal.Z);
 
                     Vector3 rotatedNormal = Vector3.Normalize(
@@ -288,10 +286,11 @@ namespace PortJob {
                 /* Generate tangents */
                 Log.Info(6, "Generating tangents");
                 if (submeshHighQualityTangents.Count > 0) {
-                    submeshHighQualityTangents = Solvers.TangentSolver.SolveTangents(flverMesh, submeshVertexIndices,
-                        submeshHighQualityNormals,
-                        submeshVertexHighQualityBasePositions,
-                        submeshVertexHighQualityBaseUVs);
+                    //@TODO Solver Re-impliments  URGENT!
+                    //submeshHighQualityTangents = Solvers.TangentSolver.SolveTangents(flverMesh, submeshVertexIndices,
+                    //    submeshHighQualityNormals,
+                    //    submeshVertexHighQualityBasePositions,
+                    //    submeshVertexHighQualityBaseUVs);
 
                     for (int i = 0; i < flverMesh.Vertices.Count; i++) {
                         Vector3 thingy = Vector3.Normalize(Vector3.Cross(submeshHighQualityNormals[i],
@@ -355,7 +354,7 @@ namespace PortJob {
             // It's also fairly possible we may instead just place down our 'dummies' as points in the msb to attach SFX to. Idk. figure it out later.
 
             /* Solve bounding box */
-            //@TODO:Bounding Box Solver
+            //@TODO:Bounding Box Solver URGENT!
             //Solvers.BoundingBoxSolver.FixAllBoundingBoxes(flver);
 
             /* Don't know */

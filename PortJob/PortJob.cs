@@ -8,6 +8,7 @@ using System.Linq;
 
 using SoulsFormats;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace PortJob {
@@ -241,6 +242,7 @@ namespace PortJob {
                             mpModel = NewMapPieceID();
                             string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
                             string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
+                            CallFBXConverter(fbxPath, flverPath, tpfDir);
                             //PortJob.convert(fbxPath, flverPath, tpfDir); //@TODO: Add call to 32 bit exe here.
 
                             modelMap.Add(content.mesh, mpModel);
@@ -345,6 +347,22 @@ namespace PortJob {
 
             File.WriteAllText(mapViewListPath, mapViewList);
             File.WriteAllText(worldMsbListPath, worldMsbList);
+        }
+
+        private static void CallFBXConverter(string fbxPath, string flverPath, string tpfDir) {
+            string cmdArgs = $@"""{fbxPath}"" ""{flverPath}"" ""{tpfDir}"""; //the double quotes here serve to provide double quotes to the arg paths, in case of spaces.
+            var proc = new Process {
+                StartInfo = new ProcessStartInfo {
+                    FileName = "\\FBXConverter\\FBXConverter.exe",
+                    Arguments = cmdArgs,
+                    UseShellExecute = true,
+                    CreateNoWindow = true,
+                }
+            };
+
+            proc.Start();
+            proc.WaitForExit();
+            Console.WriteLine(proc.StandardOutput);
         }
 
 

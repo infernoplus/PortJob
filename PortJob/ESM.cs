@@ -266,7 +266,7 @@ namespace PortJob {
                         }
                         else { color = new Vector3(1f, 1f, 1f); }
 
-                        terrain.vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(x, y), color, "D:\\Steam\\steamapps\\common\\Morrowind\\Data Files\\textures\\tx_temple_block.dds"));
+                        terrain.vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(x, y), color, $"{PortJob.MorrowindPath}Files\\textures\\tx_temple_block.dds"));
                     }
                     last = lastEdge;
                 }
