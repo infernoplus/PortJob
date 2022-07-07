@@ -355,7 +355,8 @@ namespace PortJob {
             // It's also fairly possible we may instead just place down our 'dummies' as points in the msb to attach SFX to. Idk. figure it out later.
 
             /* Solve bounding box */
-            Solvers.BoundingBoxSolver.FixAllBoundingBoxes(flver);
+            //@TODO:Bounding Box Solver
+            //Solvers.BoundingBoxSolver.FixAllBoundingBoxes(flver);
 
             /* Don't know */
             foreach (KeyValuePair<FLVER2.Mesh, TerrainData> kvp in TerrainMeshes) {

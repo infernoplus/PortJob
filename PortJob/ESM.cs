@@ -162,7 +162,7 @@ namespace PortJob {
     }
 
     public class Cell {
-        public static readonly float CELL_SIZE = 8192f * FBXConverter.GLOBAL_SCALE;
+        public static readonly float CELL_SIZE = 8192f * PortJob.GLOBAL_SCALE;
         public static readonly int GRID_SIZE = 64;
 
         public readonly string name;
@@ -250,7 +250,7 @@ namespace PortJob {
 
                         float xxx = -xx * (CELL_SIZE / (float)(GRID_SIZE));
                         float yyy = (GRID_SIZE - yy) * (CELL_SIZE / (float)(GRID_SIZE)); // I do not want to talk about this coordinate swap
-                        float zzz = last * FBXConverter.GLOBAL_SCALE;
+                        float zzz = last * PortJob.GLOBAL_SCALE;
                         Vector3 position = new Vector3(xxx, zzz, yyy) + centerOffset;
 
                         float iii = (sbyte)zstdNormal[bB++];
@@ -319,7 +319,7 @@ namespace PortJob {
             float k = float.Parse(((JArray)(data["rotation"]))[1].ToString());
             float j = float.Parse(((JArray)(data["rotation"]))[2].ToString()) - (float)Math.PI;
 
-            position = new Vector3(x, y, z) * FBXConverter.GLOBAL_SCALE;
+            position = new Vector3(x, y, z) * PortJob.GLOBAL_SCALE;
             rotation = new Vector3(i, j, k) * (float)(180 / Math.PI);
         }
     }

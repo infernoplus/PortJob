@@ -14,6 +14,7 @@ namespace PortJob {
     class PortJob {
         public static string MorrowindPath { get; set; }
         public static string OutputPath { get; set; }
+        public static readonly float GLOBAL_SCALE = 0.01f;
         static void Main(string[] args) {
             DateTime startTime = DateTime.Now;
             SetupPaths();
@@ -240,7 +241,7 @@ namespace PortJob {
                             mpModel = NewMapPieceID();
                             string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
                             string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
-                            FBXConverter.convert(fbxPath, flverPath, tpfDir);
+                            //PortJob.convert(fbxPath, flverPath, tpfDir); //@TODO: Add call to 32 bit exe here.
 
                             modelMap.Add(content.mesh, mpModel);
                         }

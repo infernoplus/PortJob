@@ -1,97 +1,112 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-    <PlatformTarget>x64</PlatformTarget>
-    <Platforms>AnyCPU;ARM32;x64</Platforms>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net5.0</TargetFramework>
+		<PlatformTarget>x64</PlatformTarget>
+		<Platforms>AnyCPU;ARM32;x64</Platforms>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<PlatformTarget>x86</PlatformTarget>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Resources\DirectXTexNetImpl.dll" />
-    <None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
-    <None Remove="Resources\DS3_MTD_INFO.json" />
-    <None Remove="settings.json" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\DS3_GX_EXAMPLE_INFO.json" />
-    <EmbeddedResource Include="Resources\DS3_MTD_INFO.json" />
-    <EmbeddedResource Include="Resources\settings.json" />
-  </ItemGroup>
+	<ItemGroup>
+		<ResourceFiles Include="$(SolutionDir)\FBXConverter\bin\Debug\net5.0\**\*.*" />
+	</ItemGroup>
+	<PropertyGroup>
+		<SolutionDir>$(MSBuildThisFileDirectory)..\..\</SolutionDir>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="gfoidl.Base64" Version="1.1.1" />
-    <PackageReference Include="ImpromptuNinjas.ZStd" Version="1.4.5.5" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="TeximpNet" Version="1.4.3" />
-  </ItemGroup>
+	<Target Name="CopyResources" Condition="'$(Configuration)'!='Publish'" AfterTargets="Build">
+		<Message Text="Copy resource files" Importance="High" />
+		<Message Text="Files: @(ResourceFiles)" Importance="High" />
+		<Message Text="directory: $(OutDir)" Importance="High" />
+		<Copy SourceFiles="@(ResourceFiles)" DestinationFolder="$(OutDir)FBXConverter\%(RecursiveDir)" SkipUnchangedFiles="true" />
+	</Target>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DirectXTexNet\DirectXTexNet\DirectXTexNet.csproj" />
-    <ProjectReference Include="..\SoulsFormat\SoulsFormats\SoulsFormats.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="Resources\DirectXTexNetImpl.dll" />
+		<None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
+		<None Remove="Resources\DS3_MTD_INFO.json" />
+		<None Remove="settings.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.Xna.Framework">
-      <HintPath>..\Lib\Microsoft.Xna.Framework.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline">
-      <HintPath>..\Lib\Microsoft.Xna.Framework.Content.Pipeline.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.FbxImporter">
-      <HintPath>..\Lib\Microsoft.Xna.Framework.Content.Pipeline.FBXImporter.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Graphics">
-      <HintPath>..\Lib\Microsoft.Xna.Framework.Graphics.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Video">
-      <HintPath>..\Lib\Microsoft.Xna.Framework.Video.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\Lib\Newtonsoft.Json.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\DS3_GX_EXAMPLE_INFO.json" />
+		<EmbeddedResource Include="Resources\DS3_MTD_INFO.json" />
+		<EmbeddedResource Include="Resources\settings.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="Resources\DirectXTexNetImpl.dll" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="gfoidl.Base64" Version="1.1.1" />
+		<PackageReference Include="ImpromptuNinjas.ZStd" Version="1.4.5.5" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="TeximpNet" Version="1.4.3" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="x64\DirectXTexNetImpl.deps.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="x64\DirectXTexNetImpl.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\DS1_MTD_INFO.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="x64\DirectXTexNetImpl.pdb">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="x64\DirectXTexNetImpl.runtimeconfig.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="x64\Ijwhost.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="x86\DirectXTexNetImpl.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="x86\Ijwhost.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\DirectXTexNet\DirectXTexNet\DirectXTexNet.csproj" />
+		<ProjectReference Include="..\SoulsFormat\SoulsFormats\SoulsFormats.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="Microsoft.Xna.Framework">
+			<HintPath>..\Lib\Microsoft.Xna.Framework.dll</HintPath>
+			<Private>true</Private>
+		</Reference>
+		<Reference Include="Microsoft.Xna.Framework.Content.Pipeline">
+			<HintPath>..\Lib\Microsoft.Xna.Framework.Content.Pipeline.dll</HintPath>
+			<Private>true</Private>
+		</Reference>
+		<Reference Include="Microsoft.Xna.Framework.Content.Pipeline.FbxImporter">
+			<HintPath>..\Lib\Microsoft.Xna.Framework.Content.Pipeline.FBXImporter.dll</HintPath>
+			<Private>true</Private>
+		</Reference>
+		<Reference Include="Microsoft.Xna.Framework.Graphics">
+			<HintPath>..\Lib\Microsoft.Xna.Framework.Graphics.dll</HintPath>
+			<Private>true</Private>
+		</Reference>
+		<Reference Include="Microsoft.Xna.Framework.Video">
+			<HintPath>..\Lib\Microsoft.Xna.Framework.Video.dll</HintPath>
+			<Private>true</Private>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>..\Lib\Newtonsoft.Json.dll</HintPath>
+			<Private>true</Private>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Resource Include="Resources\DirectXTexNetImpl.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="x64\DirectXTexNetImpl.deps.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="x64\DirectXTexNetImpl.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Resources\DS1_MTD_INFO.json">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
+		<None Update="x64\DirectXTexNetImpl.pdb">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="x64\DirectXTexNetImpl.runtimeconfig.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="x64\Ijwhost.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="x86\DirectXTexNetImpl.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="x86\Ijwhost.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
 </Project>
