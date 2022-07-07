@@ -59,7 +59,7 @@ namespace PortJob {
                 int block = i++;
                 MSB3 msb = new();
 
-                //if (block != 0) { continue; } for rapid debugging 
+                if (block != 0) { continue; } //for rapid debugging 
 
                 MSB3.Part.Player player = new(); // Player default spawn point
                 MSB3.Model.Player playerRes = new();
