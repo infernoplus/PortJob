@@ -38,7 +38,6 @@ namespace PortJob {
 
         /* Temporary code for packing up hkxs */
         public static void PackTestCol(int area, int block) {
-
             /* Setup area_block and output path*/
             string outputPath = PortJob.OutputPath;
             string area_block = $"{area:D2}_{block:D2}";
@@ -46,39 +45,49 @@ namespace PortJob {
 
             /* Write the high col bhd/bdt pair */
             int hModelID = 0;
-            string hDonorPath = Environment.CurrentDirectory + $@"..\..\..\..\..\TestCol\h30_00_00_00_{hModelID:D6}.hkx";
+            string hDonorPath = $"PortJob.TestCol.h30_00_00_00_{hModelID:D6}.hkx";
             string hPath = $"{mapName}\\h{area_block}_00_00";
             BXF4 hBXF = new();
-            byte[] hBytes = File.ReadAllBytes(hDonorPath);
+            byte[] hBytes = GetEmbededResourceBytes(hDonorPath);
             hBytes = DCX.Compress(hBytes, DCX.Type.DCX_DFLT_10000_44_9); //File is compressed inside the bdt.
             int hStartId = 0; // h col binder file IDs start here and increment by 1
-            BinderFile hBinder = new(flags:Binder.FileFlags.Flag1, id:hStartId, name:$"{hPath}_{hModelID:D6}.hkx.dcx", bytes:hBytes); //in-line parameter names help here to tell what is going on, but are not necessary.
+            BinderFile hBinder = new(flags: Binder.FileFlags.Flag1, id: hStartId, name: $"{hPath}_{hModelID:D6}.hkx.dcx", bytes: hBytes); //in-line parameter names help here to tell what is going on, but are not necessary.
             hBXF.Files.Add(hBinder);
             hBXF.Write($"{outputPath}map\\{hPath}.hkxbhd", $"{outputPath}map\\{hPath}.hkxbdt");
 
             /* Write the low col bhd/bdt pair */
             int lModelID = 0;
-            string lDonorPath = Environment.CurrentDirectory + @$"..\..\..\..\..\TestCol\l30_00_00_00_{lModelID:D6}.hkx"; //:fatcat:
+            string lDonorPath = $"PortJob.TestCol.l30_00_00_00_{lModelID:D6}.hkx"; //:fatcat:
             string lPath = $"{mapName}\\l{area_block}_00_00";
             BXF4 lBXF = new();
-            byte[] lBytes = File.ReadAllBytes(lDonorPath);
+            byte[] lBytes = GetEmbededResourceBytes(lDonorPath);
             lBytes = DCX.Compress(lBytes, DCX.Type.DCX_DFLT_10000_44_9);  //File is compressed inside the bdt.
             int lStartId = 0; // l col binder file IDs start here and increment by 1
-            BinderFile lBinder = new(flags:Binder.FileFlags.Flag1, id:lStartId, name:$"{lPath}_{lModelID:D6}.hkx.dcx", bytes:lBytes);
+            BinderFile lBinder = new(flags: Binder.FileFlags.Flag1, id: lStartId, name: $"{lPath}_{lModelID:D6}.hkx.dcx", bytes: lBytes);
             lBXF.Files.Add(lBinder);
-            lBXF.Write($"{outputPath}map\\{lPath}.hkxbhd",$"{outputPath}map\\{lPath}.hkxbdt");
+            lBXF.Write($"{outputPath}map\\{lPath}.hkxbhd", $"{outputPath}map\\{lPath}.hkxbdt");
 
             /* Write the nav mesh bnd */
             int nModelID = 1;
-            string nDonorPath = Environment.CurrentDirectory + @$"..\..\..\..\..\TestCol\n30_00_00_00_{nModelID:D6}.hkx"; //:fatcat:
+            string nDonorPath = $"PortJob.TestCol.n30_00_00_00_{nModelID:D6}.hkx"; //:fatcat:
             string nName = $"{area_block}_00_00"; //Have to seperate the name here, cause the path is long AF
             string nPath = $"N:\\FDP\\data\\INTERROOT_win64\\map\\{mapName}\\navimesh\\bind6\\n{nName}";
             BND4 nvmBND = new();
-            byte[] nBytes = File.ReadAllBytes(nDonorPath);
+            byte[] nBytes = GetEmbededResourceBytes(nDonorPath);
             int nStartId = 1000; // navmesh binder file IDs start here and increment by 1
-            BinderFile nBinder = new(flags: Binder.FileFlags.Flag1, id:nStartId, name:$"{nPath}_{nModelID:D6}.hkx", bytes:nBytes);
+            BinderFile nBinder = new(flags: Binder.FileFlags.Flag1, id: nStartId, name: $"{nPath}_{nModelID:D6}.hkx", bytes: nBytes);
             nvmBND.Files.Add(nBinder);
             nvmBND.Write($"{outputPath}map\\{mapName}\\m{nName}.nvmhktbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9); //Whole bnd is compressed. 
+        }
+        private static byte[] GetEmbededResourceBytes(string item) {
+            Assembly assembly = Assembly.GetCallingAssembly();
+            using (Stream? stream = assembly.GetManifestResourceStream(item)) {
+                if (stream == null)
+                    throw new NullReferenceException($"Could not find embedded resource: {item} in the {Assembly.GetCallingAssembly().GetName()} assembly");
+                byte[] ba = new byte[stream.Length];
+                stream.Read(ba, 0, ba.Length);
+                return ba;
+            }
         }
 
         /* If you don't like these summaries, I will replace them with regular comments.

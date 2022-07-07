@@ -31,12 +31,18 @@
 		<None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
 		<None Remove="Resources\DS3_MTD_INFO.json" />
 		<None Remove="settings.json" />
+		<None Remove="TestCol\h30_00_00_00_000000.hkx" />
+		<None Remove="TestCol\l30_00_00_00_000000.hkx" />
+		<None Remove="TestCol\n30_00_00_00_000001.hkx" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<EmbeddedResource Include="Resources\DS3_GX_EXAMPLE_INFO.json" />
 		<EmbeddedResource Include="Resources\DS3_MTD_INFO.json" />
 		<EmbeddedResource Include="Resources\settings.json" />
+		<EmbeddedResource Include="TestCol\h30_00_00_00_000000.hkx" />
+		<EmbeddedResource Include="TestCol\l30_00_00_00_000000.hkx" />
+		<EmbeddedResource Include="TestCol\n30_00_00_00_000001.hkx" />
 	</ItemGroup>
 
 	<ItemGroup>

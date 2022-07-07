@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
@@ -82,8 +83,9 @@ namespace PortJob {
                 Vector3 ROTATION = new (0, 0, 0);
 
                 NVA nva = new(); //One nva per msb. I put this up here so you can easily add the navmeshes in the loop.  
+                List <(string fbxPath, string flverPath, string tpfPath)> fbxList = new();
 
-                for(int c=0;c<layout.cells.Count;c++) {
+                for (int c=0;c<layout.cells.Count;c++) {
                     Cell cell = layout.cells[c];
                     Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
 
@@ -230,6 +232,7 @@ namespace PortJob {
                     /* Process content */
                     ESM.Type[] VALID_MAP_PIECE_TYPES = { ESM.Type.Static, ESM.Type.Door, ESM.Type.Container };
 
+
                     foreach (Content content in cell.content) {
                         if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
                         if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
@@ -242,7 +245,7 @@ namespace PortJob {
                             mpModel = NewMapPieceID();
                             string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
                             string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
-                            if (!File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) CallFBXConverter(fbxPath, flverPath, tpfDir);
+                            if (!File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) CallFBXConverter(fbxPath, flverPath, tpfDir);//fbxList.Add((fbxPath, flverPath, tpfDir));
 
                             //PortJob.convert(fbxPath, flverPath, tpfDir); //@TODO: Add call to 32 bit exe here.
 
@@ -282,6 +285,14 @@ namespace PortJob {
                         msb.Parts.MapPieces.Add(mp);
                     }
                 }
+
+                //JsonSerializer jsonSerializer = JsonSerializer.Create();
+                //string jsonString = JsonConvert.SerializeObject(new { OutputPath, MorrowindPath, GLOBAL_SCALE });
+                //jsonString += JsonConvert.SerializeObject(fbxList);
+                //StringBuilder fbxSB = new StringBuilder();
+                //foreach ((string fbxPath, string flverPath, string tpfPath) tuple in fbxList) {
+                    
+                //}
 
                 /* Just add one Navmesh to each nva. Model and Name are not a string, so no '_0000' format, and we have to use a unique ID here. */
                 int nModelID = 1;
