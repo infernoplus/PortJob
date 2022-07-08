@@ -79,7 +79,7 @@ namespace PortJob {
             nvmBND.Files.Add(nBinder);
             nvmBND.Write($"{outputPath}map\\{mapName}\\m{nName}.nvmhktbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9); //Whole bnd is compressed. 
         }
-        private static byte[] GetEmbededResourceBytes(string item) {
+        public static byte[] GetEmbededResourceBytes(string item) {
             Assembly assembly = Assembly.GetCallingAssembly();
             using (Stream? stream = assembly.GetManifestResourceStream(item)) {
                 if (stream == null)

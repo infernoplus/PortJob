@@ -156,7 +156,16 @@ namespace PortJob {
 
         public static byte[] GetSRGBTexture(string imagePath) {
 
-            byte[] tex = File.ReadAllBytes(imagePath);
+
+            byte[] tex = null;
+
+            if (imagePath.StartsWith("PortJob")) {
+                tex = Utility.GetEmbededResourceBytes(imagePath.Replace("\\", "."));
+            } else {
+                tex = File.ReadAllBytes(imagePath);
+            }
+
+
             GCHandle pinnedArray = GCHandle.Alloc(tex, GCHandleType.Pinned);
 
             ScratchImage sImage = TexHelper.Instance.LoadFromDDSMemory(pinnedArray.AddrOfPinnedObject(), tex.Length, DDS_FLAGS.NONE);

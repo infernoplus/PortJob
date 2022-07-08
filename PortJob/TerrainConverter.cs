@@ -124,9 +124,9 @@ namespace PortJob {
                 Log.Info(5, "[MTD: " + mtdName + ", Material: " + matName + "]");
 
                 /* Handle textures */
-                string blackTex = $"{PortJob.MorrowindPath}\\Data Files\\textures\\def_black.dds"; // @TODO IMPORTANT! generic textures!
-                string greyTex = $"{PortJob.MorrowindPath}\\Data Files\\textures\\def_grey.dds";
-                string flatTex = $"{PortJob.MorrowindPath}\\Data Files\\textures\\def_flat.dds";
+                string blackTex = "PortJob\\DefaultTex\\def_black.dds"; // @TODO IMPORTANT! generic textures!
+                string greyTex = "PortJob\\DefaultTex\\def_grey.dds";
+                string flatTex = "PortJob\\DefaultTex\\def_flat.dds";
                 Dictionary<string, string> boopers = new();
                 boopers.Add("g_DiffuseTexture", texA);
                 //boopers.Add("g_DiffuseTexture2", texB);

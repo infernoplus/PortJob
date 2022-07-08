@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -27,6 +27,9 @@
 	</Target>
 
 	<ItemGroup>
+		<None Remove="DefaultTex\def_black.dds" />
+		<None Remove="DefaultTex\def_flat.dds" />
+		<None Remove="DefaultTex\def_grey.dds" />
 		<None Remove="Resources\DirectXTexNetImpl.dll" />
 		<None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
 		<None Remove="Resources\DS3_MTD_INFO.json" />
@@ -37,6 +40,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="DefaultTex\def_black.dds" />
+		<EmbeddedResource Include="DefaultTex\def_flat.dds" />
+		<EmbeddedResource Include="DefaultTex\def_grey.dds" />
 		<EmbeddedResource Include="Resources\DS3_GX_EXAMPLE_INFO.json" />
 		<EmbeddedResource Include="Resources\DS3_MTD_INFO.json" />
 		<EmbeddedResource Include="Resources\settings.json" />
