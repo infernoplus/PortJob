@@ -162,13 +162,13 @@ namespace PortJob {
             return null; // Not found!
         }
 
-        /* Searches a specific set of records for one that has a matching 'id' */
-        public JObject FindRecordById(Type type, string id) {
+        /* Searches a specific set of records for one that has the specified field with a matching value */
+        public JObject FindRecordByKey(Type type, string key, string value) {
             List<JObject> records = recordsMap[type];
 
             for (int i = 0; i < records.Count; i++) {
                 JObject record = records[i];
-                if (record["id"] != null && record["id"].ToString() == id) {
+                if (record["id"] != null && record[key].ToString() == value) {
                     return record;
                 }
             }
@@ -189,7 +189,7 @@ namespace PortJob {
         public readonly int flag;
         public readonly int[] flags;
 
-        public readonly TerrainData terrain;
+        public readonly List<TerrainData> terrain;
 
         public readonly List<Content> content;
 
@@ -227,10 +227,9 @@ namespace PortJob {
             }
 
             /* Decode and parse terrain data if it exists for this cell */
+            terrain = new();
             JObject landscape = esm.GetLandscapeByGrid(position);
             if (landscape != null && landscape["vertex_heights"] != null) {
-                terrain = new TerrainData(region + ":"+ name, int.Parse(landscape["landscape_flags"].ToString()));
-
                 byte[] b64Height = Base64.Default.Decode(landscape["vertex_heights"].ToString());
                 byte[] b64Normal = Base64.Default.Decode(landscape["vertex_normals"].ToString());
                 ZStdDecompressor zstd = new();
@@ -243,22 +242,32 @@ namespace PortJob {
                     zstd.Decompress(zstdColor, b64Color);
                 }
 
-                byte[] zstdTexture = landscape["texture_indices"] != null ? new byte[16 * 16 * 2] : null;
-                if (zstdTexture != null) {
-                    byte[] b64Texture = Base64.Default.Decode(landscape["texture_indices"].ToString());
-                    zstd.Decompress(zstdTexture, b64Texture);
-                }
-
-                zstd.Dispose(); // Lol memory
-
                 int bA = 0; // Buffer postion reading heights
                 int bB = 0; // Buffer position reading normals
                 int bC = 0; // Buffer position reading color
+                int bD = 0; // Buffer position for texture indices
+
+
+                byte[] zstdTexture = landscape["texture_indices"] != null ? new byte[16 * 16 * 2] : null;
+                int[,] ltex = new int[16, 16];
+                if (zstdTexture != null) {
+                    byte[] b64Texture = Base64.Default.Decode(landscape["texture_indices"].ToString());
+                    zstd.Decompress(zstdTexture, b64Texture);
+
+                    for (int yy = 15; yy >= 0; yy--) {
+                        for (int xx = 0; xx < 16; xx++) {
+                            ltex[xx, yy] = zstdTexture[bD++];
+                        }
+                    }
+                }
+
+                zstd.Dispose(); // Lol memory
 
                 float offset = BitConverter.ToSingle(new byte[] { zstdHeight[bA++], zstdHeight[bA++], zstdHeight[bA++], zstdHeight[bA++] }, 0);
 
                 /* Vertex Data */
                 Vector3 centerOffset = new Vector3((CELL_SIZE / 2f), 0f, -(CELL_SIZE / 2f));
+                List<TerrainVertex> vertices = new();
                 float last = offset;
                 float lastEdge = last;
                 for (int yy = GRID_SIZE; yy >= 0; yy--) {
@@ -284,44 +293,79 @@ namespace PortJob {
                             color = new Vector3(rrr, ggg, bbb);
                         }
 
-                        int ltexId = 0; // Default
-                        if (zstdTexture != null) {
-                            ltexId = (int)zstdTexture[Math.Min(yy * (GRID_SIZE + 1), GRID_SIZE) + Math.Min(xx, GRID_SIZE)]; //
-                        }
-
-                        string texPath = $"{PortJob.MorrowindPath}\\Data Files\\textures\\";
-                        string texName = "tx_dagoth_mask.dds";                                                // Default is something stupid so it's obvious there was an error
-                        JObject ltexRecord = esm.FindRecordById(ESM.Type.LandscapeTexture, ltexId + "");
-                        if(ltexRecord != null) {
-                            texName = ltexRecord["texture"].ToString().Replace(".tga", ".dds"); 
-                        }
-
-                        terrain.vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2((float)(xx%2), (float)((GRID_SIZE - yy)%2)), color, texPath + texName));
+                        vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx-(GRID_SIZE/2), yy-(GRID_SIZE/2)), color, ltex[Math.Min(xx/4,15),Math.Min(yy/4,15)]));
                     }
                     last = lastEdge;
                 }
 
                 /* Index Data */
+                Dictionary<Int2, List<int>> sets = new();
                 for (int yy = 0; yy < GRID_SIZE; yy++) {
                     for (int xx = 0; xx < GRID_SIZE; xx++) {
                         int[] quad = {
-                             (yy * (GRID_SIZE + 1)) + xx,
                             (yy * (GRID_SIZE + 1)) + xx,
-                            (yy * (GRID_SIZE + 1)) + xx,
-                            (yy * (GRID_SIZE + 1)) + xx
+                            (yy * (GRID_SIZE + 1)) + (xx + 1),
+                            ((yy + 1) * (GRID_SIZE + 1)) + (xx + 1),
+                            ((yy + 1) * (GRID_SIZE + 1)) + xx
                         };
 
-                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2)) % 4]);
-                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2) + 1) % 4]);
-                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2) + 2) % 4]);
+                        
+                        int[,] tris = {
+                            {
+                                quad[(xx + ((yy % 2) * 2) + 2) % 4],
+                                quad[(xx + ((yy % 2) * 2) + 1) % 4],
+                                quad[(xx + ((yy % 2) * 2) + 0) % 4]
+                            },
+                            {
+                                quad[(xx + ((yy % 2) * 2) + 0) % 4],
+                                quad[(xx + ((yy % 2) * 2) + 3) % 4],
+                                quad[(xx + ((yy % 2) * 2) + 2) % 4]
+                            }
+                        };
 
-                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2) + 3) % 4]);
-                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2)) % 4]);
-                        terrain.indices.Add(quad[(xx + ((yy % 2) * 2) + 1) % 4]);
+                        for (int t = 0; t < 2; t++) {
+                            List<int> texs = new();
+                            for (int i = 0; i < tris.GetLength(t); i++) {
+                                texs.Add(vertices[tris[t, i]].texture);
+                            }
+                            Int2[] pair = {
+                                new Int2(texs[0], texs.Count > 1 ? texs[1] : -1),
+                                new Int2(texs.Count > 1 ? texs[1] : -1, texs[0])
+                            };
+                            //if (texs.Count > 2) { Log.Error(0, $"Terrain Triangle in [{region}:{name}][{position.x},{position.y}] with more than 2 texture indices~~~ Ugly clamping!"); }
+
+                            List<int> set;
+                            if (sets.ContainsKey(pair[0])) { set = sets[pair[0]]; } 
+                            else if(sets.ContainsKey(pair[1])) { set = sets[pair[1]]; }
+                            else { set = new(); sets.Add(pair[0], set); }
+
+                            for (int i = 0; i < 3; i++) {
+                                set.Add(tris[t,i]);
+                            }
+                        }
                     }
                 }
+
+                /* Create TerrainMeshes */
+                foreach (KeyValuePair<Int2, List<int>> set in sets) {
+                    TerrainData mesh = new TerrainData(region + ":" + name, int.Parse(landscape["landscape_flags"].ToString()), vertices, set.Value);
+
+                    string texPath = $"{PortJob.MorrowindPath}\\Data Files\\textures\\";
+
+                    for (int i = 0; i < 2; i++) {
+                        int tex = set.Key.Array()[i];
+                        string texName = "tx_dagoth_mask.dds";     // Default is something stupid so it's obvious there was an error
+                        JObject ltexRecord = esm.FindRecordByKey(ESM.Type.LandscapeTexture, "index", tex + "");
+                        if (ltexRecord != null) {
+                            texName = ltexRecord["texture"].ToString().Replace(".tga", ".dds");
+                        }
+                        mesh.textures[i++] = texPath + texName;
+                        mesh.texturesIndices[i++] = tex;
+                    }
+
+                    terrain.Add(mesh);
+                }
             }
-            else { terrain = null; }
 
             /* These fields are used by Layout for stuff */
             layout = null;
@@ -366,11 +410,16 @@ namespace PortJob {
         public int flag;
         public List<TerrainVertex> vertices;
         public List<int> indices;
-        public TerrainData(string name, int flag) {
+        public string[] textures;
+        public int[] texturesIndices;
+
+        public TerrainData(string name, int flag, List<TerrainVertex> vertices = null, List<int> indices = null) {
             this.name = name;
             this.flag = flag;
-            vertices = new();
-            indices = new();
+            this.vertices = vertices != null ? vertices : new();
+            this.indices = indices != null ? indices : new();
+            textures = new string[2];
+            texturesIndices = new int[2];
         }
     }
 
@@ -380,9 +429,9 @@ namespace PortJob {
         public Vector2 coordinate;
         public Vector3 color;
 
-        public string texture;
+        public int texture;
 
-        public TerrainVertex(Vector3 position, Vector3 normal, Vector2 coordinate, Vector3 color, string texture) {
+        public TerrainVertex(Vector3 position, Vector3 normal, Vector2 coordinate, Vector3 color, int texture) {
             this.position = position;
             this.normal = normal;
             this.coordinate = coordinate;
@@ -395,6 +444,29 @@ namespace PortJob {
         public readonly int x, y;
         public Int2(int x, int y) {
             this.x = x; this.y = y;
+        }
+
+        public static bool operator ==(Int2 a, Int2 b) {
+            return a.Equals(b);
+        }
+        public static bool operator !=(Int2 a, Int2 b) => !(a == b);
+
+        public bool Equals(Int2 b) {
+            return x == b.x && y == b.y;
+        }
+        public override bool Equals(object a) => Equals(a as Int2);
+
+        public override int GetHashCode() {
+            unchecked {
+                int hashCode = x.GetHashCode();
+                hashCode = (hashCode * 397) ^ y.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        public int[] Array() {
+            int[] r = { x, y };
+            return r;
         }
     }
 
