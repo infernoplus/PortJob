@@ -62,7 +62,8 @@ namespace PortJob {
             //Will read the output of the pipeClient Program AFTER it has stopped. For debugging.
             _pipeClient.WaitForExit();
             IsDone = true;
-            Console.WriteLine(_pipeClient.StandardOutput.ReadToEnd());
+            ExitCode = _pipeClient.ExitCode;
+            //Console.WriteLine(_pipeClient.StandardOutput.ReadToEnd());
         }
     }
 
