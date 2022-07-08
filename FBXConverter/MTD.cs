@@ -150,7 +150,7 @@ namespace FBXConverter {
 
         public static byte[] GetSRGBTexture(string imagePath) {
 
-            byte[] tex = File.ReadAllBytes(imagePath);
+            byte[] tex = imagePath.StartsWith("PortJob") ? Utility.GetEmbededResourceBytes(imagePath.Replace("\\", ".")) : File.ReadAllBytes(imagePath);
             GCHandle pinnedArray = GCHandle.Alloc(tex, GCHandleType.Pinned);
 
             ScratchImage sImage = TexHelper.Instance.LoadFromDDSMemory(pinnedArray.AddrOfPinnedObject(), tex.Length, DDS_FLAGS.NONE);
@@ -171,6 +171,12 @@ namespace FBXConverter {
             return bytes;
         }
 
+        public static byte[] GetTexture(string imagePath) {
+            if (imagePath.StartsWith("PortJob"))
+                return Utility.GetEmbededResourceBytes(imagePath.Replace("\\", "."));
+
+            return File.ReadAllBytes(imagePath);
+        }
     }
 
     public class TextureKey {

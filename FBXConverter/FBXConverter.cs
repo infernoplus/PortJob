@@ -170,7 +170,7 @@ namespace FBXConverter {
                                 }
 
                                 //if (texKvp.Key == null) { Log.Error(6, "Missing key: " + TEX.Value); continue;                                }
-
+                                string tex = texKvp.Value.Filename;
                                 string shortTexName = "mw_" + Utility.PathToFileName(texKvp.Value.Filename);
                                 matTextures.Add(new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11));
                                 //flverMaterials.Add(matName, 0);
@@ -180,7 +180,9 @@ namespace FBXConverter {
                                 TPF nuTpf = new();
                                 nuTpf.Encoding = TPF_ENCODING;
                                 nuTpf.Flag2 = TPF_FLAG_2;
-                                byte[] texBytes = MTD.GetSRGBTexture(texKvp.Value.Filename);
+                                bool srgb = !(TEX.Value.ToLower().Contains("blend") || TEX.Value.ToLower().Contains("normal") || TEX.Value.ToLower().Contains("bumpmap"));
+                                byte[] texBytes = srgb ? MTD.GetSRGBTexture(tex) : MTD.GetTexture(tex);
+                                //byte[] texBytes = MTD.GetSRGBTexture(texKvp.Value.Filename);
                                 int texFormat = DDS.GetTpfFormatFromDdsBytes(texBytes);
                                 if (texFormat == 3) mtdName += "_al";
 

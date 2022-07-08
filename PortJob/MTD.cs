@@ -156,15 +156,7 @@ namespace PortJob {
 
         public static byte[] GetSRGBTexture(string imagePath) {
 
-
-            byte[] tex = null;
-
-            if (imagePath.StartsWith("PortJob")) {
-                tex = Utility.GetEmbededResourceBytes(imagePath.Replace("\\", "."));
-            } else {
-                tex = File.ReadAllBytes(imagePath);
-            }
-
+            byte[] tex = imagePath.StartsWith("PortJob") ? Utility.GetEmbededResourceBytes(imagePath.Replace("\\", ".")) : File.ReadAllBytes(imagePath);
 
             GCHandle pinnedArray = GCHandle.Alloc(tex, GCHandleType.Pinned);
 
@@ -186,6 +178,12 @@ namespace PortJob {
             return bytes;
         }
 
+        public static byte[] GetTexture(string imagePath) {
+            if (imagePath.StartsWith("PortJob"))
+                return Utility.GetEmbededResourceBytes(imagePath.Replace("\\", "."));
+
+            return File.ReadAllBytes(imagePath);
+        }
     }
 
     public class TextureKey {

@@ -141,13 +141,12 @@ namespace PortJob {
                 //boopers.Add("g_DisplacementTexture", null");
                 //boopers.Add("g_BlendMaskTexture", greyTex);
 
-                List <TextureKey> TextureChannelMap = MTD.getTextureMap(mtdName + ".mtd");
+                List<TextureKey> TextureChannelMap = MTD.getTextureMap(mtdName + ".mtd");
                 if (TextureChannelMap == null) { Log.Error(6, "Invalid MTD: " + mtdName); }
                 foreach (TextureKey TEX in TextureChannelMap) {
                     if (TEX.Value == "g_DisplacementTexture") {
                         matTextures.Add(new TextureKey(TEX.Value, "N:\\LiveTokyo\\data\\model\\common\\tex\\dummy128.tga", TEX.Unk10, TEX.Unk11));  // God save our souls...
-                    }
-                    else {
+                    } else {
                         string tex = boopers[TEX.Value];
 
                         string shortTexName = "mw_" + Utility.PathToFileName(tex);
@@ -159,7 +158,9 @@ namespace PortJob {
                         TPF nuTpf = new();
                         nuTpf.Encoding = TPF_ENCODING;
                         nuTpf.Flag2 = TPF_FLAG_2;
-                        byte[] texBytes = MTD.GetSRGBTexture(tex);
+                        bool srgb = !(TEX.Value.ToLower().Contains("blend") || TEX.Value.ToLower().Contains("normal") || TEX.Value.ToLower().Contains("bumpmap"));
+                        byte[] texBytes = srgb ? MTD.GetSRGBTexture(tex) : MTD.GetTexture(tex);
+
                         int texFormat = DDS.GetTpfFormatFromDdsBytes(texBytes);
 
                         // @TODO this checek is pointless because it doesn't actually know wtf even
@@ -230,7 +231,7 @@ namespace PortJob {
 
                 /* Write real vertex data to FLVER */
                 Log.Info(5, "Writing vertex data");
-                for (int i=0;i<terrainMesh.vertices.Count;i++) {
+                for (int i = 0; i < terrainMesh.vertices.Count; i++) {
                     TerrainVertex vert = terrainMesh.vertices[i];
 
                     // Normal
