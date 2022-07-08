@@ -33,10 +33,11 @@ namespace PortJob {
             {
                 for (int i = _workers.Count - 1; i >= 0; i--)
                 {
-                    if (_workers[i].IsDone)
-                    {
-                        if (_workers[i].ExitCode != 0)
+                    if (_workers[i].IsDone) {
+                        if (_workers[i].ExitCode != 0) {
                             Console.WriteLine($"Worker exited with error code {_workers[i].ExitCode}");
+                            Console.WriteLine(_workers[i].ErrorMessage);
+                        }
                         _workers.RemoveAt(i);
                     }
                 }
