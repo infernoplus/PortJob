@@ -75,21 +75,19 @@ namespace PortJob {
 
             List<JObject> cells = recordsMap[Type.Cell];
             int partitionSize = (int)Math.Ceiling(cells.Count / (float)CELL_THREADS);
-            List<CellFactory> cellFactories = new();
+            List<CellFactoryWorker> cellFactories = new();
 
             for (int i = 0; i < CELL_THREADS; i++) {
                 int start = i * partitionSize;
                 int end = start + partitionSize;
-                CellFactory cellFactory = new(this, cells, start, end);
-                cellFactories.Add(cellFactory);
-                cellFactory.Start();
+                CellFactoryWorker cellFactoryWorker = new(this, cells, start, end);
+                cellFactories.Add(cellFactoryWorker);
             }
-
 
             while (true) {
                 bool workerThreadsDone = true;
-                foreach (CellFactory factory in cellFactories) {
-                    workerThreadsDone &= factory.IsDone;
+                foreach (CellFactoryWorker worker in cellFactories) {
+                    workerThreadsDone &= worker.IsDone;
                 }
 
                 if (workerThreadsDone)
@@ -97,7 +95,7 @@ namespace PortJob {
             }
 
             int count = 0;
-            foreach (CellFactory cellFactory in cellFactories) {
+            foreach (CellFactoryWorker cellFactory in cellFactories) {
                 foreach (Cell cell in cellFactory.ProcessedCells) {
                     AddCell(cell);
                     count++;
@@ -405,54 +403,6 @@ namespace PortJob {
         public TypedRecord(ESM.Type t, JObject r) {
             type = t;
             record = r;
-        }
-    }
-
-    public class CellFactory {
-        public bool IsDone { get; private set; }
-        private ESM _esm { get; }
-        private List<JObject> _cells { get; }
-        private int _start { get; }
-        private int _end { get; }
-        private Thread _thread { get; }
-        private List<Cell> _processedCells { get; }
-        public List<Cell> ProcessedCells {
-            get {
-                _thread.Join();
-                return _processedCells;
-            }
-        }
-
-        public CellFactory(ESM esm, List<JObject> cells, int start, int end) {
-            _processedCells = new List<Cell>();
-            _esm = esm;
-            _cells = cells;
-            _start = start;
-            _end = end;
-            _thread = new Thread(ProcessCell);
-
-        }
-
-        public void Start() {
-            _thread.Start();
-        }
-
-        private void ProcessCell() {
-            for (int i = _start; i < _cells.Count && i < _end; i++) {
-                // TEMP DEBUG!!! WE ARE NOT USING INTERIOR CELLS SO JUST DISCARD THEM FOR NOW!
-                int x = int.Parse(_cells[i]["data"]["grid"][0].ToString());
-                int y = int.Parse(_cells[i]["data"]["grid"][1].ToString());
-                if (
-                    x >= -40 &&
-                    x <= 40 &&
-                    y >= -40 &&
-                    y <= 40
-                ) {
-                    Cell genCell = new(_esm, _cells[i]);
-                    _processedCells.Add(genCell);
-                }
-            }
-            IsDone = true;
         }
     }
 }

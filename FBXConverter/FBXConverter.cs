@@ -253,8 +253,6 @@ namespace FBXConverter {
 
                             submeshVertexHighQualityBasePositions.Add(new Vector3(posVec3.X, posVec3.Y, posVec3.Z));
 
-
-
                         }
 
 

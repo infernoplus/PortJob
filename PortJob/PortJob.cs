@@ -10,7 +10,9 @@ using System.Linq;
 using SoulsFormats;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO.Pipes;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace PortJob {
     class PortJob {
@@ -21,16 +23,30 @@ namespace PortJob {
             DateTime startTime = DateTime.Now;
             SetupPaths();
             Log.SetupLogStream();
-
             Convert();
-
+            WaitForWorkers();
             TimeSpan length = DateTime.Now - startTime;
-            Log.Info(0,$"Porting time: {length}");
+            Log.Info(0, $"Porting time: {length}");
             Log.CloseWriter();
         }
 
-        private static void SetupPaths()
+        private static void WaitForWorkers()
         {
+            while (_workers.Count > 0)
+            {
+                for (int i = _workers.Count - 1; i >= 0; i--)
+                {
+                    if (_workers[i].IsDone)
+                    {
+                        _workers.RemoveAt(i);
+                    }
+                }
+            }
+        }
+
+        private static List<Worker> _workers = new();
+
+        private static void SetupPaths() {
             string jsonString = Utility.GetEmbededResource("PortJob.Resources.settings.json");
             JObject settings = JObject.Parse(jsonString);
             MorrowindPath = settings["morrowind"].ToString();
@@ -62,7 +78,7 @@ namespace PortJob {
                 int block = i++;
                 MSB3 msb = new();
 
-                if (block != 0) { continue; } //for rapid debugging 
+                //if (block != 0) { continue; } //for rapid debugging 
 
                 MSB3.Part.Player player = new(); // Player default spawn point
                 MSB3.Model.Player playerRes = new();
@@ -80,12 +96,12 @@ namespace PortJob {
 
                 /* This offset and rotation will be applies to all collision below this. Left for testing purposes */
                 Vector3 OFFSET = new(0, 0, 0);
-                Vector3 ROTATION = new (0, 0, 0);
+                Vector3 ROTATION = new(0, 0, 0);
 
                 NVA nva = new(); //One nva per msb. I put this up here so you can easily add the navmeshes in the loop.  
-                List <(string fbxPath, string flverPath, string tpfPath)> fbxList = new();
+                List<FBXInfo> fbxList = new();
 
-                for (int c=0;c<layout.cells.Count;c++) {
+                for (int c = 0; c < layout.cells.Count; c++) {
                     Cell cell = layout.cells[c];
                     Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
 
@@ -245,9 +261,7 @@ namespace PortJob {
                             mpModel = NewMapPieceID();
                             string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
                             string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
-                            if (!File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) CallFBXConverter(fbxPath, flverPath, tpfDir);//fbxList.Add((fbxPath, flverPath, tpfDir));
-
-                            //PortJob.convert(fbxPath, flverPath, tpfDir); //@TODO: Add call to 32 bit exe here.
+                            if (!File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) fbxList.Add(new FBXInfo(fbxPath, flverPath, tpfDir));
 
                             modelMap.Add(content.mesh, mpModel);
                         }
@@ -286,13 +300,7 @@ namespace PortJob {
                     }
                 }
 
-                //JsonSerializer jsonSerializer = JsonSerializer.Create();
-                //string jsonString = JsonConvert.SerializeObject(new { OutputPath, MorrowindPath, GLOBAL_SCALE });
-                //jsonString += JsonConvert.SerializeObject(fbxList);
-                //StringBuilder fbxSB = new StringBuilder();
-                //foreach ((string fbxPath, string flverPath, string tpfPath) tuple in fbxList) {
-                    
-                //}
+                _workers.Add(new FBXConverterWorker(OutputPath, MorrowindPath, GLOBAL_SCALE, fbxList));
 
                 /* Just add one Navmesh to each nva. Model and Name are not a string, so no '_0000' format, and we have to use a unique ID here. */
                 int nModelID = 1;
@@ -346,7 +354,7 @@ namespace PortJob {
             string mapViewListPath = $"{OutputPath}map\\mapviewlist.loadlistlist";
             string worldMsbListPath = $"{OutputPath}map\\worldmsblist.worldloadlistlist";
             string mapViewList = "", worldMsbList = "";
-            foreach(MSBData msb in msbs) {
+            foreach (MSBData msb in msbs) {
 
                 mapViewList += $"map:/MapStudio/m{msb.area:D2}_{msb.block:D2}_00_00.msb #m{msb.area:D2}B0【Layout {msb.block}】\r\n";
                 worldMsbList += $"map:/MapStudio/m{msb.area:D2}_{msb.block:D2}_00_00.msb	#m{msb.area:D2}B1yI‚Ì‰¤é_1z 0\r\n";
@@ -354,13 +362,14 @@ namespace PortJob {
             mapViewList += "\0\0\0\0\0\0\0\0\0\0\0\0"; // Buncha fucking \0 idk why
             worldMsbList += "\0\0\0\0\0\0\0\0\0\0\0\0";
 
-            if(File.Exists(mapViewListPath)) { File.Delete(mapViewListPath); }
-            if(File.Exists(worldMsbListPath)) { File.Delete(worldMsbListPath); }
+            if (File.Exists(mapViewListPath)) { File.Delete(mapViewListPath); }
+            if (File.Exists(worldMsbListPath)) { File.Delete(worldMsbListPath); }
 
             File.WriteAllText(mapViewListPath, mapViewList);
             File.WriteAllText(worldMsbListPath, worldMsbList);
         }
 
+        //Going to keep this until we know which version works best.  
         private static void CallFBXConverter(string fbxPath, string flverPath, string tpfDir) {
             string cmdArgs = $"{fbxPath.Replace(" ", "%%")} | {flverPath.Replace(" ", "%%")} | {tpfDir.Replace(" ", "%%")} | {OutputPath.Replace(" ", "%%")} | {MorrowindPath.Replace(" ", "%%")} | {GLOBAL_SCALE}"; //the double quotes here serve to provide double quotes to the arg paths, in case of spaces.
             var proc = new Process {
@@ -377,6 +386,8 @@ namespace PortJob {
             //proc.WaitForExit();
             //Console.WriteLine(proc.StandardOutput.ReadToEnd());
         }
+
+
 
         private static void PackTextures(int area) {
             string[] textures = Directory.GetFiles(OutputPath + "map\\tx\\", "*.tpf.dcx");
@@ -471,7 +482,7 @@ namespace PortJob {
             this.msb = msb;
         }
 
-     
+
     }
 
     public class NVAData {
