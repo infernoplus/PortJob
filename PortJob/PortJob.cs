@@ -23,7 +23,6 @@ namespace PortJob {
             SetupPaths();
             Log.SetupLogStream();
             Convert();
-            WaitForWorkers();
             TimeSpan length = DateTime.Now - startTime;
             Log.Info(0, $"Porting time: {length}");
             Log.CloseWriter();
@@ -347,6 +346,7 @@ namespace PortJob {
                 Utility.PackTestCol(nva.area, nva.block);
             }
 
+            WaitForWorkers();
             PackTextures(area); // This should be run once per area, currently needs to be reworked to support some like area division stuff but not important right now
 
             /* Generate and write loadlists */
