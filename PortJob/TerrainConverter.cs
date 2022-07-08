@@ -47,7 +47,10 @@ namespace PortJob {
             Dictionary<FLVER2.Mesh, string> flverMeshNameMap = new();
             Dictionary<FLVER2.Mesh, TerrainData> TerrainMeshes = new();
             Vector3 rootPosition = new Vector3(0f, 0f, 0f);
-            TerrainMeshes.Add(new FLVER2.Mesh(), cell.terrain);
+
+            foreach (TerrainData terrainData in cell.terrain) {
+                TerrainMeshes.Add(new FLVER2.Mesh(), terrainData);
+            }
 
             /* Buffer Layout dictionary */
             Dictionary<string, int> flverMaterials = new();
@@ -84,7 +87,7 @@ namespace PortJob {
                         Unk06 = 1
                     };
 
-                    faceSet.CullBackfaces = false;
+                    faceSet.CullBackfaces = true;
 
                     for (int i = 0; i < terrainMesh.indices.Count; i += 3) {
                         if (faceSet.Indices.Count >= FACESET_MAX_TRIANGLES * 3) {
@@ -113,34 +116,58 @@ namespace PortJob {
 
                 List<TextureKey> matTextures = new();
 
-                mtdName = "M[A]";
-                matName = terrainMesh.name + ":Material";
+                mtdName = "M[ARSN]";
+                string texA = terrainMesh.textures[0];
+                string texB = terrainMesh.textures[terrainMesh.textures[1] != null ? 1 : 0];
+                matName = terrainMesh.name + ":" + Utility.PathToFileName(texA) + "->" + Utility.PathToFileName(texB);
 
                 Log.Info(5, "[MTD: " + mtdName + ", Material: " + matName + "]");
 
                 /* Handle textures */
-                List<TextureKey> TextureChannelMap = MTD.getTextureMap(mtdName + ".mtd");
+                string blackTex = $"{PortJob.MorrowindPath}\\Data Files\\textures\\def_black.dds"; // @TODO IMPORTANT! generic textures!
+                string greyTex = $"{PortJob.MorrowindPath}\\Data Files\\textures\\def_grey.dds";
+                string flatTex = $"{PortJob.MorrowindPath}\\Data Files\\textures\\def_flat.dds";
+                Dictionary<string, string> boopers = new();
+                boopers.Add("g_DiffuseTexture", texA);
+                //boopers.Add("g_DiffuseTexture2", texB);
+                boopers.Add("g_SpecularTexture", blackTex);
+                //boopers.Add("g_SpecularTexture2", blackTex);
+                boopers.Add("g_ShininessTexture", blackTex);
+                //boopers.Add("g_ShininessTexture2", blackTex);
+                boopers.Add("g_BumpmapTexture", flatTex);
+                //boopers.Add("g_BumpmapTexture2", flatTex);
+                //boopers.Add("g_DetailBumpmapTexture", "");
+                //boopers.Add("g_DetailBumpmapTexture2", "");
+                //boopers.Add("g_DisplacementTexture", null");
+                //boopers.Add("g_BlendMaskTexture", greyTex);
+
+                List <TextureKey> TextureChannelMap = MTD.getTextureMap(mtdName + ".mtd");
                 if (TextureChannelMap == null) { Log.Error(6, "Invalid MTD: " + mtdName); }
                 foreach (TextureKey TEX in TextureChannelMap) {
-                    string temp = terrainMesh.vertices[0].texture;
+                    if (TEX.Value == "g_DisplacementTexture") {
+                        matTextures.Add(new TextureKey(TEX.Value, "N:\\LiveTokyo\\data\\model\\common\\tex\\dummy128.tga", TEX.Unk10, TEX.Unk11));  // God save our souls...
+                    }
+                    else {
+                        string tex = boopers[TEX.Value];
 
-                    string shortTexName = "mw_" + Utility.PathToFileName(temp);
-                    matTextures.Add(new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11));
-                    //flverMaterials.Add(matName, 0);
+                        string shortTexName = "mw_" + Utility.PathToFileName(tex);
+                        matTextures.Add(new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11));
+                        //flverMaterials.Add(matName, 0);
 
-                    // Writes every texture to a seperate file.
-                    // This is how From handles their enviroment textures so I'm just following their pattern.
-                    TPF nuTpf = new();
-                    nuTpf.Encoding = TPF_ENCODING;
-                    nuTpf.Flag2 = TPF_FLAG_2;
-                    byte[] texBytes = MTD.GetSRGBTexture(temp);
-                    int texFormat = DDS.GetTpfFormatFromDdsBytes(texBytes);
-                    if (texFormat == 3) mtdName += "_al";
+                        // Writes every texture to a seperate file.
+                        // This is how From handles their enviroment textures so I'm just following their pattern.
+                        TPF nuTpf = new();
+                        nuTpf.Encoding = TPF_ENCODING;
+                        nuTpf.Flag2 = TPF_FLAG_2;
+                        byte[] texBytes = MTD.GetSRGBTexture(tex);
+                        int texFormat = DDS.GetTpfFormatFromDdsBytes(texBytes);
 
-                    if (texFormat == 0) { Log.Error(6, "Texture is an unrecognized format [" + shortTexName + "::" + texFormat + "]"); } else { Log.Info(6, "Texure [" + shortTexName + "::" + texFormat + "]"); }
+                        // @TODO this checek is pointless because it doesn't actually know wtf even
+                        //if (texFormat == 0) { Log.Error(6, "Texture is an unrecognized format [" + shortTexName + "::" + texFormat + "]"); } else { Log.Info(6, "Texure [" + shortTexName + "::" + texFormat + "]"); }
 
-                    nuTpf.Textures.Add(new TPF.Texture(shortTexName, (byte)texFormat, 0, texBytes));
-                    tpfs.Add(nuTpf);
+                        nuTpf.Textures.Add(new TPF.Texture(shortTexName, (byte)texFormat, 0, texBytes));
+                        tpfs.Add(nuTpf);
+                    }
                 }
 
                 flverMesh.MaterialIndex = flver.Materials.Count;
@@ -233,15 +260,9 @@ namespace PortJob {
 
                     System.Numerics.Vector3 uv = new(vert.coordinate.X, vert.coordinate.Y, 0);
 
-                    if (flverMesh.Vertices[i].UVs.Count > uvIndex) {
-                        flverMesh.Vertices[i].UVs[uvIndex] = uv;
-                    } else if (flverMesh.Vertices[i].UVs.Count == uvIndex) {
-                        flverMesh.Vertices[i].UVs.Add(uv);
-                    } else if (uvIndex <= 2) {
-                        while (flverMesh.Vertices[i].UVs.Count <= uvIndex) {
-                            flverMesh.Vertices[i].UVs.Add(System.Numerics.Vector3.Zero);
-                        }
-                    }
+                    flverMesh.Vertices[i].UVs.Add(uv);
+                    flverMesh.Vertices[i].UVs.Add(uv);
+                    flverMesh.Vertices[i].UVs.Add(uv);
 
                     if (isBaseUv) {
                         submeshVertexHighQualityBaseUVs.Add(
@@ -249,6 +270,7 @@ namespace PortJob {
                     }
 
                     // Color
+                    float blend = terrainMesh.texturesIndices[0] == vert.texture ? 1f : 0f;
                     flverMesh.Vertices[i].Colors[0] = new FLVER.VertexColor(vert.color.X, vert.color.Y, vert.color.Z, 1.0f);
                 }
 
@@ -286,11 +308,10 @@ namespace PortJob {
                 /* Generate tangents */
                 Log.Info(6, "Generating tangents");
                 if (submeshHighQualityTangents.Count > 0) {
-                    //@TODO Solver Re-impliments  URGENT!
-                    //submeshHighQualityTangents = Solvers.TangentSolver.SolveTangents(flverMesh, submeshVertexIndices,
-                    //    submeshHighQualityNormals,
-                    //    submeshVertexHighQualityBasePositions,
-                    //    submeshVertexHighQualityBaseUVs);
+                    submeshHighQualityTangents = Solvers.TangentSolver.SolveTangents(flverMesh, submeshVertexIndices,
+                        submeshHighQualityNormals,
+                        submeshVertexHighQualityBasePositions,
+                        submeshVertexHighQualityBaseUVs);
 
                     for (int i = 0; i < flverMesh.Vertices.Count; i++) {
                         Vector3 thingy = Vector3.Normalize(Vector3.Cross(submeshHighQualityNormals[i],
@@ -354,8 +375,7 @@ namespace PortJob {
             // It's also fairly possible we may instead just place down our 'dummies' as points in the msb to attach SFX to. Idk. figure it out later.
 
             /* Solve bounding box */
-            //@TODO:Bounding Box Solver URGENT!
-            //Solvers.BoundingBoxSolver.FixAllBoundingBoxes(flver);
+            Solvers.BoundingBoxSolver.FixAllBoundingBoxes(flver);
 
             /* Don't know */
             foreach (KeyValuePair<FLVER2.Mesh, TerrainData> kvp in TerrainMeshes) {

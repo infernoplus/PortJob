@@ -1,136 +1,133 @@
-﻿//using Microsoft.Xna.Framework;
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using SoulsFormats;
-//using Vector3 = System.Numerics.Vector3;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+using SoulsFormats;
+using static SoulsFormats.GRASS;
+using Vector3 = System.Numerics.Vector3;
+using NMatrix = System.Numerics.Matrix4x4;
+using NVector3 = System.Numerics.Vector3;
+using NQuaternion = System.Numerics.Quaternion;
 
-//namespace PortJob.Solvers_Test {
-//    /* Code by Meowmartius, borrowed from FBX2FLVER <3 */
-//    public class BoundingBoxSolver {
-//        private static List<FLVER.Bone> GetAllBonesReferencedByVertex(FLVER2 f, FLVER2.Mesh m, FLVER.Vertex v, Dictionary<FLVER.Vertex, List<FLVER.Bone>> pcbl) {
-//            if (!pcbl.ContainsKey(v)) {
-//                List<FLVER.Bone> result = new();
+namespace PortJob.Solvers {
+    /* Code by Meowmartius, borrowed from FBX2FLVER <3 */
+    public static class BoundingBoxSolver {
+        public static void FixAllBoundingBoxes(FLVER2 flver) {
+            flver.Header.BoundingBoxMin = new System.Numerics.Vector3();
+            flver.Header.BoundingBoxMax = new System.Numerics.Vector3();
+            foreach (FLVER.Bone bone in flver.Bones) {
+                bone.BoundingBoxMin = new System.Numerics.Vector3();
+                bone.BoundingBoxMax = new System.Numerics.Vector3();
+            }
 
-//                for (int i = 0; i < v.BoneIndices.Length; i++) {
-//                    int vertBoneIndex = v.BoneIndices[i];
-//                    if (vertBoneIndex >= 0) {
-//                        /*                        if (Importer.JOBCONFIG.UseDirectBoneIndices) // Don't need this for DS1, just commented out
-//                                                {
-//                                                    result.Add(f.Bones[vertBoneIndex]);
-//                                                }
-//                                                else
-//                                                {*/
-//                        if (m.BoneIndices[vertBoneIndex] >= 0)
-//                            result.Add(f.Bones[m.BoneIndices[vertBoneIndex]]);
-//                        /*}*/
-//                    }
-//                }
+            for (int i = 0; i < flver.Meshes.Count; i++) {
 
-//                pcbl.Add(v, result);
-//            }
+                FLVER2.Mesh mesh = flver.Meshes[i];
+                if (mesh.BoundingBox != null)
+                    mesh.BoundingBox = new FLVER2.Mesh.BoundingBoxes();
 
-//            return pcbl[v];
-//        }
+                foreach (FLVER.Vertex vertex in mesh.Vertices) {
+                    flver.Header.UpdateBoundingBox(vertex.Position);
+                    if (mesh.BoundingBox != null)
+                        mesh.UpdateBoundingBox(vertex.Position);
 
-//        private static List<FLVER.Vertex> GetVerticesParentedToBone(FLVER2 f, FLVER.Bone b, Dictionary<FLVER.Vertex, List<FLVER.Bone>> pcbl) {
-//            List<FLVER.Vertex> result = new();
-//            foreach (FLVER2.Mesh sm in f.Meshes) {
-//                foreach (FLVER.Vertex v in sm.Vertices) {
-//                    List<FLVER.Bone> bonesReferencedByThisShit = GetAllBonesReferencedByVertex(f, sm, v, pcbl);
-//                    if (bonesReferencedByThisShit.Contains(b))
-//                        result.Add(v);
-//                }
-//            }
-//            return result;
-//        }
+                    for (int j = 0; j < vertex.BoneIndices.Length; j++) {
+                        var boneIndex = vertex.BoneIndices[j];
+                        var boneDoesNotExist = false;
 
-//        private static BoundingBox GetBoundingBox(List<Vector3> verts) {
-//            if (verts.Count > 0)
-//                return BoundingBox.CreateFromPoints(verts);
-//            else
-//                return new BoundingBox(Vector3.Zero, Vector3.Zero);
-//        }
+                        // Mark bone as not-dummied-out since there is geometry skinned to it.
+                        if (boneIndex >= 0 && boneIndex < flver.Bones.Count) {
+                            flver.Bones[boneIndex].Unk3C = 0;
+                        } else {
+                            boneDoesNotExist = true;
+                        }
 
-//        private static Matrix GetParentBoneMatrix(FLVER2 f, FLVER.Bone bone) {
-//            FLVER.Bone parent = bone;
+                        if (!boneDoesNotExist)
+                            flver.Bones[boneIndex].UpdateBoundingBox(flver.Bones, vertex.Position);
+                    }
+                }
 
-//            Matrix boneParentMatrix = Matrix.Identity;
+            }
+        }
+    }
 
-//            do {
-//                boneParentMatrix *= Matrix.CreateScale(parent.Scale.X, parent.Scale.Y, parent.Scale.Z);
-//                boneParentMatrix *= Matrix.CreateRotationX(parent.Rotation.X);
-//                boneParentMatrix *= Matrix.CreateRotationZ(parent.Rotation.Z);
-//                boneParentMatrix *= Matrix.CreateRotationY(parent.Rotation.Y);
+    public static class ExtensionMethods {
+        public static System.Numerics.Vector3 ToNumerics(this Vector4 v) {
+            return new System.Numerics.Vector3(v.X, v.Y, v.Z);
+        }
 
-//                //boneParentMatrix *= Matrix.CreateRotationY(parent.EulerRadian.Y);
-//                //boneParentMatrix *= Matrix.CreateRotationZ(parent.EulerRadian.Z);
-//                //boneParentMatrix *= Matrix.CreateRotationX(parent.EulerRadian.X);
-//                boneParentMatrix *= Matrix.CreateTranslation(parent.Translation.X, parent.Translation.Y, parent.Translation.Z);
-//                //boneParentMatrix *= Matrix.CreateScale(parent.Scale);
+        public static System.Numerics.Vector3 ToNumerics(this Vector3 v) {
+            return new System.Numerics.Vector3(v.X, v.Y, v.Z);
+        }
 
-//                if (parent.ParentIndex >= 0) {
-//                    parent = f.Bones[parent.ParentIndex];
-//                } else {
-//                    parent = null;
-//                }
-//            }
-//            while (parent != null);
+        public static void UpdateBoundingBox(this FLVER2.FLVERHeader header, NVector3 vertexPos) {
+            var minX = Math.Min(header.BoundingBoxMin.X, vertexPos.X);
+            var minY = Math.Min(header.BoundingBoxMin.Y, vertexPos.Y);
+            var minZ = Math.Min(header.BoundingBoxMin.Z, vertexPos.Z);
+            var maxX = Math.Max(header.BoundingBoxMax.X, vertexPos.X);
+            var maxY = Math.Max(header.BoundingBoxMax.Y, vertexPos.Y);
+            var maxZ = Math.Max(header.BoundingBoxMax.Z, vertexPos.Z);
+            header.BoundingBoxMin = new NVector3(minX, minY, minZ);
+            header.BoundingBoxMax = new NVector3(maxX, maxY, maxZ);
+        }
 
-//            return boneParentMatrix;
-//        }
+        public static void UpdateBoundingBox(this FLVER2.Mesh mesh, NVector3 vertexPos) {
+            var minX = Math.Min(mesh.BoundingBox.Min.X, vertexPos.X);
+            var minY = Math.Min(mesh.BoundingBox.Min.Y, vertexPos.Y);
+            var minZ = Math.Min(mesh.BoundingBox.Min.Z, vertexPos.Z);
+            var maxX = Math.Max(mesh.BoundingBox.Max.X, vertexPos.X);
+            var maxY = Math.Max(mesh.BoundingBox.Max.Y, vertexPos.Y);
+            var maxZ = Math.Max(mesh.BoundingBox.Max.Z, vertexPos.Z);
+            mesh.BoundingBox.Min = new NVector3(minX, minY, minZ);
+            mesh.BoundingBox.Max = new NVector3(maxX, maxY, maxZ);
+        }
 
-//        private static void SetBoneBoundingBox(FLVER2 f, FLVER.Bone b, Dictionary<FLVER.Vertex, List<FLVER.Bone>> pcbl) {
-//            BoundingBox bb = GetBoundingBox(GetVerticesParentedToBone(f, b, pcbl).Select(v => new Vector3(v.Position.X, v.Position.Y, v.Position.Z)).ToList());
-//            if (bb.Max.LengthSquared() != 0 || bb.Min.LengthSquared() != 0) {
-//                Matrix matrix = GetParentBoneMatrix(f, b);
-//                b.BoundingBoxMin = Vector3.Transform(bb.Min, Matrix.Invert(matrix)).ToNumerics();
-//                b.BoundingBoxMax = Vector3.Transform(bb.Max, Matrix.Invert(matrix)).ToNumerics();
-//            } else {
-//                b.BoundingBoxMin = new System.Numerics.Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-//                b.BoundingBoxMax = new System.Numerics.Vector3(float.MinValue, float.MinValue, float.MinValue);
-//            }
-//        }
+        public static void UpdateBoundingBox(this FLVER.Bone b, List<FLVER.Bone> bones, NVector3 vertexPos) {
+            var boneAbsoluteMatrix = b.GetAbsoluteNMatrix(bones);
 
-//        public static void FixAllBoundingBoxes(FLVER2 f) {
-//            Dictionary<FLVER.Vertex, List<FLVER.Bone>> pcbl = new();
+            if (NMatrix.Invert(boneAbsoluteMatrix, out NMatrix invertexBoneMat)) {
+                var posForBBox = NVector3.Transform(vertexPos, invertexBoneMat);
 
-//            foreach (FLVER.Bone b in f.Bones) {
-//                SetBoneBoundingBox(f, b, pcbl);
-//            }
+                var minX = Math.Min(b.BoundingBoxMin.X, posForBBox.X);
+                var minY = Math.Min(b.BoundingBoxMin.Y, posForBBox.Y);
+                var minZ = Math.Min(b.BoundingBoxMin.Z, posForBBox.Z);
+                var maxX = Math.Max(b.BoundingBoxMax.X, posForBBox.X);
+                var maxY = Math.Max(b.BoundingBoxMax.Y, posForBBox.Y);
+                var maxZ = Math.Max(b.BoundingBoxMax.Z, posForBBox.Z);
 
+                b.BoundingBoxMin = new NVector3(minX, minY, minZ);
+                b.BoundingBoxMax = new NVector3(maxX, maxY, maxZ);
+            }
 
-//            List<BoundingBox> submeshBBs = new();
+            //ErrorTODO: when this fails, else {}
+        }
 
-//            foreach (FLVER2.Mesh sm in f.Meshes) {
-//                BoundingBox bb = GetBoundingBox(sm.Vertices.Select(v => new Vector3(v.Position.X, v.Position.Y, v.Position.Z)).ToList());
-//                if (bb.Max.LengthSquared() != 0 || bb.Min.LengthSquared() != 0) {
-//                    submeshBBs.Add(bb);
-//                    sm.BoundingBox = new FLVER2.Mesh.BoundingBoxes();
-//                    sm.BoundingBox.Min = bb.Min.ToNumerics();
-//                    sm.BoundingBox.Max = bb.Max.ToNumerics();
-//                } else {
-//                    sm.BoundingBox = null;
-//                }
-//            }
+        public static NMatrix GetNMatrix(this FLVER.Bone b) {
+            return NMatrix.CreateScale(b.Scale) *
+                NMatrix.CreateRotationX(b.Rotation.X) *
+                NMatrix.CreateRotationZ(b.Rotation.Z) *
+                NMatrix.CreateRotationY(b.Rotation.Y) *
+                NMatrix.CreateTranslation(b.Translation);
+        }
 
-//            if (submeshBBs.Count > 0) {
-//                BoundingBox finalBB = submeshBBs[0];
-//                for (int i = 1; i < submeshBBs.Count; i++) {
-//                    finalBB = BoundingBox.CreateMerged(finalBB, submeshBBs[i]);
-//                }
+        public static FLVER.Bone GetParent(this FLVER.Bone b, List<FLVER.Bone> bones) {
+            if (b.ParentIndex >= 0 && b.ParentIndex < bones.Count)
+                return bones[b.ParentIndex];
+            else
+                return null;
+        }
 
-//                f.Header.BoundingBoxMin = new System.Numerics.Vector3(finalBB.Min.X, finalBB.Min.Y, finalBB.Min.Z);
-//                f.Header.BoundingBoxMax = new System.Numerics.Vector3(finalBB.Max.X, finalBB.Max.Y, finalBB.Max.Z);
-//            } else {
-//                f.Header.BoundingBoxMin = new System.Numerics.Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-//                f.Header.BoundingBoxMax = new System.Numerics.Vector3(float.MinValue, float.MinValue, float.MinValue);
-//            }
-
-
-
-//        }
-//    }
-//}
+        public static NMatrix GetAbsoluteNMatrix(this FLVER.Bone b, List<FLVER.Bone> bones) {
+            NMatrix result = NMatrix.Identity;
+            var parentBone = b;
+            while (parentBone != null) {
+                var m = parentBone.GetNMatrix();
+                result *= m;
+                parentBone = parentBone.GetParent(bones);
+            }
+            return result;
+        }
+    }
+}

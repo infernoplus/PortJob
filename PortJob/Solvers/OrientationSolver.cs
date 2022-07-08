@@ -33,10 +33,4 @@ namespace PortJob.Solvers {
 
         }
     }
-
-    public static class ExtensionMethods {
-        //public static System.Numerics.Vector3 ToNumerics(this Vector3 v) {
-        //    return new System.Numerics.Vector3(v.X, v.Y, v.Z);
-        //}
-    }
 }

@@ -8,7 +8,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<PlatformTarget>x86</PlatformTarget>
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
 
 
@@ -58,26 +58,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Reference Include="Microsoft.Xna.Framework">
-			<HintPath>..\Lib\Microsoft.Xna.Framework.dll</HintPath>
-			<Private>true</Private>
-		</Reference>
-		<Reference Include="Microsoft.Xna.Framework.Content.Pipeline">
-			<HintPath>..\Lib\Microsoft.Xna.Framework.Content.Pipeline.dll</HintPath>
-			<Private>true</Private>
-		</Reference>
-		<Reference Include="Microsoft.Xna.Framework.Content.Pipeline.FbxImporter">
-			<HintPath>..\Lib\Microsoft.Xna.Framework.Content.Pipeline.FBXImporter.dll</HintPath>
-			<Private>true</Private>
-		</Reference>
-		<Reference Include="Microsoft.Xna.Framework.Graphics">
-			<HintPath>..\Lib\Microsoft.Xna.Framework.Graphics.dll</HintPath>
-			<Private>true</Private>
-		</Reference>
-		<Reference Include="Microsoft.Xna.Framework.Video">
-			<HintPath>..\Lib\Microsoft.Xna.Framework.Video.dll</HintPath>
-			<Private>true</Private>
-		</Reference>
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>..\Lib\Newtonsoft.Json.dll</HintPath>
 			<Private>true</Private>

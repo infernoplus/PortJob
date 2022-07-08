@@ -78,12 +78,18 @@ namespace PortJob {
                 string TexMem = MTD_TEXTURE_MEMBERS[i].First.ToString();
                 switch (TexMem) {
                     case "g_DiffuseTexture": TM.Add(new TextureKey("Texture", TexMem, 0x1, true)); break;
-                    case "g_Diffuse_2": TM.Add(new TextureKey("SpecularFactor", TexMem, 0x1, true)); break;
-                    case "g_Specular": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
-                    case "g_Specular_2": TM.Add(new TextureKey("SpecularPower", TexMem, 0x1, true)); break;
-                    case "g_Bumpmap": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
-                    case "g_Bumpmap_2": TM.Add(new TextureKey("Reflection", TexMem, 0x1, true)); break;
-                    case "g_Envmap": TM.Add(new TextureKey("Transparency", TexMem, 0x1, true)); break;
+                    case "g_DiffuseTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_SpecularTexture": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
+                    case "g_SpecularTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_ShininessTexture": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
+                    case "g_ShininessTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_BumpmapTexture": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
+                    case "g_BumpmapTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_DetailBumpmapTexture": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
+                    case "g_DetailBumpmapTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_Envmap": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_DisplacementTexture": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
+                    case "g_BlendMaskTexture": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
                     case "g_Lightmap": TM.Add(new TextureKey("Emissive", TexMem, 0x1, true)); break;
                     default: throw new Exception($"The texture member {TexMem} does not exist in current MTD info");
                 }

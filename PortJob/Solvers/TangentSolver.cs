@@ -1,7 +1,7 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -112,7 +112,7 @@ namespace PortJob.Solvers {
                 mesh.Vertices[i].Tangents[0] = (new System.Numerics.Vector4(outTanVec3.X, outTanVec3.Y, outTanVec3.Z, w));
 
                 if (mesh.Vertices[i].Tangents.Count == 2) {
-                    Vector3 ghettoTan = RotatePoint(new Vector3(mesh.Vertices[i].Normal.X, mesh.Vertices[i].Normal.Y, mesh.Vertices[i].Normal.Z), 0, MathHelper.PiOver2, 0);
+                    Vector3 ghettoTan = RotatePoint(new Vector3(mesh.Vertices[i].Normal.X, mesh.Vertices[i].Normal.Y, mesh.Vertices[i].Normal.Z), 0, (float)(Math.PI/2), 0);
                     mesh.Vertices[i].Tangents[1] = new System.Numerics.Vector4(ghettoTan.X, ghettoTan.Y, ghettoTan.Z, 0);
                 }
 
