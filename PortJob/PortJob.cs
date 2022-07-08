@@ -19,6 +19,7 @@ namespace PortJob {
         public static string OutputPath { get; set; }
         public static readonly float GLOBAL_SCALE = 0.01f;
         static void Main(string[] args) {
+            CheckIsDarkSouls3IsRunning();
             DateTime startTime = DateTime.Now;
             SetupPaths();
             Log.SetupLogStream();
@@ -26,6 +27,16 @@ namespace PortJob {
             TimeSpan length = DateTime.Now - startTime;
             Log.Info(0, $"Porting time: {length}");
             Log.CloseWriter();
+        }
+
+        private static void CheckIsDarkSouls3IsRunning() {
+            Process[] processes = Process.GetProcesses();
+            foreach (Process process in processes) {
+                if (process.MainWindowTitle is "DARK SOULS™ III" or "DARK SOULS III") {
+                    Console.WriteLine("Dark Souls 3 is running! Close the game or exit the map and press any key to continue");
+                    Console.ReadKey();
+                }
+            }
         }
 
         private static void WaitForWorkers() {
