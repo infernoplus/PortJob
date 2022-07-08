@@ -31,6 +31,7 @@ namespace PortJob {
         }
 
         private void ProcessCell() {
+            ExitCode = 1;
             for (int i = _start; i < _cells.Count && i < _end; i++) {
                 // TEMP DEBUG!!! WE ARE NOT USING INTERIOR CELLS SO JUST DISCARD THEM FOR NOW!
                 int x = int.Parse(_cells[i]["data"]["grid"][0].ToString());
@@ -46,6 +47,7 @@ namespace PortJob {
                 }
             }
             IsDone = true;
+            ExitCode = 0;
         }
     }
 }

@@ -46,7 +46,7 @@ namespace FBXConverter {
             GLOBAL_SCALE = Convert.ToSingle(jsonObj["GLOBAL_SCALE"].ToString());
 
             foreach (JObject fbxList in jsonObj["FBXList"]) {
-                Console.WriteLine($"Converting: {fbxList["FBXPath"]}");
+                //Console.WriteLine($"Converting: {fbxList["FBXPath"]}");
                 FBXConverter.convert(fbxList["FBXPath"].ToString(), fbxList["FlverPath"].ToString(), fbxList["TpfDir"].ToString());
             }
 

@@ -33,8 +33,8 @@ namespace PortJob {
                 StartInfo = new ProcessStartInfo {
                     FileName = $"{Environment.CurrentDirectory}\\FBXConverter\\FBXConverter.exe",
                     UseShellExecute = false,
-                    //CreateNoWindow = true,
-                    RedirectStandardOutput = true //Cannot re-direct standard output while checking IsDone, or this child process will freeze.  
+                    CreateNoWindow = true,
+                    //RedirectStandardOutput = true //Cannot re-direct standard output while checking IsDone, or this child process will freeze.  
                 }
             };
             using (AnonymousPipeServerStream pipeServer = new(PipeDirection.Out, HandleInheritability.Inheritable)) {

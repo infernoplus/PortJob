@@ -29,13 +29,14 @@ namespace PortJob {
         }
 
         private static void WaitForWorkers() {
-            return;
             while (_workers.Count > 0)
             {
                 for (int i = _workers.Count - 1; i >= 0; i--)
                 {
                     if (_workers[i].IsDone)
                     {
+                        if (_workers[i].ExitCode != 0)
+                            Console.WriteLine($"Worker exited with error code {_workers[i].ExitCode}");
                         _workers.RemoveAt(i);
                     }
                 }

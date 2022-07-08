@@ -31,7 +31,6 @@ namespace PortJob {
 
         // Return an object containing the flver, tpfs, and generated ids and names stuff later
         public static void convert(Cell cell, string flverPath, string tpfDir) {
-            return;
             /* Skip if file already exists */
             // Lol
 
