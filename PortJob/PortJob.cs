@@ -28,8 +28,8 @@ namespace PortJob {
             Log.CloseWriter();
         }
 
-        private static void WaitForWorkers()
-        {
+        private static void WaitForWorkers() {
+            return;
             while (_workers.Count > 0)
             {
                 for (int i = _workers.Count - 1; i >= 0; i--)
@@ -480,8 +480,6 @@ namespace PortJob {
             this.block = block;
             this.msb = msb;
         }
-
-
     }
 
     public class NVAData {
