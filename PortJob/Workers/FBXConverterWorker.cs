@@ -15,7 +15,7 @@ using System.IO.Pipes;
 using System.Threading;
 
 namespace PortJob {
-    public class FBXConverterWorker : Worker {
+    public class FBXConverterWorker : Worker{
         private Process _pipeClient { get; set; }
         private string _jsonString { get; }
         public FBXConverterWorker(string outputPath, string morrowindPath, float globalScale, List<FBXInfo> fbxList) {
@@ -28,18 +28,23 @@ namespace PortJob {
 
         //Modified Example 1: https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-use-anonymous-pipes-for-local-interprocess-communication
         private void CallFBXConverter() {
-
             _pipeClient = new Process {
                 StartInfo = new ProcessStartInfo {
                     FileName = $"{Environment.CurrentDirectory}\\FBXConverter\\FBXConverter.exe",
                     UseShellExecute = false,
-                    CreateNoWindow = true,
-                    //RedirectStandardOutput = true //Cannot re-direct standard output while checking IsDone, or this child process will freeze.  
+                    CreateNoWindow = true, 
+                    RedirectStandardError = true, //Cannot re-direct standard output while checking IsDone, or this child process will freeze.  
+                    RedirectStandardOutput = true
                 }
             };
+            _pipeClient.ErrorDataReceived += _pipeClient_ErrorDataReceived;
+            _pipeClient.OutputDataReceived += _pipeClient_OutputDataReceived;
+
             using (AnonymousPipeServerStream pipeServer = new(PipeDirection.Out, HandleInheritability.Inheritable)) {
                 _pipeClient.StartInfo.Arguments = pipeServer.GetClientHandleAsString();
                 _pipeClient.Start();
+                _pipeClient.BeginOutputReadLine();
+                _pipeClient.BeginErrorReadLine();
 
                 pipeServer.DisposeLocalCopyOfClientHandle();
 
@@ -57,6 +62,9 @@ namespace PortJob {
                 // or disconnected.
                 catch (IOException e) {
                     Console.WriteLine("[SERVER] Error: {0}", e.Message);
+                    IsDone = true;
+                    ExitCode = -1;
+                    ErrorMessage = e.Message;
                 }
             }
             //Will read the output of the pipeClient Program AFTER it has stopped. For debugging.
@@ -64,6 +72,13 @@ namespace PortJob {
             IsDone = true;
             ExitCode = _pipeClient.ExitCode;
             //Console.WriteLine(_pipeClient.StandardOutput.ReadToEnd());
+        }
+
+        private void _pipeClient_OutputDataReceived(object sender, DataReceivedEventArgs e) {
+            Console.WriteLine(e.Data);
+        }
+        private void _pipeClient_ErrorDataReceived(object sender, DataReceivedEventArgs e) {
+            ErrorMessage += e.Data;
         }
     }
 

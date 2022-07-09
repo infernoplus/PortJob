@@ -36,6 +36,7 @@ namespace FBXConverter {
                 }
             }
 
+            //throw new Exception("Test Error");
             if (jsonString == null) throw new Exception("Did not receive json DATA");
 
             JObject jsonObj = JObject.Parse(jsonString);

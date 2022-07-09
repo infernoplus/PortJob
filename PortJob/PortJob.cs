@@ -19,6 +19,8 @@ namespace PortJob {
         public static string OutputPath { get; set; }
         public static readonly float GLOBAL_SCALE = 0.01f;
         static void Main(string[] args) {
+
+            CheckIsDarkSouls3IsRunning();
             DateTime startTime = DateTime.Now;
             SetupPaths();
             Log.SetupLogStream();
@@ -31,6 +33,7 @@ namespace PortJob {
             TimeSpan length = DateTime.Now - startTime;
             Log.Info(0, $"Porting time: {length}");
             Log.CloseWriter();
+
         }
 
         private static FLVER2 GetDonorFlver(string[] files) {
@@ -53,19 +56,28 @@ namespace PortJob {
                     }
                 }
             }
-
             return null;
         }
 
+        private static void CheckIsDarkSouls3IsRunning() {
+            Process[] processes = Process.GetProcesses();
+            foreach (Process process in processes) {
+                if (process.MainWindowTitle is "DARK SOULS™ III" or "DARK SOULS III") {
+                    Console.WriteLine("Dark Souls 3 is running! Close the game or exit the map and press any key to continue");
+                    Console.ReadKey();
+                    Console.WriteLine("Resuming");
+                }
+            }
+        }
+
         private static void WaitForWorkers() {
-            while (_workers.Count > 0)
-            {
-                for (int i = _workers.Count - 1; i >= 0; i--)
-                {
-                    if (_workers[i].IsDone)
-                    {
-                        if (_workers[i].ExitCode != 0)
+            while (_workers.Count > 0) {
+                for (int i = _workers.Count - 1; i >= 0; i--) {
+                    if (_workers[i].IsDone) {
+                        if (_workers[i].ExitCode != 0) {
                             Console.WriteLine($"Worker exited with error code {_workers[i].ExitCode}");
+                            Console.WriteLine(_workers[i].ErrorMessage);
+                        }
                         _workers.RemoveAt(i);
                     }
                 }
@@ -338,10 +350,10 @@ namespace PortJob {
                     nva.Navmeshes.Add(new NVA.Navmesh() {
                         NameID = id,
                         ModelID = nModelID,
-                        Position = player.Position + new Vector3(-20, 33, 50), //using player position, here. Change this to cell.center in loop.
-                        VertexCount = 203,
-                        Unk38 = 12399,
-                        Unk4C = true
+                        Position = player.Position, //using player position, here. Change this to cell.center in loop.
+                        VertexCount = 1,
+                        //Unk38 = 12399,
+                        //Unk4C = true
                     });
                 }
 
