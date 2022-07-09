@@ -35,15 +35,14 @@ namespace PortJob {
                 if (process.MainWindowTitle is "DARK SOULS™ III" or "DARK SOULS III") {
                     Console.WriteLine("Dark Souls 3 is running! Close the game or exit the map and press any key to continue");
                     Console.ReadKey();
+                    Console.WriteLine("Resuming");
                 }
             }
         }
 
         private static void WaitForWorkers() {
-            while (_workers.Count > 0)
-            {
-                for (int i = _workers.Count - 1; i >= 0; i--)
-                {
+            while (_workers.Count > 0) {
+                for (int i = _workers.Count - 1; i >= 0; i--) {
                     if (_workers[i].IsDone) {
                         if (_workers[i].ExitCode != 0) {
                             Console.WriteLine($"Worker exited with error code {_workers[i].ExitCode}");
@@ -320,10 +319,10 @@ namespace PortJob {
                     nva.Navmeshes.Add(new NVA.Navmesh() {
                         NameID = id,
                         ModelID = nModelID,
-                        Position = player.Position + new Vector3(-20, 33, 50), //using player position, here. Change this to cell.center in loop.
-                        VertexCount = 203,
-                        Unk38 = 12399,
-                        Unk4C = true
+                        Position = player.Position, //using player position, here. Change this to cell.center in loop.
+                        VertexCount = 1,
+                        //Unk38 = 12399,
+                        //Unk4C = true
                     });
                 }
 
