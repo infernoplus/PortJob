@@ -22,10 +22,39 @@ namespace PortJob {
             DateTime startTime = DateTime.Now;
             SetupPaths();
             Log.SetupLogStream();
+
             Convert();
+
+            //FLVER2 myFlver = FLVER2.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\mod\\map\\m54_00_00_00\\m54_00_00_00_009000-mapbnd-dcx\\m54_00_00_00_009000.flver");
+            //FLVER2 fromFlver = GetDonorFlver(Directory.GetFiles("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\map\\m31_00_00_00", "*.mapbnd.dcx"));
+
             TimeSpan length = DateTime.Now - startTime;
             Log.Info(0, $"Porting time: {length}");
             Log.CloseWriter();
+        }
+
+        private static FLVER2 GetDonorFlver(string[] files) {
+            foreach (string file in files) {
+                BND4 bnd = BND4.Read(file);
+
+                foreach (BinderFile binderFile in bnd.Files) {
+                    if (binderFile.Name.ToLower().Contains("flver")) {
+                        FLVER2 flver = FLVER2.Read(binderFile.Bytes);
+
+                        foreach (FLVER2.Material mat in flver.Materials) {
+                            Console.WriteLine(file);
+                            if (mat.MTD.ToLower().EndsWith("m[arsn]_m.mtd"))
+                                return flver;
+                            //   Console.WriteLine($"Material found {binderFile.Name} {file} {mat.Name}");
+
+                            //if (mat.MTD.ToLower().Contains("m[a]"))
+                            //    Console.WriteLine($"Material found {binderFile.Name} {file} {mat.Name}");
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static void WaitForWorkers() {
@@ -77,7 +106,7 @@ namespace PortJob {
                 int block = i++;
                 MSB3 msb = new();
 
-                if (block != 0) { continue; } //for rapid debugging 
+                //if (block != 0) { continue; } //for rapid debugging 
 
                 MSB3.Part.Player player = new(); // Player default spawn point
                 MSB3.Model.Player playerRes = new();
@@ -101,6 +130,7 @@ namespace PortJob {
                 List<FBXInfo> fbxList = new();
 
                 for (int c = 0; c < layout.cells.Count; c++) {
+                    //if (c > 0) { break; } //DEBUG DEBUG @TODO DEBUG
                     Cell cell = layout.cells[c];
                     Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
 

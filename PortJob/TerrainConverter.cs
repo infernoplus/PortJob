@@ -62,7 +62,7 @@ namespace PortJob {
             /* Read FBX mesh data */
             int mc = 0;
             foreach (KeyValuePair<FLVER2.Mesh, TerrainData> kvp in TerrainMeshes) {
-                Log.Info(2, "Mesh #" + mc + " :: " + kvp.Value.name);
+                Log.Info(2, "Mesh #" + mc++ + " :: " + kvp.Value.name);
                 FLVER2.Mesh flverMesh = kvp.Key;
                 TerrainData terrainMesh = kvp.Value;
 
@@ -115,9 +115,9 @@ namespace PortJob {
 
                 List<TextureKey> matTextures = new();
 
-                mtdName = "M[ARSN]";
+                mtdName = "M[ARSN]_m";
                 string texA = terrainMesh.textures[0];
-                string texB = terrainMesh.textures[terrainMesh.textures[1] != null ? 1 : 0];
+                string texB = terrainMesh.textures[1];
                 matName = terrainMesh.name + ":" + Utility.PathToFileName(texA) + "->" + Utility.PathToFileName(texB);
 
                 Log.Info(5, "[MTD: " + mtdName + ", Material: " + matName + "]");
@@ -128,24 +128,28 @@ namespace PortJob {
                 string flatTex = "PortJob\\DefaultTex\\def_flat.dds";
                 Dictionary<string, string> boopers = new();
                 boopers.Add("g_DiffuseTexture", texA);
-                //boopers.Add("g_DiffuseTexture2", texB);
+                boopers.Add("g_DiffuseTexture2", texB);
                 boopers.Add("g_SpecularTexture", blackTex);
-                //boopers.Add("g_SpecularTexture2", blackTex);
+                boopers.Add("g_SpecularTexture2", blackTex);
                 boopers.Add("g_ShininessTexture", blackTex);
-                //boopers.Add("g_ShininessTexture2", blackTex);
+                boopers.Add("g_ShininessTexture2", blackTex);
                 boopers.Add("g_BumpmapTexture", flatTex);
-                //boopers.Add("g_BumpmapTexture2", flatTex);
-                //boopers.Add("g_DetailBumpmapTexture", "");
-                //boopers.Add("g_DetailBumpmapTexture2", "");
-                //boopers.Add("g_DisplacementTexture", null");
-                //boopers.Add("g_BlendMaskTexture", greyTex);
+                boopers.Add("g_BumpmapTexture2", flatTex);
+                boopers.Add("g_BlendMaskTexture", greyTex);
 
                 List<TextureKey> TextureChannelMap = MTD.getTextureMap(mtdName + ".mtd");
                 if (TextureChannelMap == null) { Log.Error(6, "Invalid MTD: " + mtdName); }
                 foreach (TextureKey TEX in TextureChannelMap) {
                     if (TEX.Value == "g_DisplacementTexture") {
-                        matTextures.Add(new TextureKey(TEX.Value, "N:\\LiveTokyo\\data\\model\\common\\tex\\dummy128.tga", TEX.Unk10, TEX.Unk11));  // God save our souls...
-                    } else {
+                        matTextures.Add(new TextureKey(TEX.Value, "N:\\LiveTokyo\\data\\model\\common\\tex\\dummy128.tga", TEX.Unk10, TEX.Unk11)); // HARD CODED
+                    }
+                    else  if (TEX.Value == "g_DetailBumpmapTexture") {
+                        matTextures.Add(new TextureKey(TEX.Value, "N:\\SPRJ\\data\\Other\\SysTex\\SYSTEX_DummyNormal.tga", TEX.Unk10, TEX.Unk11)); // LIKE A BOSS
+                    }
+                    else if (TEX.Value == "g_DetailBumpmapTexture2") {
+                        matTextures.Add(new TextureKey(TEX.Value, "N:\\SPRJ\\data\\Other\\SysTex\\SYSTEX_DummyNormal.tga", TEX.Unk10, TEX.Unk11)); // I AM THE MEMER
+                    }
+                    else {
                         string tex = boopers[TEX.Value];
 
                         string shortTexName = "mw_" + Utility.PathToFileName(tex);
@@ -222,9 +226,6 @@ namespace PortJob {
                     flverMesh.Vertices.Add(newVert);
 
                     submeshVertexHighQualityBasePositions.Add(new Vector3(posVec3.X, posVec3.Y, posVec3.Z));
-
-
-
                 }
 
 
@@ -249,6 +250,29 @@ namespace PortJob {
 
                     submeshHighQualityNormals.Add(new Vector3(rotatedNormal.X, rotatedNormal.Y, rotatedNormal.Z));
 
+                    // Tangent
+                    Vector3 tangent;
+                    //Vector3 binormal;
+
+                    Vector3 c1 = Vector3.Cross(flverMesh.Vertices[i].Normal, new Vector3(0.0f, 0.0f, 1.0f)); 
+                    Vector3 c2 = Vector3.Cross(flverMesh.Vertices[i].Normal, new Vector3(0.0f, 1.0f, 0.0f));
+
+                    if (Math.Sqrt((c1.X*c1.X)+(c1.Y*c1.Y)+(c1.Z*c1.Z)) > Math.Sqrt((c2.X * c2.X) + (c2.Y * c2.Y) + (c2.Z * c2.Z))) {
+                        tangent = c1;
+                    } else {
+                        tangent = c2;
+                    }
+
+                    tangent = Vector3.Normalize(tangent);
+                    flverMesh.Vertices[i].Tangents[0] = new Vector4(tangent.X, tangent.Y, tangent.Z, 1.0f);
+                    flverMesh.Vertices[i].Tangents[1] = new Vector4(tangent.X, tangent.Y, tangent.Z, 1.0f);
+
+                    //binormal = MathUtil.crossProduct(norm, tangent);
+                    //binormal = MathUtil.normalize(binormal);
+
+                    // Bitangent
+                    flverMesh.Vertices[i].Bitangent = new System.Numerics.Vector4(0f, 0f, 0f, 0f);
+
                     // Texture Coordinate
                     int uvIndex = 0;
 
@@ -260,9 +284,9 @@ namespace PortJob {
 
                     System.Numerics.Vector3 uv = new(vert.coordinate.X, vert.coordinate.Y, 0);
 
-                    flverMesh.Vertices[i].UVs.Add(uv);
-                    flverMesh.Vertices[i].UVs.Add(uv);
-                    flverMesh.Vertices[i].UVs.Add(uv);
+                    flverMesh.Vertices[i].UVs[0] = uv;
+                    flverMesh.Vertices[i].UVs[1] = uv;
+                    flverMesh.Vertices[i].UVs[2] = uv;
 
                     if (isBaseUv) {
                         submeshVertexHighQualityBaseUVs.Add(
@@ -270,8 +294,8 @@ namespace PortJob {
                     }
 
                     // Color
-                    float blend = terrainMesh.texturesIndices[0] == vert.texture ? 1f : 0f;
-                    flverMesh.Vertices[i].Colors[0] = new FLVER.VertexColor(vert.color.X, vert.color.Y, vert.color.Z, 1.0f);
+                    float blend = terrainMesh.texturesIndices[0] == vert.texture ? 0f : (terrainMesh.texturesIndices[1] == vert.texture ? 1f : 0f);
+                    flverMesh.Vertices[i].Colors[0] = new FLVER.VertexColor(blend, blend, blend, blend);
                 }
 
                 /* Set blank weights for all vertices */
@@ -306,8 +330,8 @@ namespace PortJob {
                 }
 
                 /* Generate tangents */
-                Log.Info(6, "Generating tangents");
-                if (submeshHighQualityTangents.Count > 0) {
+                //Log.Info(6, "Generating tangents"); // @TODO YEEE DELETE THIS!
+                /*if (submeshHighQualityTangents.Count > 0) {
                     submeshHighQualityTangents = Solvers.TangentSolver.SolveTangents(flverMesh, submeshVertexIndices,
                         submeshHighQualityNormals,
                         submeshVertexHighQualityBasePositions,
@@ -319,9 +343,9 @@ namespace PortJob {
                            submeshHighQualityTangents[i].Y,
                            submeshHighQualityTangents[i].Z) * submeshHighQualityTangents[i].W));
 
-                        flverMesh.Vertices[i].Tangents[0] = new System.Numerics.Vector4(thingy.X, thingy.Y, thingy.Z, submeshHighQualityTangents[i].W);
+                        flverMesh.Vertices[i].Tangents[0] = new System.Numerics.Vector4(thingy.X, thingy.Y, thingy.Z, -1.0f);
                     }
-                }
+                }*/
 
                 /* Meow just wrote "bone shit" here so I guess that? */
                 foreach (FLVER2.Mesh mesh in flver.Meshes) {

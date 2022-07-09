@@ -34,7 +34,7 @@ namespace PortJob {
                 int index = int.Parse(buffers[i]["Index"].ToString());
                 int unk00 = int.Parse(buffers[i]["Unk00"].ToString());
                 //int size = int.Parse(buffers[i]["Size"].ToString());
-                if (isStatic && mbs == MBS.BoneWeights) { continue; }
+                if (isStatic && (mbs == MBS.BoneIndices || mbs == MBS.BoneWeights)) { continue; }
                 BL.Add(new FLVER.LayoutMember(mbt, mbs, index, unk00));
             }
 
@@ -57,7 +57,7 @@ namespace PortJob {
                 foreach (JObject buffer in buffers) {
                     MBT mbt = (MBT)uint.Parse(buffer["Type"].ToString());
                     MBS mbs = (MBS)uint.Parse(buffer["Semantic"].ToString());
-                    if (isStatic && mbs == MBS.BoneWeights) { continue; }
+                    if (isStatic && (mbs == MBS.BoneIndices || mbs == MBS.BoneWeights)) { continue; }
                     BL.Add(new FLVER.LayoutMember(mbt, mbs));
                 }
                 layouts.Add(BL);

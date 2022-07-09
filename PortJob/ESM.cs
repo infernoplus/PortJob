@@ -291,7 +291,7 @@ namespace PortJob {
                             color = new Vector3(rrr, ggg, bbb);
                         }
 
-                        vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx-(GRID_SIZE/2), yy-(GRID_SIZE/2)), color, ltex[Math.Min(xx/4,15),Math.Min(yy/4,15)]));
+                        vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx*0.1f, yy*0.1f), color, ltex[Math.Min(xx/4,15),Math.Min(yy/4,15)]));
                     }
                     last = lastEdge;
                 }
@@ -323,19 +323,17 @@ namespace PortJob {
 
                         for (int t = 0; t < 2; t++) {
                             List<int> texs = new();
-                            for (int i = 0; i < tris.GetLength(t); i++) {
-                                texs.Add(vertices[tris[t, i]].texture);
+                            for (int i = 0; i < 3; i++) {
+                                if (!texs.Contains(vertices[tris[t, i]].texture)) {
+                                    texs.Add(vertices[tris[t, i]].texture);
+                                }
                             }
-                            Int2[] pair = {
-                                new Int2(texs[0], texs.Count > 1 ? texs[1] : -1),
-                                new Int2(texs.Count > 1 ? texs[1] : -1, texs[0])
-                            };
+                            Int2 pair = new Int2(texs[0], texs.Count > 1 ? texs[1] : -1);
                             //if (texs.Count > 2) { Log.Error(0, $"Terrain Triangle in [{region}:{name}][{position.x},{position.y}] with more than 2 texture indices~~~ Ugly clamping!"); }
 
                             List<int> set;
-                            if (sets.ContainsKey(pair[0])) { set = sets[pair[0]]; } 
-                            else if(sets.ContainsKey(pair[1])) { set = sets[pair[1]]; }
-                            else { set = new(); sets.Add(pair[0], set); }
+                            if (sets.ContainsKey(pair)) { set = sets[pair]; } 
+                            else { set = new(); sets.Add(pair, set); }
 
                             for (int i = 0; i < 3; i++) {
                                 set.Add(tris[t,i]);
@@ -357,8 +355,8 @@ namespace PortJob {
                         if (ltexRecord != null) {
                             texName = ltexRecord["texture"].ToString().Replace(".tga", ".dds");
                         }
-                        mesh.textures[i++] = texPath + texName;
-                        mesh.texturesIndices[i++] = tex;
+                        mesh.textures[i] = texPath + texName;
+                        mesh.texturesIndices[i] = tex;
                     }
 
                     terrain.Add(mesh);
