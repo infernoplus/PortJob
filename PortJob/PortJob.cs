@@ -19,7 +19,6 @@ namespace PortJob {
         public static string OutputPath { get; set; }
         public static readonly float GLOBAL_SCALE = 0.01f;
         static void Main(string[] args) {
-        
 
             CheckIsDarkSouls3IsRunning();
             DateTime startTime = DateTime.Now;
@@ -67,8 +66,8 @@ namespace PortJob {
                 if (process.MainWindowTitle is "DARK SOULS™ III" or "DARK SOULS III") {
                     Console.WriteLine("Dark Souls III is running! Close the game or exit the map and press any key or close Dark Souls III to continue");
                     while (!process.HasExited) {
-                            if (Console.KeyAvailable)
-                                break;
+                        if (Console.KeyAvailable)
+                            break;
 
                         Thread.Sleep(500);
                     }
@@ -126,7 +125,7 @@ namespace PortJob {
                 int block = i++;
                 MSB3 msb = new();
 
-                if (block is not 3 or 8) { continue; } //for rapid debugging 
+                if (block is not (3 or 8)) { continue; } //for rapid debugging 
 
                 MSB3.Part.Player player = new(); // Player default spawn point
                 MSB3.Model.Player playerRes = new();
@@ -352,7 +351,7 @@ namespace PortJob {
                 _workers.Add(new FBXConverterWorker(OutputPath, MorrowindPath, GLOBAL_SCALE, fbxList));
 
                 /* Just add one Navmesh to each nva. Model and Name are not a string, so no '_0000' format, and we have to use a unique ID here. */
-                int nModelID = 1;
+                int nModelID = block;
                 if (int.TryParse($"{area}{block}{nModelID:D6}", out int id)) //This is just for testing so we don't go over int.MaxValue.
                 {
                     nva.Navmeshes.Add(new NVA.Navmesh() {

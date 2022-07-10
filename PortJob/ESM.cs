@@ -26,8 +26,9 @@ namespace PortJob {
         }
 
         public ESM(string path) {
-            DateTime startParse = DateTime.Now;
             JsonSerializer serializer = new();
+            Log.Info(0,"Deserializing Json file");
+            DateTime startParse = DateTime.Now;
             using (FileStream s = File.Open(path, FileMode.Open))
             using (StreamReader sr = new(s))
             using (JsonReader reader = new JsonTextReader(sr)) {
@@ -35,9 +36,6 @@ namespace PortJob {
                     json = serializer.Deserialize<JArray>(reader);
                 }
             }
-
-            //string data = File.ReadAllTextAsync(path).Result;
-            //json = JArray.Parse(data);
             Log.Info(0, $"Parse Json time: {DateTime.Now - startParse}");
 
             recordsMap = new Dictionary<Type, List<JObject>>();
