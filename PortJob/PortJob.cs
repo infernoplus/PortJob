@@ -351,7 +351,7 @@ namespace PortJob {
                 _workers.Add(new FBXConverterWorker(OutputPath, MorrowindPath, GLOBAL_SCALE, fbxList));
 
                 /* Just add one Navmesh to each nva. Model and Name are not a string, so no '_0000' format, and we have to use a unique ID here. */
-                int nModelID = block;
+                int nModelID = 0;
                 if (int.TryParse($"{area}{block}{nModelID:D6}", out int id)) //This is just for testing so we don't go over int.MaxValue.
                 {
                     nva.Navmeshes.Add(new NVA.Navmesh() {
