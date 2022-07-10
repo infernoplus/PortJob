@@ -19,6 +19,7 @@ namespace PortJob {
         public static string OutputPath { get; set; }
         public static readonly float GLOBAL_SCALE = 0.01f;
         static void Main(string[] args) {
+        
 
             CheckIsDarkSouls3IsRunning();
             DateTime startTime = DateTime.Now;
@@ -35,6 +36,7 @@ namespace PortJob {
             Log.CloseWriter();
 
         }
+
 
         private static FLVER2 GetDonorFlver(string[] files) {
             foreach (string file in files) {
@@ -63,8 +65,14 @@ namespace PortJob {
             Process[] processes = Process.GetProcesses();
             foreach (Process process in processes) {
                 if (process.MainWindowTitle is "DARK SOULS™ III" or "DARK SOULS III") {
-                    Console.WriteLine("Dark Souls 3 is running! Close the game or exit the map and press any key to continue");
-                    Console.ReadKey();
+                    Console.WriteLine("Dark Souls III is running! Close the game or exit the map and press any key or close Dark Souls III to continue");
+                    while (!process.HasExited) {
+                            if (Console.KeyAvailable)
+                                break;
+
+                        Thread.Sleep(500);
+                    }
+
                     Console.WriteLine("Resuming");
                 }
             }
@@ -118,7 +126,7 @@ namespace PortJob {
                 int block = i++;
                 MSB3 msb = new();
 
-                //if (block != 0) { continue; } //for rapid debugging 
+                if (block is not 3 or 8) { continue; } //for rapid debugging 
 
                 MSB3.Part.Player player = new(); // Player default spawn point
                 MSB3.Model.Player playerRes = new();
@@ -350,7 +358,7 @@ namespace PortJob {
                     nva.Navmeshes.Add(new NVA.Navmesh() {
                         NameID = id,
                         ModelID = nModelID,
-                        Position = player.Position, //using player position, here. Change this to cell.center in loop.
+                        Position = new Vector3(716, 2, -514),// player.Position, //using player position, here. Change this to cell.center in loop.
                         VertexCount = 1,
                         //Unk38 = 12399,
                         //Unk4C = true
