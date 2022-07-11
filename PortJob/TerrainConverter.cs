@@ -115,27 +115,52 @@ namespace PortJob {
 
                 List<TextureKey> matTextures = new();
 
-                mtdName = "M[ARSN]_m";
+                mtdName = "M[ARSN]_4m";
                 string texA = terrainMesh.textures[0];
                 string texB = terrainMesh.textures[1];
-                matName = terrainMesh.name + ":" + Utility.PathToFileName(texA) + "->" + Utility.PathToFileName(texB);
+                string texC = terrainMesh.textures[2];
+                string texD = terrainMesh.textures[2];
+                matName = Utility.PathToFileName(texA) + "->" + Utility.PathToFileName(texB) + "->" + Utility.PathToFileName(texC);
 
                 Log.Info(5, "[MTD: " + mtdName + ", Material: " + matName + "]");
 
                 /* Handle textures */
-                string blackTex = "PortJob\\DefaultTex\\def_black.dds"; // @TODO IMPORTANT! generic textures!
-                string greyTex = "PortJob\\DefaultTex\\def_grey.dds";
-                string flatTex = "PortJob\\DefaultTex\\def_flat.dds";
+                string blackTex = "$PortJob\\DefaultTex\\def_black.dds"; // @TODO IMPORTANT! generic textures!
+                string greyTex = "$PortJob\\DefaultTex\\def_grey.dds";
+                string flatTex = "$PortJob\\DefaultTex\\def_flat.dds";
                 Dictionary<string, string> boopers = new();
-                boopers.Add("g_DiffuseTexture", texA);
-                boopers.Add("g_DiffuseTexture2", texB);
-                boopers.Add("g_SpecularTexture", blackTex);
-                boopers.Add("g_SpecularTexture2", blackTex);
-                boopers.Add("g_ShininessTexture", blackTex);
-                boopers.Add("g_ShininessTexture2", blackTex);
-                boopers.Add("g_BumpmapTexture", flatTex);
-                boopers.Add("g_BumpmapTexture2", flatTex);
-                boopers.Add("g_BlendMaskTexture", greyTex);
+                /*
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_1_GSBlendMap_AlbedoMap_0", texA);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_2_GSBlendMap_AlbedoMap_1", texB);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_3_GSBlendMap_AlbedoMap_2", texC);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_0_GSBlendMap_BlendEdgeTexture", greyTex);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_13_GSBlendMap_NormalMap_0", flatTex);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_14_GSBlendMap_NormalMap_1", flatTex);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_15_GSBlendMap_NormalMap_2", flatTex);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_5_GSBlendMap_ReflectanceMap_0", blackTex);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_6_GSBlendMap_ReflectanceMap_1", blackTex);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_7_GSBlendMap_ReflectanceMap_2", blackTex);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_9_GSBlendMap_ShininessMap_0", blackTex);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_10_GSBlendMap_ShininessMap_1", blackTex);
+                boopers.Add("MultiBlend3_et1_snp_Texture2D_11_GSBlendMap_ShininessMap_2", blackTex);
+                */
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_1_GSBlendMap_AlbedoMap_0", texA);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_2_GSBlendMap_AlbedoMap_1", texB);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_3_GSBlendMap_AlbedoMap_2", texC);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_4_GSBlendMap_AlbedoMap_3", texD);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_0_GSBlendMap_BlendEdgeTexture", greyTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_13_GSBlendMap_NormalMap_0", flatTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_14_GSBlendMap_NormalMap_1", flatTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_15_GSBlendMap_NormalMap_2", flatTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_16_GSBlendMap_NormalMap_3", flatTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_5_GSBlendMap_ReflectanceMap_0", blackTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_6_GSBlendMap_ReflectanceMap_1", blackTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_7_GSBlendMap_ReflectanceMap_2", blackTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_8_GSBlendMap_ReflectanceMap_3", blackTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_9_GSBlendMap_ShininessMap_0", blackTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_10_GSBlendMap_ShininessMap_1", blackTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_11_GSBlendMap_ShininessMap_2", blackTex);
+                boopers.Add("MultiBlend4_et1_snp_Texture2D_12_GSBlendMap_ShininessMap_3", blackTex);
 
                 List<TextureKey> TextureChannelMap = MTD.getTextureMap(mtdName + ".mtd");
                 if (TextureChannelMap == null) { Log.Error(6, "Invalid MTD: " + mtdName); }
@@ -177,7 +202,8 @@ namespace PortJob {
                 flverMesh.MaterialIndex = flver.Materials.Count;
 
                 /* Write material to FLVER */
-                FLVER2.Material mat = new(matName, mtdName + ".mtd", 232) {
+                int flags = 2974; // testy hack?
+                FLVER2.Material mat = new(matName, mtdName + ".mtd", flags) {
                     GXIndex = gxIndex
                 };
 
@@ -205,7 +231,7 @@ namespace PortJob {
                     };
 
                     /* Add placeholder vertex data to FLVER */
-                    foreach (FLVER.LayoutMember memb in MTD.getLayout(mtdName + ".mtd", true)) {
+                    foreach (FLVER.LayoutMember memb in MTD.getAllLayouts(mtdName + ".mtd", true)[0]) {
                         switch (memb.Semantic) {
                             case FLVER.LayoutSemantic.Position: break;
                             case FLVER.LayoutSemantic.Normal: newVert.Normal = new System.Numerics.Vector3(0, 0, 0); break;
@@ -252,7 +278,7 @@ namespace PortJob {
 
                     // Tangent
                     Vector3 tangent;
-                    //Vector3 binormal;
+                    Vector3 binormal;
 
                     Vector3 c1 = Vector3.Cross(flverMesh.Vertices[i].Normal, new Vector3(0.0f, 0.0f, 1.0f)); 
                     Vector3 c2 = Vector3.Cross(flverMesh.Vertices[i].Normal, new Vector3(0.0f, 1.0f, 0.0f));
@@ -265,13 +291,13 @@ namespace PortJob {
 
                     tangent = Vector3.Normalize(tangent);
                     flverMesh.Vertices[i].Tangents[0] = new Vector4(tangent.X, tangent.Y, tangent.Z, 1.0f);
-                    flverMesh.Vertices[i].Tangents[1] = new Vector4(tangent.X, tangent.Y, tangent.Z, 1.0f);
+                    //flverMesh.Vertices[i].Tangents[1] = new Vector4(tangent.X, tangent.Y, tangent.Z, 1.0f);
 
-                    //binormal = MathUtil.crossProduct(norm, tangent);
-                    //binormal = MathUtil.normalize(binormal);
+                    binormal = Vector3.Cross(flverMesh.Vertices[i].Normal, tangent);
+                    binormal = Vector3.Normalize(binormal);
 
                     // Bitangent
-                    flverMesh.Vertices[i].Bitangent = new System.Numerics.Vector4(0f, 0f, 0f, 0f);
+                    //flverMesh.Vertices[i].Bitangent = new System.Numerics.Vector4(binormal.X, binormal.Y, binormal.Z, 1f);
 
                     // Texture Coordinate
                     int uvIndex = 0;
@@ -285,8 +311,7 @@ namespace PortJob {
                     System.Numerics.Vector3 uv = new(vert.coordinate.X, vert.coordinate.Y, 0);
 
                     flverMesh.Vertices[i].UVs[0] = uv;
-                    flverMesh.Vertices[i].UVs[1] = uv;
-                    flverMesh.Vertices[i].UVs[2] = uv;
+                    flverMesh.Vertices[i].UVs[1] = new Vector3(0.5f, 0f, 0f);
 
                     if (isBaseUv) {
                         submeshVertexHighQualityBaseUVs.Add(
@@ -294,8 +319,11 @@ namespace PortJob {
                     }
 
                     // Color
-                    float blend = terrainMesh.texturesIndices[0] == vert.texture ? 0f : (terrainMesh.texturesIndices[1] == vert.texture ? 1f : 0f);
-                    flverMesh.Vertices[i].Colors[0] = new FLVER.VertexColor(blend, blend, blend, blend);
+                    //float blend = terrainMesh.texturesIndices[0] == vert.texture ? 0f : (terrainMesh.texturesIndices[1] == vert.texture ? 1f : 0f);
+                    float blendA = terrainMesh.texturesIndices[0] == vert.texture ? 1f : 0f;
+                    float blendB = terrainMesh.texturesIndices[1] == vert.texture ? 1f : 0f;
+                    float blendC = terrainMesh.texturesIndices[2] == vert.texture ? 1f : 0f;
+                    flverMesh.Vertices[i].Colors[0] = new FLVER.VertexColor(1f, 1f, 1f, 1f);
                 }
 
                 /* Set blank weights for all vertices */
@@ -387,7 +415,7 @@ namespace PortJob {
             /* Write Buffer Layouts */
             flver.BufferLayouts = new List<FLVER2.BufferLayout>();
             foreach (FLVER2.Material mat in flver.Materials) {
-                flver.BufferLayouts.Add(MTD.getLayout(mat.MTD, true));
+                flver.BufferLayouts.Add(MTD.getAllLayouts(mat.MTD, true)[0]);
             }
 
             /* Couple of random FLVER flags to set */

@@ -18,7 +18,7 @@ namespace PortJob {
         private static JArray MTD_INFO_LIST;
         private static JObject GX_INFO_LIST;
 
-        public static FLVER2.BufferLayout getLayout(string MTDName, bool isStatic) {
+        public static FLVER2.BufferLayout getLayoutObsolete(string MTDName, bool isStatic) {
 
             if (MTD_INFO_LIST == null) {
                 loadMTDInfoList();
@@ -77,6 +77,7 @@ namespace PortJob {
             for (int i = 0; i < MTD_TEXTURE_MEMBERS.Length; i++) {
                 string TexMem = MTD_TEXTURE_MEMBERS[i].First.ToString();
                 switch (TexMem) {
+                    /* 'Normal' texture slot names */
                     case "g_DiffuseTexture": TM.Add(new TextureKey("Texture", TexMem, 0x1, true)); break;
                     case "g_DiffuseTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
                     case "g_SpecularTexture": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
@@ -91,6 +92,38 @@ namespace PortJob {
                     case "g_DisplacementTexture": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
                     case "g_BlendMaskTexture": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
                     case "g_Lightmap": TM.Add(new TextureKey("Emissive", TexMem, 0x1, true)); break;
+                    /* Absolute From Software tier wtf texture slot names */
+                    case "MultiBlend3_et1_snp_Texture2D_1_GSBlendMap_AlbedoMap_0": TM.Add(new TextureKey("Texture", TexMem, 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_2_GSBlendMap_AlbedoMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_3_GSBlendMap_AlbedoMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_0_GSBlendMap_BlendEdgeTexture": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_13_GSBlendMap_NormalMap_0": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_14_GSBlendMap_NormalMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_15_GSBlendMap_NormalMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_5_GSBlendMap_ReflectanceMap_0": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_6_GSBlendMap_ReflectanceMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_7_GSBlendMap_ReflectanceMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_9_GSBlendMap_ShininessMap_0": TM.Add(new TextureKey("Specular", TexMem, 0x0, false)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_10_GSBlendMap_ShininessMap_1": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_11_GSBlendMap_ShininessMap_2": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
+                    /* Kill me */
+                    case "MultiBlend4_et1_snp_Texture2D_1_GSBlendMap_AlbedoMap_0": TM.Add(new TextureKey("Texture", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_2_GSBlendMap_AlbedoMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_3_GSBlendMap_AlbedoMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_4_GSBlendMap_AlbedoMap_3": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_0_GSBlendMap_BlendEdgeTexture": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_13_GSBlendMap_NormalMap_0": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_14_GSBlendMap_NormalMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_15_GSBlendMap_NormalMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_16_GSBlendMap_NormalMap_3": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_5_GSBlendMap_ReflectanceMap_0": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_6_GSBlendMap_ReflectanceMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_7_GSBlendMap_ReflectanceMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_8_GSBlendMap_ReflectanceMap_3": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_9_GSBlendMap_ShininessMap_0": TM.Add(new TextureKey("Specular", TexMem, 0x0, false)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_10_GSBlendMap_ShininessMap_1": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_11_GSBlendMap_ShininessMap_2": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
+                    case "MultiBlend4_et1_snp_Texture2D_12_GSBlendMap_ShininessMap_3": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
                     default: throw new Exception($"The texture member {TexMem} does not exist in current MTD info");
                 }
             }
@@ -156,7 +189,7 @@ namespace PortJob {
 
         public static byte[] GetSRGBTexture(string imagePath) {
 
-            byte[] tex = imagePath.StartsWith("PortJob") ? Utility.GetEmbededResourceBytes(imagePath.Replace("\\", ".")) : File.ReadAllBytes(imagePath);
+            byte[] tex = imagePath.StartsWith("$PortJob") ? Utility.GetEmbededResourceBytes(imagePath.Replace("\\", ".").Substring(1)) : File.ReadAllBytes(imagePath);
 
             GCHandle pinnedArray = GCHandle.Alloc(tex, GCHandleType.Pinned);
 
@@ -179,8 +212,8 @@ namespace PortJob {
         }
 
         public static byte[] GetTexture(string imagePath) {
-            if (imagePath.StartsWith("PortJob"))
-                return Utility.GetEmbededResourceBytes(imagePath.Replace("\\", "."));
+            if (imagePath.StartsWith("$PortJob"))
+                return Utility.GetEmbededResourceBytes(imagePath.Replace("\\", ".").Substring(1));
 
             return File.ReadAllBytes(imagePath);
         }

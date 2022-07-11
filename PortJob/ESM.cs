@@ -294,13 +294,13 @@ namespace PortJob {
                             color = new Vector3(rrr, ggg, bbb);
                         }
 
-                        vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx*0.25f, yy*0.25f), color, ltex[Math.Min((xx)/4,15),Math.Min((GRID_SIZE-yy) / 4,15)]));
+                        vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2((float)xx/(float)GRID_SIZE, (float)yy/(float)GRID_SIZE), color, ltex[Math.Min((xx)/4,15),Math.Min((GRID_SIZE-yy) / 4,15)]));
                     }
                     last = lastEdge;
                 }
 
                 /* Index Data */
-                Dictionary<UShort2, List<int>> sets = new();
+                Dictionary<UShort3, List<int>> sets = new();
                 for (int yy = 0; yy < GRID_SIZE; yy++) {
                     for (int xx = 0; xx < GRID_SIZE; xx++) {
                         int[] quad = {
@@ -331,7 +331,7 @@ namespace PortJob {
                                     texs.Add(vertices[tris[t, i]].texture);
                                 }
                             }
-                            UShort2 pair = new UShort2(texs[0], texs.Count > 1 ? texs[1] : (ushort)9999);
+                            UShort3 pair = new UShort3(texs[0], texs.Count > 1 ? texs[1] : ushort.MaxValue, texs.Count > 2 ? texs[2] : ushort.MaxValue);
                             //if (texs.Count > 2) { Log.Error(0, $"Terrain Triangle in [{region}:{name}][{position.x},{position.y}] with more than 2 texture indices~~~ Ugly clamping!"); }
 
                             List<int> set;
@@ -346,19 +346,19 @@ namespace PortJob {
                 }
 
                 /* Create TerrainMeshes */
-                foreach (KeyValuePair<UShort2, List<int>> set in sets) {
+                foreach (KeyValuePair<UShort3, List<int>> set in sets) {
                     TerrainData mesh = new TerrainData(region + ":" + name, int.Parse(landscape["landscape_flags"].ToString()), vertices, set.Value);
 
-                    string texPath = $"{PortJob.MorrowindPath}\\Data Files\\textures\\";
+                    string texDir = $"{PortJob.MorrowindPath}\\Data Files\\textures\\";
 
-                    for (int i = 0; i < 2; i++) {
+                    for (int i = 0; i < 3; i++) {
                         ushort tex = set.Key.Array()[i];
-                        string texName = "tx_dagoth_mask.dds";     // Default is something stupid so it's obvious there was an error
+                        string texPath = "$PortJob\\DefaultTex\\def_missing.dds";     // Default is something stupid so it's obvious there was an error
                         JObject ltexRecord = esm.FindRecordByKey(ESM.Type.LandscapeTexture, "index", tex + "");
                         if (ltexRecord != null) {
-                            texName = ltexRecord["texture"].ToString().Replace(".tga", ".dds");
+                            texPath = texDir + ltexRecord["texture"].ToString().Replace(".tga", ".dds");
                         }
-                        mesh.textures[i] = texPath + texName;
+                        mesh.textures[i] = texPath;
                         mesh.texturesIndices[i] = tex;
                     }
 
@@ -417,8 +417,8 @@ namespace PortJob {
             this.flag = flag;
             this.vertices = vertices != null ? vertices : new();
             this.indices = indices != null ? indices : new();
-            textures = new string[2];
-            texturesIndices = new ushort[2];
+            textures = new string[3];
+            texturesIndices = new ushort[3];
         }
     }
 
@@ -469,32 +469,33 @@ namespace PortJob {
         }
     }
 
-    public class UShort2 {
-        public readonly ushort x, y;
-        public UShort2(ushort x, ushort y) {
-            this.x = x; this.y = y;
+    public class UShort3 {
+        public readonly ushort x, y, z;
+        public UShort3(ushort x, ushort y, ushort z) {
+            this.x = x; this.y = y; this.z = z;
         }
 
-        public static bool operator ==(UShort2 a, UShort2 b) {
+        public static bool operator ==(UShort3 a, UShort3 b) {
             return a.Equals(b);
         }
-        public static bool operator !=(UShort2 a, UShort2 b) => !(a == b);
+        public static bool operator !=(UShort3 a, UShort3 b) => !(a == b);
 
-        public bool Equals(UShort2 b) {
-            return x == b.x && y == b.y;
+        public bool Equals(UShort3 b) {
+            return x == b.x && y == b.y && z == b.z;
         }
-        public override bool Equals(object a) => Equals(a as UShort2);
+        public override bool Equals(object a) => Equals(a as UShort3);
 
         public override int GetHashCode() {
             unchecked {
                 int hashCode = x.GetHashCode();
                 hashCode = (hashCode * 397) ^ y.GetHashCode();
+                hashCode = (hashCode * 397) ^ z.GetHashCode();
                 return hashCode;
             }
         }
 
         public ushort[] Array() {
-            ushort[] r = { x, y };
+            ushort[] r = { x, y, z };
             return r;
         }
     }
