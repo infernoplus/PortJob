@@ -124,7 +124,7 @@ namespace PortJob {
                 int block = i++;
                 MSB3 msb = new();
 
-                if (block is not (3 or 8)) { continue; } //for rapid debugging 
+                if (block is not (0)) { continue; } //for rapid debugging 
 
                 MSB3.Part.Player player = new(); // Player default spawn point
                 MSB3.Model.Player playerRes = new();
@@ -148,7 +148,7 @@ namespace PortJob {
                 List<FBXInfo> fbxList = new();
 
                 for (int c = 0; c < layout.cells.Count; c++) {
-                    //if (c > 0) { break; } //DEBUG DEBUG @TODO DEBUG
+                    //if (c > 8) { break; } //DEBUG DEBUG @TODO DEBUG
                     Cell cell = layout.cells[c];
                     Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
 

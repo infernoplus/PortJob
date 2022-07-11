@@ -123,19 +123,19 @@ namespace PortJob {
                 Log.Info(5, "[MTD: " + mtdName + ", Material: " + matName + "]");
 
                 /* Handle textures */
-                string blackTex = "PortJob\\DefaultTex\\def_black.dds"; // @TODO IMPORTANT! generic textures!
-                string greyTex = "PortJob\\DefaultTex\\def_grey.dds";
-                string flatTex = "PortJob\\DefaultTex\\def_flat.dds";
-                Dictionary<string, string> boopers = new();
-                boopers.Add("g_DiffuseTexture", texA);
-                boopers.Add("g_DiffuseTexture2", texB);
-                boopers.Add("g_SpecularTexture", blackTex);
-                boopers.Add("g_SpecularTexture2", blackTex);
-                boopers.Add("g_ShininessTexture", blackTex);
-                boopers.Add("g_ShininessTexture2", blackTex);
-                boopers.Add("g_BumpmapTexture", flatTex);
-                boopers.Add("g_BumpmapTexture2", flatTex);
-                boopers.Add("g_BlendMaskTexture", greyTex);
+                string blackTex = "$PortJob\\DefaultTex\\def_black.dds"; // @TODO IMPORTANT! generic textures!
+                string greyTex = "$PortJob\\DefaultTex\\def_grey.dds";
+                string flatTex = "$PortJob\\DefaultTex\\def_flat.dds";
+                Dictionary<string, KeyValuePair<string, Vector2>> boopers = new();
+                boopers.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>(texA, new Vector2(32f, 32f)));
+                boopers.Add("g_DiffuseTexture2", new KeyValuePair<string, Vector2>(texB, new Vector2(32f, 32f)));
+                boopers.Add("g_SpecularTexture", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                boopers.Add("g_SpecularTexture2", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                boopers.Add("g_ShininessTexture", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                boopers.Add("g_ShininessTexture2", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                boopers.Add("g_BumpmapTexture", new KeyValuePair<string, Vector2>(flatTex, new Vector2(32f, 32f)));
+                boopers.Add("g_BumpmapTexture2", new KeyValuePair<string, Vector2>(flatTex, new Vector2(32f, 32f)));
+                boopers.Add("g_BlendMaskTexture", new KeyValuePair<string, Vector2>(greyTex, new Vector2(1f, 1f)));
 
                 List<TextureKey> TextureChannelMap = MTD.getTextureMap(mtdName + ".mtd");
                 if (TextureChannelMap == null) { Log.Error(6, "Invalid MTD: " + mtdName); }
@@ -150,10 +150,12 @@ namespace PortJob {
                         matTextures.Add(new TextureKey(TEX.Value, "N:\\SPRJ\\data\\Other\\SysTex\\SYSTEX_DummyNormal.tga", TEX.Unk10, TEX.Unk11)); // I AM THE MEMER
                     }
                     else {
-                        string tex = boopers[TEX.Value];
+                        string tex = boopers[TEX.Value].Key;
 
                         string shortTexName = "mw_" + Utility.PathToFileName(tex);
-                        matTextures.Add(new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11));
+                        TextureKey texKey = new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11);
+                        texKey.uv = boopers[TEX.Value].Value;
+                        matTextures.Add(texKey);
                         //flverMaterials.Add(matName, 0);
 
                         // Writes every texture to a seperate file.
@@ -205,7 +207,7 @@ namespace PortJob {
                     };
 
                     /* Add placeholder vertex data to FLVER */
-                    foreach (FLVER.LayoutMember memb in MTD.getLayout(mtdName + ".mtd", true)) {
+                    foreach (FLVER.LayoutMember memb in MTD.getLayouts(mtdName + ".mtd", true)[0]) {
                         switch (memb.Semantic) {
                             case FLVER.LayoutSemantic.Position: break;
                             case FLVER.LayoutSemantic.Normal: newVert.Normal = new System.Numerics.Vector3(0, 0, 0); break;
@@ -387,7 +389,7 @@ namespace PortJob {
             /* Write Buffer Layouts */
             flver.BufferLayouts = new List<FLVER2.BufferLayout>();
             foreach (FLVER2.Material mat in flver.Materials) {
-                flver.BufferLayouts.Add(MTD.getLayout(mat.MTD, true));
+                flver.BufferLayouts.Add(MTD.getLayouts(mat.MTD, true)[0]);
             }
 
             /* Couple of random FLVER flags to set */

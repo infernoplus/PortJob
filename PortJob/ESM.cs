@@ -294,7 +294,7 @@ namespace PortJob {
                             color = new Vector3(rrr, ggg, bbb);
                         }
 
-                        vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx*0.25f, yy*0.25f), color, ltex[Math.Min((xx)/4,15),Math.Min((GRID_SIZE-yy) / 4,15)]));
+                        vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx * (1f / GRID_SIZE), yy * (1f / GRID_SIZE)), color, ltex[Math.Min((xx)/4,15),Math.Min((GRID_SIZE-yy) / 4,15)]));
                     }
                     last = lastEdge;
                 }
@@ -331,7 +331,7 @@ namespace PortJob {
                                     texs.Add(vertices[tris[t, i]].texture);
                                 }
                             }
-                            UShort2 pair = new UShort2(texs[0], texs.Count > 1 ? texs[1] : (ushort)9999);
+                            UShort2 pair = new UShort2(texs[0], texs.Count > 1 ? texs[1] : ushort.MaxValue);
                             //if (texs.Count > 2) { Log.Error(0, $"Terrain Triangle in [{region}:{name}][{position.x},{position.y}] with more than 2 texture indices~~~ Ugly clamping!"); }
 
                             List<int> set;
@@ -349,16 +349,16 @@ namespace PortJob {
                 foreach (KeyValuePair<UShort2, List<int>> set in sets) {
                     TerrainData mesh = new TerrainData(region + ":" + name, int.Parse(landscape["landscape_flags"].ToString()), vertices, set.Value);
 
-                    string texPath = $"{PortJob.MorrowindPath}\\Data Files\\textures\\";
+                    string texDir = $"{PortJob.MorrowindPath}\\Data Files\\textures\\";
 
                     for (int i = 0; i < 2; i++) {
                         ushort tex = set.Key.Array()[i];
-                        string texName = "tx_dagoth_mask.dds";     // Default is something stupid so it's obvious there was an error
+                        string texPath = "$PortJob\\DefaultTex\\def_missing.dds";     // Default is something stupid so it's obvious there was an error
                         JObject ltexRecord = esm.FindRecordByKey(ESM.Type.LandscapeTexture, "index", tex + "");
                         if (ltexRecord != null) {
-                            texName = ltexRecord["texture"].ToString().Replace(".tga", ".dds");
+                            texPath = texDir + ltexRecord["texture"].ToString().Replace(".tga", ".dds");
                         }
-                        mesh.textures[i] = texPath + texName;
+                        mesh.textures[i] = texPath;
                         mesh.texturesIndices[i] = tex;
                     }
 
