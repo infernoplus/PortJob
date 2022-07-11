@@ -294,7 +294,7 @@ namespace PortJob {
                             color = new Vector3(rrr, ggg, bbb);
                         }
 
-                        vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2((float)xx/(float)GRID_SIZE, (float)yy/(float)GRID_SIZE), color, ltex[Math.Min((xx)/4,15),Math.Min((GRID_SIZE-yy) / 4,15)]));
+                        vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx*(1f/GRID_SIZE), yy*(1f/GRID_SIZE)), color, ltex[Math.Min((xx)/4,15),Math.Min((GRID_SIZE-yy) / 4,15)]));
                     }
                     last = lastEdge;
                 }

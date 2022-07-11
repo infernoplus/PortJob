@@ -25,13 +25,13 @@ namespace PortJob {
             SetupPaths();
             Log.SetupLogStream();
 
-            Convert();
+            //Convert();
 
             //FLVER2 myFlver = FLVER2.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\mod\\map\\m54_00_00_00\\m54_00_00_00_009000-mapbnd-dcx\\m54_00_00_00_009000.flver");
             //FLVER2 testFlver = FLVER2.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\mod\\map\\m54_00_00_00\\m54_00_00_00_000504-mapbnd-dcx\\map\\m54_00_00_00\\m54_00_00_00_000504\\Model\\m54_00_00_00_000504.flver");
             //testFlver.Write("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\mod\\map\\m54_00_00_00\\m54_00_00_00_000504-mapbnd-dcx\\map\\m54_00_00_00\\m54_00_00_00_000504\\Model\\m54_00_00_00_000504.flver");
-           // FLVER2 fromFlver = GetDonorFlver(Directory.GetFiles("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\map\\m33_00_00_00", "*.mapbnd.dcx"), "m[arsn]_4m.mtd");
-
+             FLVER2 fromFlver = GetDonorFlver(Directory.GetFiles("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\map\\m45_00_00_00", "*.mapbnd.dcx"), "m[arsn]_4m.mtd");
+            //var fuck= MTD.getLayoutObsolete("m[arsn]_3m.mtd", true);
             TimeSpan length = DateTime.Now - startTime;
             Log.Info(0, $"Porting time: {length}");
             Log.CloseWriter();

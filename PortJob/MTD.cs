@@ -12,58 +12,38 @@ using System.Diagnostics;
 using System.Collections;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace PortJob {
     public static class MTD {
         private static JArray MTD_INFO_LIST;
         private static JObject GX_INFO_LIST;
 
-        public static FLVER2.BufferLayout getLayoutObsolete(string MTDName, bool isStatic) {
-
+        public static List<FLVER2.BufferLayout> getLayouts(string MTDName, bool isStatic) {
             if (MTD_INFO_LIST == null) {
                 loadMTDInfoList();
             }
+
+            List<FLVER2.BufferLayout> BLS = new();
 
             JObject MTD_INFO = getMTDInfo(MTDName);
             JToken[] MTD_LAYOUT_MEMBERS = MTD_INFO["AcceptableVertexBufferDeclarations"].ToArray();
-            FLVER2.BufferLayout BL = new();
-            JArray buffers = (JArray)MTD_LAYOUT_MEMBERS.Last()["Buffers"].First;
-            for (int i = 0; i < buffers.Count; i++) {
-                MBT mbt = (MBT)uint.Parse(buffers[i]["Type"].ToString());
-                MBS mbs = (MBS)uint.Parse(buffers[i]["Semantic"].ToString());
-                int index = int.Parse(buffers[i]["Index"].ToString());
-                int unk00 = int.Parse(buffers[i]["Unk00"].ToString());
-                //int size = int.Parse(buffers[i]["Size"].ToString());
-                if (isStatic && (mbs == MBS.BoneIndices || mbs == MBS.BoneWeights)) { continue; }
-                BL.Add(new FLVER.LayoutMember(mbt, mbs, index, unk00));
-            }
-
-            return BL;
-        }
-
-        public static List<FLVER2.BufferLayout> getAllLayouts(string MTDName, bool isStatic) {
-            if (MTD_INFO_LIST == null) {
-                loadMTDInfoList();
-            }
-
-            JObject MTD_INFO = getMTDInfo(MTDName);
-            JArray MTD_LAYOUT_MEMBERS = (JArray)MTD_INFO["AcceptableVertexBufferDeclarations"];
-            //JArray buffers = (JArray)MTD_LAYOUT_MEMBERS.First()["Buffers"];
-            List<FLVER2.BufferLayout> layouts = new();
-
-            for (int i = 0; i < MTD_LAYOUT_MEMBERS.Count; i++) {
+            for (int j = 0; j < MTD_LAYOUT_MEMBERS.Length; j++) {
                 FLVER2.BufferLayout BL = new();
-                JArray buffers = (JArray)MTD_LAYOUT_MEMBERS[i]["Buffers"][0];
-                foreach (JObject buffer in buffers) {
-                    MBT mbt = (MBT)uint.Parse(buffer["Type"].ToString());
-                    MBS mbs = (MBS)uint.Parse(buffer["Semantic"].ToString());
+                JArray buffers = (JArray)MTD_LAYOUT_MEMBERS[j]["Buffers"].First;
+                for (int i = 0; i < buffers.Count; i++) {
+                    MBT mbt = (MBT)uint.Parse(buffers[i]["Type"].ToString());
+                    MBS mbs = (MBS)uint.Parse(buffers[i]["Semantic"].ToString());
+                    int index = int.Parse(buffers[i]["Index"].ToString());
+                    int unk00 = int.Parse(buffers[i]["Unk00"].ToString());
+                    //int size = int.Parse(buffers[i]["Size"].ToString());
                     if (isStatic && (mbs == MBS.BoneIndices || mbs == MBS.BoneWeights)) { continue; }
-                    BL.Add(new FLVER.LayoutMember(mbt, mbs));
+                    BL.Add(new FLVER.LayoutMember(mbt, mbs, index, unk00));
                 }
-                layouts.Add(BL);
+                BLS.Add(BL);
             }
 
-            return layouts;
+            return BLS;
         }
 
         public static List<TextureKey> getTextureMap(string MTDName) {
@@ -78,52 +58,34 @@ namespace PortJob {
                 string TexMem = MTD_TEXTURE_MEMBERS[i].First.ToString();
                 switch (TexMem) {
                     /* 'Normal' texture slot names */
-                    case "g_DiffuseTexture": TM.Add(new TextureKey("Texture", TexMem, 0x1, true)); break;
-                    case "g_DiffuseTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "g_SpecularTexture": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
-                    case "g_SpecularTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "g_ShininessTexture": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
-                    case "g_ShininessTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "g_BumpmapTexture": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
-                    case "g_BumpmapTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "g_DetailBumpmapTexture": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
-                    case "g_DetailBumpmapTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "g_Envmap": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "g_DisplacementTexture": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
-                    case "g_BlendMaskTexture": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "g_Lightmap": TM.Add(new TextureKey("Emissive", TexMem, 0x1, true)); break;
+                    case "g_DiffuseTexture": TM.Add(new TextureKey("Texture", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_DiffuseTexture2": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_SpecularTexture": TM.Add(new TextureKey("Specular", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_SpecularTexture2": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_ShininessTexture": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_ShininessTexture2": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_BumpmapTexture": TM.Add(new TextureKey("NormalMap", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_BumpmapTexture2": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_DetailBumpmapTexture": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_DetailBumpmapTexture2": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_Envmap": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_DisplacementTexture": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x0, false)); break;
+                    case "g_BlendMaskTexture": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x1, true)); break;
+                    case "g_Lightmap": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x1, true)); break;
                     /* Absolute From Software tier wtf texture slot names */
-                    case "MultiBlend3_et1_snp_Texture2D_1_GSBlendMap_AlbedoMap_0": TM.Add(new TextureKey("Texture", TexMem, 0x1, true)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_2_GSBlendMap_AlbedoMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_3_GSBlendMap_AlbedoMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_0_GSBlendMap_BlendEdgeTexture": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_13_GSBlendMap_NormalMap_0": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_14_GSBlendMap_NormalMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_15_GSBlendMap_NormalMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_5_GSBlendMap_ReflectanceMap_0": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_6_GSBlendMap_ReflectanceMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_7_GSBlendMap_ReflectanceMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_9_GSBlendMap_ShininessMap_0": TM.Add(new TextureKey("Specular", TexMem, 0x0, false)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_10_GSBlendMap_ShininessMap_1": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
-                    case "MultiBlend3_et1_snp_Texture2D_11_GSBlendMap_ShininessMap_2": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
-                    /* Kill me */
-                    case "MultiBlend4_et1_snp_Texture2D_1_GSBlendMap_AlbedoMap_0": TM.Add(new TextureKey("Texture", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_2_GSBlendMap_AlbedoMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_3_GSBlendMap_AlbedoMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_4_GSBlendMap_AlbedoMap_3": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_0_GSBlendMap_BlendEdgeTexture": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_13_GSBlendMap_NormalMap_0": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_14_GSBlendMap_NormalMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_15_GSBlendMap_NormalMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_16_GSBlendMap_NormalMap_3": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_5_GSBlendMap_ReflectanceMap_0": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_6_GSBlendMap_ReflectanceMap_1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_7_GSBlendMap_ReflectanceMap_2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_8_GSBlendMap_ReflectanceMap_3": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_9_GSBlendMap_ShininessMap_0": TM.Add(new TextureKey("Specular", TexMem, 0x0, false)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_10_GSBlendMap_ShininessMap_1": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_11_GSBlendMap_ShininessMap_2": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
-                    case "MultiBlend4_et1_snp_Texture2D_12_GSBlendMap_ShininessMap_3": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_1_GSBlendMap_AlbedoMap_0": TM.Add(new TextureKey("Texture", TexMem, new Vector2(32f, 32f), 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_2_GSBlendMap_AlbedoMap_1": TM.Add(new TextureKey("x", TexMem, new Vector2(32f, 32f), 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_3_GSBlendMap_AlbedoMap_2": TM.Add(new TextureKey("x", TexMem, new Vector2(32f, 32f), 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_0_GSBlendMap_BlendEdgeTexture": TM.Add(new TextureKey("x", TexMem, Vector2.One, 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_13_GSBlendMap_NormalMap_0": TM.Add(new TextureKey("NormalMap", TexMem, new Vector2(32f, 32f), 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_14_GSBlendMap_NormalMap_1": TM.Add(new TextureKey("x", TexMem, new Vector2(32f, 32f), 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_15_GSBlendMap_NormalMap_2": TM.Add(new TextureKey("x", TexMem, new Vector2(32f, 32f), 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_5_GSBlendMap_ReflectanceMap_0": TM.Add(new TextureKey("Specular", TexMem, new Vector2(32f, 32f), 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_6_GSBlendMap_ReflectanceMap_1": TM.Add(new TextureKey("x", TexMem, new Vector2(32f, 32f), 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_7_GSBlendMap_ReflectanceMap_2": TM.Add(new TextureKey("x", TexMem, new Vector2(32f, 32f), 0x1, true)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_9_GSBlendMap_ShininessMap_0": TM.Add(new TextureKey("x", TexMem, new Vector2(32f, 32f), 0x0, false)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_10_GSBlendMap_ShininessMap_1": TM.Add(new TextureKey("x", TexMem, new Vector2(32f, 32f), 0x0, false)); break;
+                    case "MultiBlend3_et1_snp_Texture2D_11_GSBlendMap_ShininessMap_2": TM.Add(new TextureKey("x", TexMem, new Vector2(32f, 32f), 0x0, false)); break;
                     default: throw new Exception($"The texture member {TexMem} does not exist in current MTD info");
                 }
             }
@@ -155,7 +117,7 @@ namespace PortJob {
 
         public static List<TextureKey> getHardcodedTextureMap() {
             List<TextureKey> TM = new();
-            TM.Add(new TextureKey("g_DetailBumpmap", "", 0x0, false));
+            TM.Add(new TextureKey("g_DetailBumpmap", "", Vector2.One, 0x0, false));
             return TM;
         }
 
@@ -221,10 +183,11 @@ namespace PortJob {
 
     public class TextureKey {
         public string Key, Value;
+        public Vector2 uv;
         public byte Unk10;
         public bool Unk11;
-        public TextureKey(string k, string v, byte u, bool uu) {
-            Key = k; Value = v; Unk10 = u; Unk11 = uu;
+        public TextureKey(string k, string v, Vector2 t, byte u, bool uu) {
+            Key = k; Value = v; uv = t; Unk10 = u; Unk11 = uu;
         }
     }
 }
