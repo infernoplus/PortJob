@@ -192,7 +192,7 @@ namespace PortJob {
                     /* Flat connect collision for testing */
                     for (int k = 0; k < cell.connects.Count; k++) {
                         string ccModel = cModel;
-                        
+
                         if (!partMap.ContainsKey(ccModel))
                             throw new Exception("Connect col must reference an exisiting collision");
 
@@ -366,7 +366,7 @@ namespace PortJob {
                     nva.Navmeshes.Add(new NVA.Navmesh() {
                         NameID = id,
                         ModelID = nModelID,
-                        Position = block == 3 ?  new Vector3(798, 3, -185) : new Vector3(),//new Vector3(716, 2, -514),// player.Position, //using player position, here. Change this to cell.center in loop.
+                        Position = block == 3 ? new Vector3(798, 3, -185) : new Vector3(),//new Vector3(716, 2, -514),// player.Position, //using player position, here. Change this to cell.center in loop.
                         VertexCount = 1,
                         //Unk38 = 12399,
                         //Unk4C = true
@@ -452,6 +452,9 @@ namespace PortJob {
 
             /* Write the nav mesh bnd */
             string nPreGenPath = $"PortJob.TestCol.n{area_block}_00_00_{nModelId:D6}.hkx"; //:fatcat:
+            if (block is not (3 or 8))
+                nPreGenPath = $"PortJob.TestCol.n54_03_00_00_{0:D6}.hkx";
+
             string nPath = $"n{area_block}_00_00";
             byte[] nBytes = Utility.GetEmbededResourceBytes(nPreGenPath);
             Directory.CreateDirectory($"{OutputPath}\\map\\{mapName}\\hkx\\nav\\");
