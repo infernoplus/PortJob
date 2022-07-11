@@ -115,7 +115,7 @@ namespace PortJob {
 
                 List<TextureKey> matTextures = new();
 
-                mtdName = "M[ARSN]_4m";
+                mtdName = "M[ARSN]_3m";
                 string texA = terrainMesh.textures[0];
                 string texB = terrainMesh.textures[1];
                 string texC = terrainMesh.textures[2];
@@ -129,7 +129,7 @@ namespace PortJob {
                 string greyTex = "$PortJob\\DefaultTex\\def_grey.dds";
                 string flatTex = "$PortJob\\DefaultTex\\def_flat.dds";
                 Dictionary<string, string> boopers = new();
-                /*
+                
                 boopers.Add("MultiBlend3_et1_snp_Texture2D_1_GSBlendMap_AlbedoMap_0", texA);
                 boopers.Add("MultiBlend3_et1_snp_Texture2D_2_GSBlendMap_AlbedoMap_1", texB);
                 boopers.Add("MultiBlend3_et1_snp_Texture2D_3_GSBlendMap_AlbedoMap_2", texC);
@@ -143,7 +143,8 @@ namespace PortJob {
                 boopers.Add("MultiBlend3_et1_snp_Texture2D_9_GSBlendMap_ShininessMap_0", blackTex);
                 boopers.Add("MultiBlend3_et1_snp_Texture2D_10_GSBlendMap_ShininessMap_1", blackTex);
                 boopers.Add("MultiBlend3_et1_snp_Texture2D_11_GSBlendMap_ShininessMap_2", blackTex);
-                */
+                
+                /*
                 boopers.Add("MultiBlend4_et1_snp_Texture2D_1_GSBlendMap_AlbedoMap_0", texA);
                 boopers.Add("MultiBlend4_et1_snp_Texture2D_2_GSBlendMap_AlbedoMap_1", texB);
                 boopers.Add("MultiBlend4_et1_snp_Texture2D_3_GSBlendMap_AlbedoMap_2", texC);
@@ -161,6 +162,7 @@ namespace PortJob {
                 boopers.Add("MultiBlend4_et1_snp_Texture2D_10_GSBlendMap_ShininessMap_1", blackTex);
                 boopers.Add("MultiBlend4_et1_snp_Texture2D_11_GSBlendMap_ShininessMap_2", blackTex);
                 boopers.Add("MultiBlend4_et1_snp_Texture2D_12_GSBlendMap_ShininessMap_3", blackTex);
+                */
 
                 List<TextureKey> TextureChannelMap = MTD.getTextureMap(mtdName + ".mtd");
                 if (TextureChannelMap == null) { Log.Error(6, "Invalid MTD: " + mtdName); }
