@@ -42,42 +42,42 @@ namespace PortJob {
             string outputPath = PortJob.OutputPath;
             string area_block = $"{area:D2}_{block:D2}";
             string mapName = $"m{area_block}_00_00";
-
-            /* Write the high col bhd/bdt pair */
-            int hModelID = 0;
-            string hDonorPath = $"PortJob.TestCol.h30_00_00_00_{hModelID:D6}.hkx";
             string hPath = $"{mapName}\\h{area_block}_00_00";
-            BXF4 hBXF = new();
-            byte[] hBytes = GetEmbededResourceBytes(hDonorPath);
-            hBytes = DCX.Compress(hBytes, DCX.Type.DCX_DFLT_10000_44_9); //File is compressed inside the bdt.
-            int hStartId = 0; // h col binder file IDs start here and increment by 1
-            BinderFile hBinder = new(flags: Binder.FileFlags.Flag1, id: hStartId, name: $"{hPath}_{hModelID:D6}.hkx.dcx", bytes: hBytes); //in-line parameter names help here to tell what is going on, but are not necessary.
-            hBXF.Files.Add(hBinder);
-            hBXF.Write($"{outputPath}map\\{hPath}.hkxbhd", $"{outputPath}map\\{hPath}.hkxbdt");
-
-            /* Write the low col bhd/bdt pair */
-            int lModelID = 0;
-            string lDonorPath = $"PortJob.TestCol.l30_00_00_00_{lModelID:D6}.hkx"; //:fatcat:
             string lPath = $"{mapName}\\l{area_block}_00_00";
+
+            string[] colFiles = Directory.GetFiles($"{outputPath}\\map\\{mapName}\\hkx\\col", "*.hkx.dcx");
+            int startId = 0; // h col binder file IDs start here and increment by 1
             BXF4 lBXF = new();
-            byte[] lBytes = GetEmbededResourceBytes(lDonorPath);
-            lBytes = DCX.Compress(lBytes, DCX.Type.DCX_DFLT_10000_44_9);  //File is compressed inside the bdt.
-            int lStartId = 0; // l col binder file IDs start here and increment by 1
-            BinderFile lBinder = new(flags: Binder.FileFlags.Flag1, id: lStartId, name: $"{lPath}_{lModelID:D6}.hkx.dcx", bytes: lBytes);
-            lBXF.Files.Add(lBinder);
+            BXF4 hBXF = new();
+            foreach (string col in colFiles) {
+                byte[] bytes = File.ReadAllBytes(col);
+                string name = Path.GetFileName(col).Replace("-", "\\");
+
+                BinderFile hBinder = new(flags: Binder.FileFlags.Flag1, id: startId, name: name, bytes: bytes); //in-line parameter names help here to tell what is going on, but are not necessary.
+                hBXF.Files.Add(hBinder);
+
+                BinderFile lBinder = new(flags: Binder.FileFlags.Flag1, id: startId, name: name.Replace("\\h", "\\l"), bytes: bytes);
+                lBXF.Files.Add(lBinder);
+                startId++;
+            }
+
+            hBXF.Write($"{outputPath}map\\{hPath}.hkxbhd", $"{outputPath}map\\{hPath}.hkxbdt");
             lBXF.Write($"{outputPath}map\\{lPath}.hkxbhd", $"{outputPath}map\\{lPath}.hkxbdt");
 
             /* Write the nav mesh bnd */
-            int nModelID = 1;
-            string nDonorPath = $"PortJob.TestCol.n30_00_00_00_{nModelID:D6}.hkx"; //:fatcat:
-            string nName = $"{area_block}_00_00"; //Have to seperate the name here, cause the path is long AF
-            string nPath = $"N:\\FDP\\data\\INTERROOT_win64\\map\\{mapName}\\navimesh\\bind6\\n{nName}";
+            string[] navFiles = Directory.GetFiles($"{outputPath}\\map\\{mapName}\\hkx\\nav", "*.hkx");
             BND4 nvmBND = new();
-            byte[] nBytes = GetEmbededResourceBytes(nDonorPath);
             int nStartId = 1000; // navmesh binder file IDs start here and increment by 1
-            BinderFile nBinder = new(flags: Binder.FileFlags.Flag1, id: nStartId, name: $"{nPath}_{nModelID:D6}.hkx", bytes: nBytes);
-            nvmBND.Files.Add(nBinder);
-            nvmBND.Write($"{outputPath}map\\{mapName}\\m{nName}.nvmhktbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9); //Whole bnd is compressed. 
+            foreach (string nav in navFiles) {
+                byte[] bytes = File.ReadAllBytes(nav);
+                string name = Path.GetFileName(nav).Replace("-", "\\"); //Have to seperate the name here, cause the path is long AF
+                string path = $"N:\\FDP\\data\\INTERROOT_win64\\map\\{mapName}\\navimesh\\bind6\\{name}";
+                BinderFile nBinder = new(flags: Binder.FileFlags.Flag1, id: nStartId, name: path, bytes: bytes);
+                nvmBND.Files.Add(nBinder);
+                nStartId++;
+
+            }
+            nvmBND.Write($"{outputPath}map\\{mapName}\\m{area_block}_00_00.nvmhktbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9); //Whole bnd is compressed. 
         }
         public static byte[] GetEmbededResourceBytes(string item) {
             Assembly assembly = Assembly.GetCallingAssembly();

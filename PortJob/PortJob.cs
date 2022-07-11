@@ -19,7 +19,6 @@ namespace PortJob {
         public static string OutputPath { get; set; }
         public static readonly float GLOBAL_SCALE = 0.01f;
         static void Main(string[] args) {
-
             CheckIsDarkSouls3IsRunning();
             DateTime startTime = DateTime.Now;
             SetupPaths();
@@ -154,14 +153,15 @@ namespace PortJob {
                     Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
 
                     /* Name and model name stuff */
-                    string cModel = "h000000";
-                    string cName;
+                    string cModel = NewCollisionID();
+                    //string cName;
                     if (partMap.ContainsKey(cModel)) {
-                        cName = "_" + (partMap[cModel]++.ToString("D4"));
-                    } else {
-                        cName = "_0000";
-                        partMap.Add(cModel, 1);
+                        throw new Exception("No duplicate non-connect col");
                     }
+
+                    //cName = "_" + (partMap[cModel]++.ToString("D4"));
+                    //cName = "_0000";
+                    partMap.Add(cModel, 0);
 
                     /* Flat ground for testing */
                     MSB3.Part.Collision flat = new();
@@ -177,26 +177,32 @@ namespace PortJob {
                         flat.DispGroups[k] = cell.drawGroups[k];
                         flat.BackreadGroups[k] = cell.drawGroups[k];
                     }
-                    flat.Name = cModel + cName;
+
+                    flat.Name = cModel;// + cName;
                     flat.LodParamID = -1;
                     flat.UnkE0E = -1;
 
                     flatRes.Name = flat.ModelName;
                     flatRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{cModel}.hkt";
 
+                    WriteTestCollision(cModel, area, block);
                     AddResource(msb, flatRes);
                     msb.Parts.Collisions.Add(flat);
 
                     /* Flat connect collision for testing */
                     for (int k = 0; k < cell.connects.Count; k++) {
-                        string ccModel = "h000000";
-                        string ccName;
-                        if (partMap.ContainsKey(ccModel)) {
-                            ccName = "_" + (partMap[ccModel]++.ToString("D4"));
-                        } else {
-                            ccName = "_0000";
-                            partMap.Add(ccModel, 1);
-                        }
+                        string ccModel = cModel;
+                        
+                        if (!partMap.ContainsKey(ccModel))
+                            throw new Exception("Connect col must reference an exisiting collision");
+
+                        string ccName = "_" + (partMap[ccModel]++.ToString("D4"));
+                        //ccName = "_0000";
+                        //ccName = "_" + (partMap[ccModel]++.ToString("D4"));
+                        //} else {
+                        //    ccName = "_0000";
+                        //    partMap.Add(ccModel, 1);
+                        //}
 
                         MSB3.Part.ConnectCollision con = new();
                         MSB3.Model.Collision conRes = new();
@@ -352,17 +358,22 @@ namespace PortJob {
 
                 /* Just add one Navmesh to each nva. Model and Name are not a string, so no '_0000' format, and we have to use a unique ID here. */
                 int nModelID = 0;
+                if (block == 8)
+                    nModelID = 91;
+
                 if (int.TryParse($"{area}{block}{nModelID:D6}", out int id)) //This is just for testing so we don't go over int.MaxValue.
                 {
                     nva.Navmeshes.Add(new NVA.Navmesh() {
                         NameID = id,
                         ModelID = nModelID,
-                        Position = new Vector3(716, 2, -514),// player.Position, //using player position, here. Change this to cell.center in loop.
+                        Position = block == 3 ?  new Vector3(798, 3, -185) : new Vector3(),//new Vector3(716, 2, -514),// player.Position, //using player position, here. Change this to cell.center in loop.
                         VertexCount = 1,
                         //Unk38 = 12399,
                         //Unk4C = true
                     });
                 }
+
+                WriteTestNavMesh(nModelID, area, block);
 
                 /* There has to be an entry for each vertex in each navmesh in nav.Navmashes */
                 foreach (NVA.Navmesh navmesh in nva.Navmeshes) {
@@ -385,7 +396,7 @@ namespace PortJob {
                 Log.Info(0, "Writing MSB to: " + msbPath);
                 msb.msb.Write(msbPath, DCX.Type.DCX_DFLT_10000_44_9);
 
-                Utility.PackTestCol(msb.area, msb.block);
+                //Utility.PackTestCol(msb.area, msb.block);
             }
 
             foreach (NVAData nva in nvas) {
@@ -416,6 +427,35 @@ namespace PortJob {
 
             File.WriteAllText(mapViewListPath, mapViewList);
             File.WriteAllText(worldMsbListPath, worldMsbList);
+        }
+
+        private static void WriteTestCollision(string cModel, int area, int block) {
+            /* Setup area_block and output path*/
+            string area_block = $"{area:D2}_{block:D2}";
+            string mapName = $"m{area_block}_00_00";
+
+            /* Write the high col bhd/bdt pair */
+            if (!int.TryParse(cModel.Substring(1), out int hModelId))
+                throw new Exception($"Could not parse cModel ID: {cModel}");
+
+            string hPreGenPath = $"PortJob.TestCol.h30_00_00_00_{0:D6}.hkx";
+            string hPath = $"{mapName}-h{area_block}_00_00";
+            byte[] hBytes = Utility.GetEmbededResourceBytes(hPreGenPath);
+            hBytes = DCX.Compress(hBytes, DCX.Type.DCX_DFLT_10000_44_9); //File is compressed inside the bdt.
+            Directory.CreateDirectory($"{OutputPath}\\map\\{mapName}\\hkx\\col\\");
+            File.WriteAllBytes($"{OutputPath}\\map\\{mapName}\\hkx\\col\\{hPath}_{hModelId:D6}.hkx.dcx", hBytes);
+        }
+        private static void WriteTestNavMesh(int nModelId, int area, int block) {
+            /* Setup area_block and output path*/
+            string area_block = $"{area:D2}_{block:D2}";
+            string mapName = $"m{area_block}_00_00";
+
+            /* Write the nav mesh bnd */
+            string nPreGenPath = $"PortJob.TestCol.n{area_block}_00_00_{nModelId:D6}.hkx"; //:fatcat:
+            string nPath = $"n{area_block}_00_00";
+            byte[] nBytes = Utility.GetEmbededResourceBytes(nPreGenPath);
+            Directory.CreateDirectory($"{OutputPath}\\map\\{mapName}\\hkx\\nav\\");
+            File.WriteAllBytes($"{OutputPath}\\map\\{mapName}\\hkx\\nav\\{nPath}_{nModelId:D6}.hkx", nBytes);
         }
 
         //Going to keep this until we know which version works best.  

@@ -37,6 +37,8 @@
 		<None Remove="TestCol\h30_00_00_00_000000.hkx" />
 		<None Remove="TestCol\l30_00_00_00_000000.hkx" />
 		<None Remove="TestCol\n30_00_00_00_000001.hkx" />
+		<None Remove="TestCol\n54_03_00_00_000000.hkx" />
+		<None Remove="TestCol\n54_08_00_00_000091.hkx" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -49,6 +51,8 @@
 		<EmbeddedResource Include="TestCol\h30_00_00_00_000000.hkx" />
 		<EmbeddedResource Include="TestCol\l30_00_00_00_000000.hkx" />
 		<EmbeddedResource Include="TestCol\n30_00_00_00_000001.hkx" />
+		<EmbeddedResource Include="TestCol\n54_03_00_00_000000.hkx" />
+		<EmbeddedResource Include="TestCol\n54_08_00_00_000091.hkx" />
 	</ItemGroup>
 
 	<ItemGroup>
