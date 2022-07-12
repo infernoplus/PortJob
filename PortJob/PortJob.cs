@@ -126,6 +126,8 @@ namespace PortJob {
 
                 if (block is not (0)) { continue; } //for rapid debugging 
 
+                Log.Info(0, $"=== Generating MSB[{block}] === [{layout.cells.Count} cells]", "test");
+
                 MSB3.Part.Player player = new(); // Player default spawn point
                 MSB3.Model.Player playerRes = new();
                 player.ModelName = "c0000";
@@ -148,9 +150,10 @@ namespace PortJob {
                 List<FBXInfo> fbxList = new();
 
                 for (int c = 0; c < layout.cells.Count; c++) {
-                    //if (c > 8) { break; } //DEBUG DEBUG @TODO DEBUG
+                    if (c > 12) { break; } //DEBUG DEBUG @TODO DEBUG
                     Cell cell = layout.cells[c];
-                    Log.Info(0, "Processing Cell: " + cell.region + "->" + cell.name + " [" + cell.position.x + ", " + cell.position.y + "]", "test");
+                    Log.Info(0, "Processing Cell: " + cell.region + (cell.name!=""?":" + cell.name:"") + " -> [" + cell.position.x + ", " + cell.position.y + "]", "test");
+                    cell.Generate(esm);
 
                     /* Name and model name stuff */
                     string cModel = NewCollisionID();
@@ -382,12 +385,13 @@ namespace PortJob {
                     }
                 }
 
-                Log.Info(0, $"MSB: m{area:D2}_{block:D2}_00_00");
-                Log.Info(1, "MapPieces: " + msb.Parts.MapPieces.Count);
-                Log.Info(1, "Collisions: " + msb.Parts.Collisions.Count);
+                Log.Info(0, $"Completed: m{area:D2}_{block:D2}_00_00.msb");
+                Log.Info(2, "MapPieces: " + msb.Parts.MapPieces.Count);
+                Log.Info(2, "Collisions: " + msb.Parts.Collisions.Count);
 
                 msbs.Add(new MSBData(area, block, msb));
                 nvas.Add(new NVAData(area, block, nva));
+                Log.Info(0, "\n");
             }
 
             /* Write msbs to file and build packages */

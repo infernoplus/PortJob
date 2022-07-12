@@ -71,6 +71,8 @@ namespace PortJob {
                     case "g_DisplacementTexture": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
                     case "g_BlendMaskTexture": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
                     case "g_Lightmap": TM.Add(new TextureKey("Emissive", TexMem, 0x1, true)); break;
+                    case "g_DOLTexture1": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_DOLTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
                     default: throw new Exception($"The texture member {TexMem} does not exist in current MTD info");
                 }
             }

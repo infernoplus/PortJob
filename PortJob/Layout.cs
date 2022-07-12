@@ -21,6 +21,8 @@ namespace PortJob {
             // and it doesn't like doing any math with non const or read-only properties. We can use static readonly, instead, but they have to be class fields.
             // So we just have to move them outside of this method. 
 
+            Log.Info(0, "Calculating cell grid layouts...");
+
             Box MSB_GRID_SIZE = new(
                 (int)Math.Floor((float)GRID_SIZE.x1 / (float)MSB_SIZE.x),
                 (int)Math.Floor((float)GRID_SIZE.y1 / (float)MSB_SIZE.y),
@@ -48,13 +50,13 @@ namespace PortJob {
             List<Layout> layouts = new();
 
             /* Helper functions */
-            Layout GetLayoutById(int id) {
+            /*Layout GetLayoutById(int id) { // Deletable i think
                 for (int i = 0; i < layouts.Count; i++) {
                     if (layouts[i].id == id) { return layouts[i]; }
                 }
                 Console.WriteLine("FAILED TO FIND MSB BY ID: " + id);
                 return null;
-            };
+            };*/
 
             Cell getCellByPosition(Int2 position) {
                 for (int i = 0; i < cells.Count; i++) {
@@ -143,7 +145,7 @@ namespace PortJob {
                 }
 
                 if (small != null && layout.cells.Count + small.cells.Count < LAYOUT_CELL_BUDGET_MAX) {
-                    Console.WriteLine("Merging msb[" + layout.id + "] and layout[" + small.id + "].");
+                    Log.Info(2, "Merging layout[" + layout.id + "] and layout[" + small.id + "].");
 
                     for (int k = 0; k < layout.cells.Count; k++) {
                         Cell cell = layout.cells[k];
@@ -158,13 +160,13 @@ namespace PortJob {
             }
 
             /* Sanity Test */
-            List<Cell> fuckers = new();
+            /*List<Cell> fuckers = new(); // you can delete this now i think lol
             for (int i = 0; i < cells.Count; i++) {
                 if(cells[i].layout == null) {
                     fuckers.Add(cells[i]);
                 }
             }
-            Console.WriteLine("fuckers: " + fuckers.Count);
+            Console.WriteLine("fuckers: " + fuckers.Count);*/
 
             /* Find cell border pairs and connect collisions */
             for (int i = 0; i < layouts.Count; i++) {
@@ -305,14 +307,14 @@ namespace PortJob {
             }
 
             /* Write out results */
-            Console.WriteLine("----");
+            Log.Info(0, "Drawgroup Info:");
             for (int i = 0; i < visRes.Length; i++) {
                 if (visRes[i] > 0) {
-                    Console.WriteLine(visRes[i] + " drawgroups with " + i + " cells visible.");
+                    Log.Info(2, visRes[i] + " drawgroups with " + i + " cells visible.");
                 }
             }
 
-            Console.WriteLine("----");
+            Log.Info(0, "Cell distribution info:");
             int[] msbRes = new int[LAYOUT_CELL_BUDGET_MAX];
             for (int i = 0; i < layouts.Count; i++) {
                 msbRes[layouts[i].cells.Count]++;
@@ -320,15 +322,14 @@ namespace PortJob {
 
             for (int i = 0; i < msbRes.Length; i++) {
                 if (msbRes[i] > 0) {
-                    Console.WriteLine(msbRes[i] + " msbs containing " + i + " cells.");
+                    Log.Info(2, msbRes[i] + " layouts containing " + i + " cells.");
                 }
             }
 
-            Console.WriteLine("----");
             for (int i = 0; i < cells.Count; i++) {
                 Cell cell = cells[i];
                 if (cell.connects.Count > 2) {
-                    Console.WriteLine("Cell with more than 2 connections: [" + cell.position.x + ", " + cell.position.y + "]");
+                    Console.WriteLine("Cell with more than 2 connections: [" + cell.position.x + ", " + cell.position.y + "]!!!!!");
                 }
             }
 
@@ -337,6 +338,8 @@ namespace PortJob {
                 Layout layout = layouts[i];
                 layout.id = i;
             }
+
+            Log.Info(0, "");
 
             return layouts;
         }

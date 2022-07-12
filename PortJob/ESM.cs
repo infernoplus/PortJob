@@ -18,6 +18,7 @@ namespace PortJob {
         private JArray json; // Full unfiltered json of the morrowind.json
         private Dictionary<Type, List<JObject>> recordsMap;
         public List<Cell> exteriorCells, interiorCells;
+        public List<TerrainTexture> terrainTextures; // LandscapeTextures but in a faster to search format
 
         public enum Type {
             Header, GameSetting, GlobalVariable, Class, Faction, Race, Sound, Skill, MagicEffect, Script, Region, Birthsign, LandscapeTexture, Spell, Static, Door,
@@ -56,20 +57,27 @@ namespace PortJob {
 
             foreach (string name in Enum.GetNames(typeof(Type))) {
                 Enum.TryParse(name, out Type type);
-                Console.WriteLine(name + ": " + recordsMap[type].Count);
+                //Console.WriteLine(name + ": " + recordsMap[type].Count);
             }
 
             DateTime startLoadCells = DateTime.Now;
             LoadCells();
-            Log.Info(0, $"Load Cells time: {DateTime.Now - startLoadCells}");
+            Log.Info(0, $"Load Cells time: {DateTime.Now - startLoadCells}\n");
         }
 
         const int EXTERIOR_BOUNDS = 40; // +/- Bounds of the cell grid we consider to be the 'Exterior'
         const int CELL_THREADS = 16;
 
         private void LoadCells() {
-            exteriorCells = new List<Cell>();
-            interiorCells = new List<Cell>();
+            /* Load TerrainTextures first since we will be referencing them a lot */
+            terrainTextures = new();
+            foreach(JObject record in recordsMap[Type.LandscapeTexture]) {
+                TerrainTexture ttex = new TerrainTexture(record["texture"].ToString(), ushort.Parse(record["index"].ToString()));
+                terrainTextures.Add(ttex);
+            }
+
+            exteriorCells = new();
+            interiorCells = new();
 
             List<JObject> cells = recordsMap[Type.Cell];
             int partitionSize = (int)Math.Ceiling(cells.Count / (float)CELL_THREADS);
@@ -100,11 +108,11 @@ namespace PortJob {
                 }
             }
 
-            Log.Info(0,$"Processed: {count} == Json: {cells.Count}");
+            Log.Info(0,$"Processed: {count}/{cells.Count} cells");
         }
 
         private void AddCell(Cell genCell) {
-            if (genCell.content.Count < 1) return; // Cull cells with nothing in them. Removes most blank ocean cells which we really don't need.
+            if (genCell.refs < 1) return; // Cull cells with nothing in them. Removes most blank ocean cells which we really don't need.
 
             if (genCell.position.x >= -EXTERIOR_BOUNDS &&
                 genCell.position.x <= EXTERIOR_BOUNDS &&
@@ -129,6 +137,13 @@ namespace PortJob {
             Type.Armor, Type.Clothing, Type.RepairTool, Type.Activator, Type.Apparatus, Type.Lockpick, Type.Probe, Type.Ingredient, Type.Book, Type.Alchemy, Type.LevelledItem,
             Type.LevelledCreature, Type.PathGrid, Type.SoundGen
         };
+
+        public Cell GetCellByGrid(Int2 position) {
+            foreach(Cell cell in exteriorCells) {
+                if(cell.position == position) { return cell; }
+            }
+            return null;
+        }
 
         public JObject GetLandscapeByGrid(Int2 position) {
             foreach (JObject landscape in recordsMap[Type.Landscape]) {
@@ -170,11 +185,25 @@ namespace PortJob {
             }
             return null; // Not found!
         }
+
+        /* Get a TerrainTexture by it's index. We do this a lot during terrain generatino so I made a class for it for speeeed */
+        public TerrainTexture GetTerrainTextureByIndex(ushort index) {
+            foreach(TerrainTexture ttex in terrainTextures) {
+                if(ttex.index == index) {
+                    return ttex;
+                }
+            }
+            return null;
+        }
     }
 
     public class Cell {
         public static readonly float CELL_SIZE = 8192f * PortJob.GLOBAL_SCALE;
         public static readonly int GRID_SIZE = 64;
+        public static readonly bool GENERATE_NICE_TERRAIN = true;
+
+        public readonly JObject raw; // Raw JSON data
+        public bool generated = false; // True once generate() has been called and finished, most cell data is not filled out until that point
 
         public readonly string name;
         public readonly string region;
@@ -186,17 +215,21 @@ namespace PortJob {
         public readonly int[] flags;
 
         public readonly List<TerrainData> terrain;
+        public readonly TerrainVertex[,] borders;
 
         public readonly List<Content> content;
 
         /* These fields are used by Layout for stuff */
         public Layout layout;         // Parent layout
+        public int refs;              // Number of references in this cell, for culling purposes
         public int drawId;            // Drawgroup ID, value also correponds to the bitwise (1 << id)
         public uint[] drawGroups;
         public List<Cell> pairs;      // Cells that it borders in other msbs, these will have 'paired draw ids'
         public List<Layout> connects; // Connect collisions we need to generate
 
         public Cell(ESM esm, JObject data) {
+            raw = data;
+
             name = data["id"].ToString();
             region = data["region"] != null ? data["region"].ToString() : "null";
 
@@ -214,16 +247,28 @@ namespace PortJob {
                 flags[i] = int.Parse(flc[i].ToString());
             }
 
-            content = new List<Content>();
+            /* Create these arrays but we don't fill them out until we call 'generate()' on this cell */
+            content = new();
+            terrain = new();
+            borders = new TerrainVertex[4, 65];
 
-            JArray refc = (JArray)(data["references"]);
+            /* These fields are used by Layout for stuff */
+            refs = ((JArray)data["references"]).Count; // We don't actaully process cell content until we call generate() on it but we do make a quick count of it's content for culling purposes
+            layout = null;
+            drawId = -1;
+            drawGroups = null;
+            pairs = null;
+            connects = null;
+        }
+
+        public void Generate(ESM esm) {
+            JArray refc = (JArray)(raw["references"]);
             for (int i = 0; i < refc.Count; i++) {
                 JObject reference = (JObject)(refc[i]);
                 content.Add(new Content(esm, reference));
             }
 
             /* Decode and parse terrain data if it exists for this cell */
-            terrain = new();
             JObject landscape = esm.GetLandscapeByGrid(position);
             if (landscape != null && landscape["vertex_heights"] != null) {
                 byte[] b64Height = Base64.Default.Decode(landscape["vertex_heights"].ToString());
@@ -243,18 +288,18 @@ namespace PortJob {
                 int bC = 0; // Buffer position reading color
                 int bD = 0; // Buffer position for texture indices
 
-
+                /* Checks through all landscape texture data and makes sure there is no duplicate texture index that points to the same texture file. Returns same index if no dupe or a dupe at a higher index, returns dupe index if found and it's a lower value. */
                 byte[] zstdTexture = landscape["texture_indices"] != null ? new byte[16 * 16 * 2] : null;
                 ushort[,] ltex = new ushort[16, 16];
                 if (zstdTexture != null) {
                     byte[] b64Texture = Base64.Default.Decode(landscape["texture_indices"].ToString());
                     zstd.Decompress(zstdTexture, b64Texture);
 
-                    for(int yy = 0; yy < 15; yy+=4) {
-                        for(int xx = 0; xx < 15; xx+=4) {
+                    for (int yy = 0; yy < 15; yy += 4) {
+                        for (int xx = 0; xx < 15; xx += 4) {
                             for (int yyy = 0; yyy < 4; yyy++) {
                                 for (int xxx = 0; xxx < 4; xxx++) {
-                                    ushort texIndex = (ushort)(BitConverter.ToUInt16(new byte[] { zstdTexture[bD++], zstdTexture[bD++] }, 0) - (ushort)1);
+                                    ushort texIndex = Cell.DeDupeTextureIndex(esm, (ushort)(BitConverter.ToUInt16(new byte[] { zstdTexture[bD++], zstdTexture[bD++] }, 0) - (ushort)1));
                                     ltex[xx + xxx, yy + yyy] = texIndex;
                                 }
                             }
@@ -275,12 +320,13 @@ namespace PortJob {
                     for (int xx = 0; xx < GRID_SIZE + 1; xx++) {
                         sbyte height = (sbyte)(zstdHeight[bA++]);
                         last += height;
-                        if(xx == 0) { lastEdge = last; }
+                        if (xx == 0) { lastEdge = last; }
 
                         float xxx = -xx * (CELL_SIZE / (float)(GRID_SIZE));
                         float yyy = (GRID_SIZE - yy) * (CELL_SIZE / (float)(GRID_SIZE)); // I do not want to talk about this coordinate swap
                         float zzz = last * 8f * PortJob.GLOBAL_SCALE;
                         Vector3 position = new Vector3(xxx, zzz, yyy) + centerOffset;
+                        Int2 grid = new Int2(xx, yy);
 
                         float iii = (sbyte)zstdNormal[bB++];
                         float jjj = (sbyte)zstdNormal[bB++];
@@ -294,13 +340,114 @@ namespace PortJob {
                             color = new Vector3(rrr, ggg, bbb);
                         }
 
-                        vertices.Add(new TerrainVertex(position, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx * (1f / GRID_SIZE), yy * (1f / GRID_SIZE)), color, ltex[Math.Min((xx)/4,15),Math.Min((GRID_SIZE-yy) / 4,15)]));
+                        vertices.Add(new TerrainVertex(position, grid, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx * (1f / GRID_SIZE), yy * (1f / GRID_SIZE)), color, ltex[Math.Min((xx) / 4, 15), Math.Min((GRID_SIZE - yy) / 4, 15)]));
                     }
                     last = lastEdge;
                 }
 
+                if (GENERATE_NICE_TERRAIN) {
+                    // Gets and returns a TerrainVertex by it's grid position
+                    TerrainVertex GetTerrainVertexByGrid(Int2 g) {
+                        foreach (TerrainVertex vert in vertices) {
+                            if (vert.grid == g) { return vert; }
+                        }
+                        return null;
+                    }
+
+                    /* Texture blend smoothing pass */
+                    ushort[] nuTexIndices = new ushort[vertices.Count];
+                    for (int v = 0; v < vertices.Count; v++) {
+                        TerrainVertex vert = vertices[v];
+                        // Get local grid
+                        TerrainVertex[,] local = new TerrainVertex[3, 3];
+                        for (int yy = -1; yy <= 1; yy++) {
+                            for (int xx = -1; xx <= 1; xx++) {
+                                Int2 g = new Int2(vert.grid.x + xx, vert.grid.y + yy);
+                                local[xx + 1, yy + 1] = GetTerrainVertexByGrid(g);
+                            }
+                        }
+
+                        // Count texture use in local grid
+                        Dictionary<ushort, int> texCounts = new();
+                        for (int yy = -1; yy <= 1; yy++) {
+                            for (int xx = -1; xx <= 1; xx++) {
+                                TerrainVertex clamp = local[xx + 1, yy + 1];
+                                if (clamp == null) { clamp = local[1, yy + 1]; }
+                                if (clamp == null) { clamp = local[xx + 1, 1]; }
+                                if (clamp == null) { clamp = local[1, 1]; }
+                                if (texCounts.ContainsKey(clamp.texture)) { texCounts[clamp.texture]++; } else { texCounts.Add(clamp.texture, 1); }
+                            }
+                        }
+
+                        // Find most used texture in local grid
+                        ushort big = ushort.MaxValue; // Has to be assigned, should never actually result in this outcome.
+                        foreach (KeyValuePair<ushort, int> a in texCounts) {
+                            bool test = true;
+                            foreach (KeyValuePair<ushort, int> b in texCounts) {
+                                if (a.Value < b.Value) { test = false; continue; }
+                            }
+                            if (test) { big = a.Key; break; }
+                        }
+
+                        // Store result to apply later
+                        nuTexIndices[v] = big;
+                    }
+
+                    // We wait to apply the new texture indices until after calculating all of them so that we don't change the data while calculating off it.
+                    for (int v = 0; v < vertices.Count; v++) {
+                        TerrainVertex vert = vertices[v];
+                        vert.texture = nuTexIndices[v];
+                    }
+
+                    /* Create our border vertex arrays. These are used 2-fold */
+                    // We read adjacent cells border arrays to match their texture indices to create seamless blending between cels
+                    // We also set these up before blending so that we can reado ur own border array instaed of having to search our vertices arrays multiple times for border vertices
+                    for (int ii = 0; ii <= GRID_SIZE; ii++) {
+                        borders[3, ii] = GetTerrainVertexByGrid(new Int2(ii, 0));
+                        borders[1, ii] = GetTerrainVertexByGrid(new Int2(GRID_SIZE, ii));
+                        borders[2, ii] = GetTerrainVertexByGrid(new Int2(ii, GRID_SIZE));
+                        borders[0, ii] = GetTerrainVertexByGrid(new Int2(0, ii));
+                    }
+
+                    /* Border blending pass */
+                    // We look at our bordering cells and IF they have already been fully generated we sample their texture indices to blend terrain seamlessly between cells
+                    Cell[] adjacents = {
+                        esm.GetCellByGrid(position + new Int2(-1, 0)),
+                        esm.GetCellByGrid(position + new Int2(1, 0)),
+                        esm.GetCellByGrid(position + new Int2(0, -1)),
+                        esm.GetCellByGrid(position + new Int2(0, 1))
+                    };
+                    int[] ri = {  // Reverse index thing. Do not ask me how this works. I don't know.
+                        3,
+                        0,
+                        1,
+                        2 
+                    };
+                    for (int ii = 0; ii < adjacents.Length; ii++) {
+                        if (adjacents[ii] != null && adjacents[ii].generated) {
+                            for (int jj = 0; jj <= GRID_SIZE; jj++) {
+                                borders[ii, jj].texture = adjacents[ii].borders[ri[ii], jj].texture; // Summons demons
+                            }
+                        }
+                    }
+                }
+
                 /* Index Data */
                 Dictionary<UShort2, List<int>> sets = new();
+                for (int yy = 0; yy < GRID_SIZE / 4; yy++) {
+                    for (int xx = 0; xx < (GRID_SIZE / 4) - 1; xx++) {
+                        // Pre-generate some sets to make optimizations possible below~
+                        UShort2[] keys = {
+                            new UShort2(ltex[xx, yy], ltex[xx + 1, yy]),
+                            new UShort2(ltex[xx+1, yy], ltex[xx, yy])
+                        };
+                        if (keys[0].x != keys[0].y && !sets.ContainsKey(keys[0]) && !sets.ContainsKey(keys[1])) {
+                            sets.Add(keys[0], new List<int>());
+                        }
+
+                    }
+                }
+
                 for (int yy = 0; yy < GRID_SIZE; yy++) {
                     for (int xx = 0; xx < GRID_SIZE; xx++) {
                         int[] quad = {
@@ -310,17 +457,17 @@ namespace PortJob {
                             ((yy + 1) * (GRID_SIZE + 1)) + xx
                         };
 
-                        
+
                         int[,] tris = {
                             {
-                                quad[(xx + ((yy % 2) * 2) + 2) % 4],
-                                quad[(xx + ((yy % 2) * 2) + 1) % 4],
-                                quad[(xx + ((yy % 2) * 2) + 0) % 4]
+                                quad[(xx + (yy % 2) + 2) % 4],
+                                quad[(xx + (yy % 2) + 1) % 4],
+                                quad[(xx + (yy % 2) + 0) % 4]
                             },
                             {
-                                quad[(xx + ((yy % 2) * 2) + 0) % 4],
-                                quad[(xx + ((yy % 2) * 2) + 3) % 4],
-                                quad[(xx + ((yy % 2) * 2) + 2) % 4]
+                                quad[(xx + (yy % 2) + 0) % 4],
+                                quad[(xx + (yy % 2) + 3) % 4],
+                                quad[(xx + (yy % 2) + 2) % 4]
                             }
                         };
 
@@ -331,15 +478,30 @@ namespace PortJob {
                                     texs.Add(vertices[tris[t, i]].texture);
                                 }
                             }
-                            UShort2 pair = new UShort2(texs[0], texs.Count > 1 ? texs[1] : ushort.MaxValue);
+                            UShort2[] pair = {
+                                new UShort2(texs[0], texs.Count > 1 ? texs[1] : ushort.MaxValue),
+                                new UShort2(texs.Count > 1 ? texs[1] : ushort.MaxValue, texs[0])
+                            };
                             //if (texs.Count > 2) { Log.Error(0, $"Terrain Triangle in [{region}:{name}][{position.x},{position.y}] with more than 2 texture indices~~~ Ugly clamping!"); }
 
-                            List<int> set;
-                            if (sets.ContainsKey(pair)) { set = sets[pair]; } 
-                            else { set = new(); sets.Add(pair, set); }
+                            List<int> set = null;
+                            if (pair[0].y == ushort.MaxValue) {
+                                // Optimization! Slap any 1 material triangles into an existing material, doesn't matter what the combo is because we only use the relevant texture indice
+                                foreach (var kvp in sets) {
+                                    if (kvp.Key.x == pair[0].x || kvp.Key.y == pair[0].x) {
+                                        set = kvp.Value; break;
+                                    }
+                                }
+                            }
+
+                            if (set == null) {
+                                if (sets.ContainsKey(pair[0])) { set = sets[pair[0]]; } // Exact match
+                                else if (sets.ContainsKey(pair[1])) { set = sets[pair[1]]; } // Optimization! The way we handle this, it's fine to flip it over
+                                else { set = new(); sets.Add(pair[0], set); }
+                            }
 
                             for (int i = 0; i < 3; i++) {
-                                set.Add(tris[t,i]);
+                                set.Add(tris[t, i]);
                             }
                         }
                     }
@@ -347,7 +509,24 @@ namespace PortJob {
 
                 /* Create TerrainMeshes */
                 foreach (KeyValuePair<UShort2, List<int>> set in sets) {
-                    TerrainData mesh = new TerrainData(region + ":" + name, int.Parse(landscape["landscape_flags"].ToString()), vertices, set.Value);
+                    /* Cull unused vertices and build new indices */
+                    // This is a big optimization and compresses the size of these terrain meshes by quite a bit in some cases
+                    List<TerrainVertex> cv = new();
+                    List<int> ci = new();
+                    
+                    for(int ii=0;ii<set.Value.Count;ii++) {
+                        int index = set.Value[ii];
+                        TerrainVertex vert = vertices[index];
+
+                        int re = cv.IndexOf(vert);
+                        if (re != -1) { ci.Add(re); }
+                        else {
+                            cv.Add(vert);
+                            ci.Add(cv.Count - 1);
+                        }
+                    }
+
+                    TerrainData mesh = new TerrainData(region + ":" + name, int.Parse(landscape["landscape_flags"].ToString()), cv, ci);
 
                     string texDir = $"{PortJob.MorrowindPath}\\Data Files\\textures\\";
 
@@ -365,13 +544,27 @@ namespace PortJob {
                     terrain.Add(mesh);
                 }
             }
+            generated = true;
+        }
 
-            /* These fields are used by Layout for stuff */
-            layout = null;
-            drawId = -1;
-            drawGroups = null;
-            pairs = null;
-            connects = null;
+        /* Stupid thing to try and make this run a little faster */
+        // 
+        private static ushort[] preOpt = new ushort[512]; // Optimization, store any results we have in this array so we don't have to search the list for them
+        private static ushort DeDupeTextureIndex(ESM esm, ushort a) {
+            if (a < preOpt.Length && preOpt[a] != 0) { return preOpt[a]; }
+
+            TerrainTexture ttex = esm.GetTerrainTextureByIndex(a);
+            if (ttex == null) { return a; }
+            ushort res = a;
+            foreach (TerrainTexture ottex in esm.terrainTextures) {
+                if (ttex != ottex && ttex.texture.ToLower() == ottex.texture.ToLower()) {
+                    res = ttex.index < ottex.index ? ttex.index : ottex.index; // Lower index overrides
+                    break;
+                }
+            }
+
+            if (res < preOpt.Length) { preOpt[a] = res; }
+            return res;
         }
     }
 
@@ -424,18 +617,29 @@ namespace PortJob {
 
     public class TerrainVertex {
         public Vector3 position;
+        public Int2 grid; // position on this cells grid
         public Vector3 normal;
         public Vector2 coordinate;
         public Vector3 color;
 
         public ushort texture;
 
-        public TerrainVertex(Vector3 position, Vector3 normal, Vector2 coordinate, Vector3 color, ushort texture) {
+        public TerrainVertex(Vector3 position, Int2 grid, Vector3 normal, Vector2 coordinate, Vector3 color, ushort texture) {
             this.position = position;
+            this.grid = grid;
             this.normal = normal;
             this.coordinate = coordinate;
             this.color = color;
             this.texture = texture;
+        }
+    }
+
+    public class TerrainTexture {
+        public string texture;
+        public ushort index;
+
+        public TerrainTexture(string texture, ushort index) {
+            this.texture = texture; this.index = index;
         }
     }
 
@@ -454,6 +658,14 @@ namespace PortJob {
             return x == b.x && y == b.y;
         }
         public override bool Equals(object a) => Equals(a as Int2);
+
+        public static Int2 operator +(Int2 a, Int2 b) {
+            return a.Add(b);
+        }
+
+        public Int2 Add(Int2 b) {
+            return new Int2(x + b.x, y + b.y);
+        }
 
         public override int GetHashCode() {
             unchecked {
