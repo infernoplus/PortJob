@@ -42,7 +42,7 @@ namespace PortJob {
             List<TPF> tpfs = new();
 
             /* Grab terrain data from cell */
-            Log.Info(0, "Converting terrain data for cell: ");
+            //Log.Info(0, "Converting terrain data for cell: ");
             Dictionary<FLVER2.Mesh, string> flverMeshNameMap = new();
             Dictionary<FLVER2.Mesh, TerrainData> TerrainMeshes = new();
             Vector3 rootPosition = new Vector3(0f, 0f, 0f);
@@ -62,7 +62,7 @@ namespace PortJob {
             /* Read FBX mesh data */
             int mc = 0;
             foreach (KeyValuePair<FLVER2.Mesh, TerrainData> kvp in TerrainMeshes) {
-                Log.Info(2, "Mesh #" + mc++ + " :: " + kvp.Value.name);
+                //Log.Info(2, "Mesh #" + mc++ + " :: " + kvp.Value.name);
                 FLVER2.Mesh flverMesh = kvp.Key;
                 TerrainData terrainMesh = kvp.Value;
 
@@ -118,24 +118,24 @@ namespace PortJob {
                 mtdName = "M[ARSN]_m";
                 string texA = terrainMesh.textures[0];
                 string texB = terrainMesh.textures[1];
-                matName = terrainMesh.name + ":" + Utility.PathToFileName(texA) + "->" + Utility.PathToFileName(texB);
+                matName = Utility.PathToFileName(texA) + "->" + Utility.PathToFileName(texB);
 
-                Log.Info(5, "[MTD: " + mtdName + ", Material: " + matName + "]");
+                //Log.Info(5, "[MTD: " + mtdName + ", Material: " + matName + "]" + " { " + terrainMesh.texturesIndices[0] + ", " + terrainMesh.texturesIndices[1] + " }");
 
                 /* Handle textures */
-                string blackTex = "PortJob\\DefaultTex\\def_black.dds"; // @TODO IMPORTANT! generic textures!
-                string greyTex = "PortJob\\DefaultTex\\def_grey.dds";
-                string flatTex = "PortJob\\DefaultTex\\def_flat.dds";
-                Dictionary<string, string> boopers = new();
-                boopers.Add("g_DiffuseTexture", texA);
-                boopers.Add("g_DiffuseTexture2", texB);
-                boopers.Add("g_SpecularTexture", blackTex);
-                boopers.Add("g_SpecularTexture2", blackTex);
-                boopers.Add("g_ShininessTexture", blackTex);
-                boopers.Add("g_ShininessTexture2", blackTex);
-                boopers.Add("g_BumpmapTexture", flatTex);
-                boopers.Add("g_BumpmapTexture2", flatTex);
-                boopers.Add("g_BlendMaskTexture", greyTex);
+                string blackTex = "$PortJob\\DefaultTex\\def_black.dds"; // @TODO IMPORTANT! generic textures!
+                string greyTex = "$PortJob\\DefaultTex\\def_grey.dds";
+                string flatTex = "$PortJob\\DefaultTex\\def_flat.dds";
+                Dictionary<string, KeyValuePair<string, Vector2>> boopers = new();
+                boopers.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>(texA, new Vector2(32f, 32f)));
+                boopers.Add("g_DiffuseTexture2", new KeyValuePair<string, Vector2>(texB, new Vector2(32f, 32f)));
+                boopers.Add("g_SpecularTexture", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                boopers.Add("g_SpecularTexture2", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                boopers.Add("g_ShininessTexture", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                boopers.Add("g_ShininessTexture2", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                boopers.Add("g_BumpmapTexture", new KeyValuePair<string, Vector2>(flatTex, new Vector2(32f, 32f)));
+                boopers.Add("g_BumpmapTexture2", new KeyValuePair<string, Vector2>(flatTex, new Vector2(32f, 32f)));
+                boopers.Add("g_BlendMaskTexture", new KeyValuePair<string, Vector2>(greyTex, new Vector2(1f, 1f)));
 
                 List<TextureKey> TextureChannelMap = MTD.getTextureMap(mtdName + ".mtd");
                 if (TextureChannelMap == null) { Log.Error(6, "Invalid MTD: " + mtdName); }
@@ -150,10 +150,12 @@ namespace PortJob {
                         matTextures.Add(new TextureKey(TEX.Value, "N:\\SPRJ\\data\\Other\\SysTex\\SYSTEX_DummyNormal.tga", TEX.Unk10, TEX.Unk11)); // I AM THE MEMER
                     }
                     else {
-                        string tex = boopers[TEX.Value];
+                        string tex = boopers[TEX.Value].Key;
 
                         string shortTexName = "mw_" + Utility.PathToFileName(tex);
-                        matTextures.Add(new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11));
+                        TextureKey texKey = new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11);
+                        texKey.uv = boopers[TEX.Value].Value;
+                        matTextures.Add(texKey);
                         //flverMaterials.Add(matName, 0);
 
                         // Writes every texture to a seperate file.
@@ -182,7 +184,7 @@ namespace PortJob {
                 };
 
                 foreach (TextureKey t in matTextures) {
-                    FLVER2.Texture tex = new(t.Key, t.Value, System.Numerics.Vector2.One, t.Unk10, t.Unk11, 0, 0, 0);
+                    FLVER2.Texture tex = new(t.Key, t.Value, t.uv, t.Unk10, t.Unk11, 0, 0, 0);
                     mat.Textures.Add(tex);
                 }
                 flver.Materials.Add(mat);
@@ -192,7 +194,7 @@ namespace PortJob {
                 flver.GXLists.Add(gxinfo);
 
                 /* Write position data to FLVER */
-                Log.Info(5, "Writing vertices");
+                //Log.Info(5, "Writing vertices");
                 for (int i = 0; i < terrainMesh.vertices.Count; i++) {
                     Vector3 posVec3 = new Vector3(terrainMesh.vertices[i].position.X, terrainMesh.vertices[i].position.Y, terrainMesh.vertices[i].position.Z);
 
@@ -205,7 +207,7 @@ namespace PortJob {
                     };
 
                     /* Add placeholder vertex data to FLVER */
-                    foreach (FLVER.LayoutMember memb in MTD.getLayout(mtdName + ".mtd", true)) {
+                    foreach (FLVER.LayoutMember memb in MTD.getLayouts(mtdName + ".mtd", true)[0]) {
                         switch (memb.Semantic) {
                             case FLVER.LayoutSemantic.Position: break;
                             case FLVER.LayoutSemantic.Normal: newVert.Normal = new System.Numerics.Vector3(0, 0, 0); break;
@@ -230,7 +232,7 @@ namespace PortJob {
 
 
                 /* Write real vertex data to FLVER */
-                Log.Info(5, "Writing vertex data");
+                //Log.Info(5, "Writing vertex data");
                 for (int i = 0; i < terrainMesh.vertices.Count; i++) {
                     TerrainVertex vert = terrainMesh.vertices[i];
 
@@ -287,6 +289,7 @@ namespace PortJob {
                     flverMesh.Vertices[i].UVs[0] = uv;
                     flverMesh.Vertices[i].UVs[1] = uv;
                     flverMesh.Vertices[i].UVs[2] = uv;
+                    flverMesh.Vertices[i].UVs.Add(uv);
 
                     if (isBaseUv) {
                         submeshVertexHighQualityBaseUVs.Add(
@@ -295,7 +298,7 @@ namespace PortJob {
 
                     // Color
                     float blend = terrainMesh.texturesIndices[0] == vert.texture ? 0f : (terrainMesh.texturesIndices[1] == vert.texture ? 1f : 0f);
-                    flverMesh.Vertices[i].Colors[0] = new FLVER.VertexColor(blend, blend, blend, blend);
+                    flverMesh.Vertices[i].Colors[0] = new FLVER.VertexColor(blend, 1f, 0f, 1f);
                 }
 
                 /* Set blank weights for all vertices */
@@ -387,7 +390,7 @@ namespace PortJob {
             /* Write Buffer Layouts */
             flver.BufferLayouts = new List<FLVER2.BufferLayout>();
             foreach (FLVER2.Material mat in flver.Materials) {
-                flver.BufferLayouts.Add(MTD.getLayout(mat.MTD, true));
+                flver.BufferLayouts.Add(MTD.getLayouts(mat.MTD, true)[0]);
             }
 
             /* Couple of random FLVER flags to set */
@@ -407,7 +410,7 @@ namespace PortJob {
             }
 
             /* Write FLVER to file */
-            Log.Info(1, "Writing FLVER to: " + flverPath);
+            //Log.Info(1, "Writing FLVER to: " + flverPath);
             BND4 bnd = new() {
                 Compression = DCX.Type.DCX_DFLT_10000_44_9
             };
@@ -422,9 +425,11 @@ namespace PortJob {
             foreach (TPF tpf in tpfs) {
                 string tpfPath = tpfDir + tpf.Textures[0].Name + ".tpf.dcx";
                 if (File.Exists(tpfPath)) { continue; } // Skip if file already exists
-                Log.Info(2, "Writing TPF to: " + tpfPath);
+                //Log.Info(2, "Writing TPF to: " + tpfPath);
                 tpf.Write(tpfPath, DCX.Type.DCX_DFLT_10000_24_9);
             }
+
+            Log.Info(2, $"Generated Terrain with [{cell.terrain.Count}] meshes -> {Utility.PathToFileName(flverPath)}");
         }
     }
 }

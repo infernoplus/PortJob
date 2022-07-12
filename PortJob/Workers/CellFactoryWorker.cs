@@ -34,18 +34,8 @@ namespace PortJob {
             ExitCode = 1;
            // ProgressBar progress = new($"Processing cells {_start} - {_end}", Console.CursorTop);
             for (int i = _start; i < _cells.Count && i < _end; i++) {
-                // TEMP DEBUG!!! WE ARE NOT USING INTERIOR CELLS SO JUST DISCARD THEM FOR NOW!
-                int x = int.Parse(_cells[i]["data"]["grid"][0].ToString());
-                int y = int.Parse(_cells[i]["data"]["grid"][1].ToString());
-                if (
-                    x >= -40 &&
-                    x <= 40 &&
-                    y >= -40 &&
-                    y <= 40
-                ) {
-                    Cell genCell = new(_esm, _cells[i]);
-                    _processedCells.Add(genCell);
-                }
+                Cell genCell = new(_esm, _cells[i]);
+                _processedCells.Add(genCell);
                 //progress.Report(i / (_end - _start));
             }
             IsDone = true;
