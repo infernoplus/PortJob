@@ -221,7 +221,7 @@ namespace FBXConverter {
                             };
 
                             /* Add placeholder vertex data to FLVER */
-                            foreach (FLVER.LayoutMember memb in MTD.getLayout(mtdName + ".mtd", true)) {
+                            foreach (FLVER.LayoutMember memb in MTD.getLayouts(mtdName + ".mtd", true).Last()) {
                                 switch (memb.Semantic) {
                                     case FLVER.LayoutSemantic.Position: break;
                                     case FLVER.LayoutSemantic.Normal: newVert.Normal = new System.Numerics.Vector3(0, 0, 0); break;
@@ -397,7 +397,7 @@ namespace FBXConverter {
             /* Write Buffer Layouts */
             flver.BufferLayouts = new List<FLVER2.BufferLayout>();
             foreach (FLVER2.Material mat in flver.Materials) {
-                flver.BufferLayouts.Add(MTD.getLayout(mat.MTD, true));
+                flver.BufferLayouts.Add(MTD.getLayouts(mat.MTD, true).Last());
             }
 
             /* Couple of random FLVER flags to set */

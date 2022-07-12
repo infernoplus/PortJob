@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CommonFunc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,27 +9,13 @@ using SoulsFormats;
 
 using System.IO;
 using System.Numerics;
-
+using DDS = CommonFunc.DDS;
+using MTD = CommonFunc.MTD;
+using static CommonFunc.Const;
 
 namespace PortJob {
     /* Converts landscape data into a flver model */
     class TerrainConverter {
-        const int FLVER_VERSION = 0x20014;
-        const byte TPF_ENCODING = 2;
-        const byte TPF_FLAG_2 = 3;
-
-        const byte FLVER_UNK_0x5C = 0;
-        const int FLVER_UNK_0x68 = 4;
-
-        const string HARDCODE_TEXTURE_KEY = "g_DetailBumpmap";
-        const string HARDCODE_TEXTURE_VAL = "";
-        const byte HARDCODE_TEXTURE_UNK10 = 0x01;
-        const bool HARDCODE_TEXTURE_UNK11 = true;
-
-        const bool ABSOLUTE_VERT_POSITIONS = true;
-
-        const int FACESET_MAX_TRIANGLES = 65535; // Max triangles in a mesh for the DS1 engine.
-
         // Return an object containing the flver, tpfs, and generated ids and names stuff later
         public static void convert(Cell cell, string flverPath, string tpfDir) {
             /* Skip if file already exists */
@@ -123,9 +110,9 @@ namespace PortJob {
                 //Log.Info(5, "[MTD: " + mtdName + ", Material: " + matName + "]" + " { " + terrainMesh.texturesIndices[0] + ", " + terrainMesh.texturesIndices[1] + " }");
 
                 /* Handle textures */
-                string blackTex = "$PortJob\\DefaultTex\\def_black.dds"; // @TODO IMPORTANT! generic textures!
-                string greyTex = "$PortJob\\DefaultTex\\def_grey.dds";
-                string flatTex = "$PortJob\\DefaultTex\\def_flat.dds";
+                string blackTex = "CommonFunc\\DefaultTex\\def_black.dds"; // @TODO IMPORTANT! generic textures!
+                string greyTex = "CommonFunc\\DefaultTex\\def_grey.dds";
+                string flatTex = "CommonFunc\\DefaultTex\\def_flat.dds";
                 Dictionary<string, KeyValuePair<string, Vector2>> boopers = new();
                 boopers.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>(texA, new Vector2(32f, 32f)));
                 boopers.Add("g_DiffuseTexture2", new KeyValuePair<string, Vector2>(texB, new Vector2(32f, 32f)));

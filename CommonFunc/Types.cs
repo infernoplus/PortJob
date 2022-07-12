@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,7 +13,6 @@ namespace CommonFunc {
             this.x2 = x2; this.y2 = y2;
         }
     }
-
     public class Int2 {
         public readonly int x, y;
         public Int2(int x, int y) {
@@ -42,4 +42,15 @@ namespace CommonFunc {
             return r;
         }
     }
+    public class TextureKey {
+        public string Key, Value;
+        public Vector2 uv;
+        public byte Unk10;
+        public bool Unk11;
+        public TextureKey(string k, string v, byte u, bool uu) {
+            Key = k; Value = v; Unk10 = u; Unk11 = uu;
+            uv = Vector2.One;
+        }
+    }
+
 }

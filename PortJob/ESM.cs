@@ -11,6 +11,7 @@ using System.Threading;
 
 using gfoidl.Base64;
 using ImpromptuNinjas.ZStd;
+using static CommonFunc.Const;
 
 namespace PortJob {
     /* Loads and handles the JSON file of the morrowind.esm that tes3conv outputs */
@@ -198,10 +199,6 @@ namespace PortJob {
     }
 
     public class Cell {
-        public static readonly float CELL_SIZE = 8192f * PortJob.GLOBAL_SCALE;
-        public static readonly int GRID_SIZE = 64;
-        public static readonly bool GENERATE_NICE_TERRAIN = true;
-
         public readonly JObject raw; // Raw JSON data
         public bool generated = false; // True once generate() has been called and finished, most cell data is not filled out until that point
 
@@ -316,15 +313,15 @@ namespace PortJob {
                 List<TerrainVertex> vertices = new();
                 float last = offset;
                 float lastEdge = last;
-                for (int yy = GRID_SIZE; yy >= 0; yy--) {
-                    for (int xx = 0; xx < GRID_SIZE + 1; xx++) {
+                for (int yy = CELL_GRID_SIZE; yy >= 0; yy--) {
+                    for (int xx = 0; xx < CELL_GRID_SIZE + 1; xx++) {
                         sbyte height = (sbyte)(zstdHeight[bA++]);
                         last += height;
                         if (xx == 0) { lastEdge = last; }
 
-                        float xxx = -xx * (CELL_SIZE / (float)(GRID_SIZE));
-                        float yyy = (GRID_SIZE - yy) * (CELL_SIZE / (float)(GRID_SIZE)); // I do not want to talk about this coordinate swap
-                        float zzz = last * 8f * PortJob.GLOBAL_SCALE;
+                        float xxx = -xx * (CELL_SIZE / (float)(CELL_GRID_SIZE));
+                        float yyy = (CELL_GRID_SIZE - yy) * (CELL_SIZE / (float)(CELL_GRID_SIZE)); // I do not want to talk about this coordinate swap
+                        float zzz = last * 8f * GLOBAL_SCALE;
                         Vector3 position = new Vector3(xxx, zzz, yyy) + centerOffset;
                         Int2 grid = new Int2(xx, yy);
 
@@ -340,7 +337,7 @@ namespace PortJob {
                             color = new Vector3(rrr, ggg, bbb);
                         }
 
-                        vertices.Add(new TerrainVertex(position, grid, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx * (1f / GRID_SIZE), yy * (1f / GRID_SIZE)), color, ltex[Math.Min((xx) / 4, 15), Math.Min((GRID_SIZE - yy) / 4, 15)]));
+                        vertices.Add(new TerrainVertex(position, grid, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx * (1f / CELL_GRID_SIZE), yy * (1f / CELL_GRID_SIZE)), color, ltex[Math.Min((xx) / 4, 15), Math.Min((CELL_GRID_SIZE - yy) / 4, 15)]));
                     }
                     last = lastEdge;
                 }
@@ -402,10 +399,10 @@ namespace PortJob {
                     /* Create our border vertex arrays. These are used 2-fold */
                     // We read adjacent cells border arrays to match their texture indices to create seamless blending between cels
                     // We also set these up before blending so that we can reado ur own border array instaed of having to search our vertices arrays multiple times for border vertices
-                    for (int ii = 0; ii <= GRID_SIZE; ii++) {
+                    for (int ii = 0; ii <= CELL_GRID_SIZE; ii++) {
                         borders[3, ii] = GetTerrainVertexByGrid(new Int2(ii, 0));
-                        borders[1, ii] = GetTerrainVertexByGrid(new Int2(GRID_SIZE, ii));
-                        borders[2, ii] = GetTerrainVertexByGrid(new Int2(ii, GRID_SIZE));
+                        borders[1, ii] = GetTerrainVertexByGrid(new Int2(CELL_GRID_SIZE, ii));
+                        borders[2, ii] = GetTerrainVertexByGrid(new Int2(ii, CELL_GRID_SIZE));
                         borders[0, ii] = GetTerrainVertexByGrid(new Int2(0, ii));
                     }
 
@@ -425,7 +422,7 @@ namespace PortJob {
                     };
                     for (int ii = 0; ii < adjacents.Length; ii++) {
                         if (adjacents[ii] != null && adjacents[ii].generated) {
-                            for (int jj = 0; jj <= GRID_SIZE; jj++) {
+                            for (int jj = 0; jj <= CELL_GRID_SIZE; jj++) {
                                 borders[ii, jj].texture = adjacents[ii].borders[ri[ii], jj].texture; // Summons demons
                             }
                         }
@@ -434,8 +431,8 @@ namespace PortJob {
 
                 /* Index Data */
                 Dictionary<UShort2, List<int>> sets = new();
-                for (int yy = 0; yy < GRID_SIZE / 4; yy++) {
-                    for (int xx = 0; xx < (GRID_SIZE / 4) - 1; xx++) {
+                for (int yy = 0; yy < CELL_GRID_SIZE / 4; yy++) {
+                    for (int xx = 0; xx < (CELL_GRID_SIZE / 4) - 1; xx++) {
                         // Pre-generate some sets to make optimizations possible below~
                         UShort2[] keys = {
                             new UShort2(ltex[xx, yy], ltex[xx + 1, yy]),
@@ -448,13 +445,13 @@ namespace PortJob {
                     }
                 }
 
-                for (int yy = 0; yy < GRID_SIZE; yy++) {
-                    for (int xx = 0; xx < GRID_SIZE; xx++) {
+                for (int yy = 0; yy < CELL_GRID_SIZE; yy++) {
+                    for (int xx = 0; xx < CELL_GRID_SIZE; xx++) {
                         int[] quad = {
-                            (yy * (GRID_SIZE + 1)) + xx,
-                            (yy * (GRID_SIZE + 1)) + (xx + 1),
-                            ((yy + 1) * (GRID_SIZE + 1)) + (xx + 1),
-                            ((yy + 1) * (GRID_SIZE + 1)) + xx
+                            (yy * (CELL_GRID_SIZE + 1)) + xx,
+                            (yy * (CELL_GRID_SIZE + 1)) + (xx + 1),
+                            ((yy + 1) * (CELL_GRID_SIZE + 1)) + (xx + 1),
+                            ((yy + 1) * (CELL_GRID_SIZE + 1)) + xx
                         };
 
 
@@ -528,11 +525,11 @@ namespace PortJob {
 
                     TerrainData mesh = new TerrainData(region + ":" + name, int.Parse(landscape["landscape_flags"].ToString()), cv, ci);
 
-                    string texDir = $"{PortJob.MorrowindPath}\\Data Files\\textures\\";
+                    string texDir = $"{MorrowindPath}\\Data Files\\textures\\";
 
                     for (int i = 0; i < 2; i++) {
                         ushort tex = set.Key.Array()[i];
-                        string texPath = "$PortJob\\DefaultTex\\def_missing.dds";     // Default is something stupid so it's obvious there was an error
+                        string texPath = "CommonFunc\\DefaultTex\\def_missing.dds";     // Default is something stupid so it's obvious there was an error
                         JObject ltexRecord = esm.FindRecordByKey(ESM.Type.LandscapeTexture, "index", tex + "");
                         if (ltexRecord != null) {
                             texPath = texDir + ltexRecord["texture"].ToString().Replace(".tga", ".dds");
@@ -592,7 +589,7 @@ namespace PortJob {
             float k = float.Parse(((JArray)(data["rotation"]))[1].ToString());
             float j = float.Parse(((JArray)(data["rotation"]))[2].ToString()) - (float)Math.PI;
 
-            position = new Vector3(x, y, z) * PortJob.GLOBAL_SCALE;
+            position = new Vector3(x, y, z) * GLOBAL_SCALE;
             rotation = new Vector3(i, j, k) * (float)(180 / Math.PI);
         }
     }

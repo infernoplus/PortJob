@@ -37,8 +37,9 @@ namespace CommonFunc {
         }
 
         /* Temporary code for packing up hkxs */
-        public static void PackTestCol(string outputPath, int area, int block) {
+        public static void PackTestCol(int area, int block) {
             /* Setup area_block and output path*/
+            string outputPath = Settings.OutputPath;
             string area_block = $"{area:D2}_{block:D2}";
             string mapName = $"m{area_block}_00_00";
             string hPath = $"{mapName}\\h{area_block}_00_00";
@@ -143,7 +144,7 @@ namespace CommonFunc {
         }
 
         public static bool IsEmbeddedResource(this string s) {
-            Assembly executingAssembly = Assembly.GetCallingAssembly();
+            Assembly executingAssembly = Assembly.GetEntryAssembly();
             if (s.StartsWith(executingAssembly.GetName().Name))
                 return true;
 
@@ -154,6 +155,10 @@ namespace CommonFunc {
             }
 
             return false;
+        }
+
+        public static string PathToEmbeddedPath(this string path) {
+            return path.Replace("\\", ".");
         }
 
     }
