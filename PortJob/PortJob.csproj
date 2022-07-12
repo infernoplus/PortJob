@@ -46,20 +46,11 @@
 	<ItemGroup>
 		<PackageReference Include="gfoidl.Base64" Version="1.1.1" />
 		<PackageReference Include="ImpromptuNinjas.ZStd" Version="1.4.5.5" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="TeximpNet" Version="1.4.3" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\CommonFunc\CommonFunc.csproj" />
 		<ProjectReference Include="..\SoulsFormat\SoulsFormats\SoulsFormats.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>..\Lib\Newtonsoft.Json.dll</HintPath>
-			<Private>true</Private>
-		</Reference>
 	</ItemGroup>
 
 </Project>
