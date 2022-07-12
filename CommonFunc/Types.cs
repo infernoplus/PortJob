@@ -29,6 +29,14 @@ namespace CommonFunc {
         }
         public override bool Equals(object a) => Equals(a as Int2);
 
+        public static Int2 operator +(Int2 a, Int2 b) {
+            return a.Add(b);
+        }
+
+        public Int2 Add(Int2 b) {
+            return new Int2(x + b.x, y + b.y);
+        }
+
         public override int GetHashCode() {
             unchecked {
                 int hashCode = x.GetHashCode();
@@ -42,6 +50,37 @@ namespace CommonFunc {
             return r;
         }
     }
+
+    public class UShort2 {
+        public readonly ushort x, y;
+        public UShort2(ushort x, ushort y) {
+            this.x = x; this.y = y;
+        }
+
+        public static bool operator ==(UShort2 a, UShort2 b) {
+            return a.Equals(b);
+        }
+        public static bool operator !=(UShort2 a, UShort2 b) => !(a == b);
+
+        public bool Equals(UShort2 b) {
+            return x == b.x && y == b.y;
+        }
+        public override bool Equals(object a) => Equals(a as UShort2);
+
+        public override int GetHashCode() {
+            unchecked {
+                int hashCode = x.GetHashCode();
+                hashCode = (hashCode * 397) ^ y.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        public ushort[] Array() {
+            ushort[] r = { x, y };
+            return r;
+        }
+    }
+
     public class TextureKey {
         public string Key, Value;
         public Vector2 uv;

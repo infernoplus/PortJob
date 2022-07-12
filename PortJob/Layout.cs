@@ -1,18 +1,15 @@
-﻿using System;
+﻿using CommonFunc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static CommonFunc.Const;
 
 namespace PortJob {
     /* This class takes the list of exterior cells that ESM generates and calculates the layout for MSBs to use */
     /* Calculates information for which msbs contain which cells, what connect collisions to put in which cells, and what drawgroups each cell will have */
     public class Layout {
-        static readonly Box GRID_SIZE = new (-18, -17, 24, 28);
-        static readonly Int2 MSB_SIZE = new (8, 8);
-        static readonly int LAYOUT_CELL_BUDGET = MSB_SIZE.x * MSB_SIZE.y;
-        static readonly int LAYOUT_CELL_BUDGET_MAX = (int)(LAYOUT_CELL_BUDGET * 1.25);
-
         public static List<Layout> CalculateLayout(ESM esm) {
             /* Const settings */
             // Nord how the fuck do I make these actual const class values it keeps giving me errors reeeeeeeeeeeeeeeeeeeeeeeeeee
