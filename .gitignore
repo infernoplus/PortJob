@@ -396,4 +396,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/PortJob/Resources/settings.json
+/CommonFunc/Resources/settings.json
