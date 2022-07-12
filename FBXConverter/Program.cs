@@ -6,6 +6,8 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
+using CommonFunc;
 
 namespace FBXConverter {
     internal class Program {
@@ -14,6 +16,10 @@ namespace FBXConverter {
         public static float GLOBAL_SCALE { get; set; }
         //Modified Example 2: https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-use-anonymous-pipes-for-local-interprocess-communication
         public static void Main(string[] args) {
+            if (args.Length > 0) {
+                throw new Exception("lol args");
+            }
+
             string jsonString = null;
             if (args.Length <= 0) throw new Exception("Did not receive pipe handle");
             using (PipeStream pipeClient =
@@ -38,11 +44,11 @@ namespace FBXConverter {
 
             //throw new Exception("Test Error");
             if (jsonString == null) throw new Exception("Did not receive json DATA");
+            Settings.InitSettings();
+            OutputPath = Settings.OutputPath;
+            MorrowindPath = Settings.MorrowindPath;
 
             JObject jsonObj = JObject.Parse(jsonString);
-
-            OutputPath = jsonObj["OutputPath"].ToString();
-            MorrowindPath = jsonObj["MorrowindPath"].ToString();
 
             GLOBAL_SCALE = Convert.ToSingle(jsonObj["GLOBAL_SCALE"].ToString());
 

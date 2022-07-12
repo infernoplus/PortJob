@@ -13,7 +13,7 @@ using System.Collections;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace FBXConverter {
+namespace CommonFunc {
     public static class MTD {
         private static JArray MTD_INFO_LIST;
         private static JObject GX_INFO_LIST;
@@ -34,7 +34,7 @@ namespace FBXConverter {
                 int index = int.Parse(buffers[i]["Index"].ToString());
                 int unk00 = int.Parse(buffers[i]["Unk00"].ToString());
                 //int size = int.Parse(buffers[i]["Size"].ToString());
-                if (isStatic && mbs == MBS.BoneWeights) { continue; }
+                if (isStatic && (mbs == MBS.BoneIndices || mbs == MBS.BoneWeights)) { continue; }
                 BL.Add(new FLVER.LayoutMember(mbt, mbs, index, unk00));
             }
 
@@ -57,7 +57,7 @@ namespace FBXConverter {
                 foreach (JObject buffer in buffers) {
                     MBT mbt = (MBT)uint.Parse(buffer["Type"].ToString());
                     MBS mbs = (MBS)uint.Parse(buffer["Semantic"].ToString());
-                    if (isStatic && mbs == MBS.BoneWeights) { continue; }
+                    if (isStatic && (mbs == MBS.BoneIndices || mbs == MBS.BoneWeights)) { continue; }
                     BL.Add(new FLVER.LayoutMember(mbt, mbs));
                 }
                 layouts.Add(BL);
@@ -78,12 +78,18 @@ namespace FBXConverter {
                 string TexMem = MTD_TEXTURE_MEMBERS[i].First.ToString();
                 switch (TexMem) {
                     case "g_DiffuseTexture": TM.Add(new TextureKey("Texture", TexMem, 0x1, true)); break;
-                    case "g_Diffuse_2": TM.Add(new TextureKey("SpecularFactor", TexMem, 0x1, true)); break;
-                    case "g_Specular": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
-                    case "g_Specular_2": TM.Add(new TextureKey("SpecularPower", TexMem, 0x1, true)); break;
-                    case "g_Bumpmap": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
-                    case "g_Bumpmap_2": TM.Add(new TextureKey("Reflection", TexMem, 0x1, true)); break;
-                    case "g_Envmap": TM.Add(new TextureKey("Transparency", TexMem, 0x1, true)); break;
+                    case "g_DiffuseTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_SpecularTexture": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
+                    case "g_SpecularTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_ShininessTexture": TM.Add(new TextureKey("Specular", TexMem, 0x1, true)); break;
+                    case "g_ShininessTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_BumpmapTexture": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
+                    case "g_BumpmapTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_DetailBumpmapTexture": TM.Add(new TextureKey("NormalMap", TexMem, 0x1, true)); break;
+                    case "g_DetailBumpmapTexture2": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_Envmap": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
+                    case "g_DisplacementTexture": TM.Add(new TextureKey("x", TexMem, 0x0, false)); break;
+                    case "g_BlendMaskTexture": TM.Add(new TextureKey("x", TexMem, 0x1, true)); break;
                     case "g_Lightmap": TM.Add(new TextureKey("Emissive", TexMem, 0x1, true)); break;
                     default: throw new Exception($"The texture member {TexMem} does not exist in current MTD info");
                 }
@@ -132,7 +138,7 @@ namespace FBXConverter {
         }
 
         private static void loadMTDInfoList() {
-            string jsonString = Utility.GetEmbededResource("FBXConverter.Resources.DS3_MTD_INFO.json");
+            string jsonString = Utility.GetEmbededResource("CommonFunc.Resources.DS3_MTD_INFO.json");
             JObject json = JObject.Parse(jsonString);
             MTD_INFO_LIST = (JArray)json["mtds"];
         }
@@ -143,14 +149,14 @@ namespace FBXConverter {
         }
 
         private static void loadGXInfoList() {
-            string jsonString = Utility.GetEmbededResource("FBXConverter.Resources.DS3_GX_EXAMPLE_INFO.json");
+            string jsonString = Utility.GetEmbededResource("CommonFunc.Resources.DS3_GX_EXAMPLE_INFO.json");
             JObject json = JObject.Parse(jsonString);
             GX_INFO_LIST = json;
         }
 
         public static byte[] GetSRGBTexture(string imagePath) {
+            byte[] tex = GetTexture(imagePath);
 
-            byte[] tex = imagePath.StartsWith("PortJob") ? Utility.GetEmbededResourceBytes(imagePath.Replace("\\", ".")) : File.ReadAllBytes(imagePath);
             GCHandle pinnedArray = GCHandle.Alloc(tex, GCHandleType.Pinned);
 
             ScratchImage sImage = TexHelper.Instance.LoadFromDDSMemory(pinnedArray.AddrOfPinnedObject(), tex.Length, DDS_FLAGS.NONE);
@@ -172,8 +178,8 @@ namespace FBXConverter {
         }
 
         public static byte[] GetTexture(string imagePath) {
-            if (imagePath.StartsWith("PortJob"))
-                return Utility.GetEmbededResourceBytes(imagePath.Replace("\\", "."));
+            if (imagePath.IsEmbeddedResource())
+                return Utility.GetEmbededResourceBytes(imagePath);
 
             return File.ReadAllBytes(imagePath);
         }

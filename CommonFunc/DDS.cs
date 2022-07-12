@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TeximpNet.DDS;
 
-namespace FBXConverter {
+namespace CommonFunc {
     public class DDS {
         public static int GetTpfFormatFromDdsBytes(byte[] ddsBytes) {
             using (MemoryStream ddsStream = new(ddsBytes)) {
