@@ -11,15 +11,8 @@ using CommonFunc;
 
 namespace FBXConverter {
     internal class Program {
-        public static string MorrowindPath { get; set; }
-        public static string OutputPath { get; set; }
-        public static float GLOBAL_SCALE { get; set; }
         //Modified Example 2: https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-use-anonymous-pipes-for-local-interprocess-communication
         public static void Main(string[] args) {
-            if (args.Length > 0) {
-                throw new Exception("lol args");
-            }
-
             string jsonString = null;
             if (args.Length <= 0) throw new Exception("Did not receive pipe handle");
             using (PipeStream pipeClient =
@@ -45,12 +38,8 @@ namespace FBXConverter {
             //throw new Exception("Test Error");
             if (jsonString == null) throw new Exception("Did not receive json DATA");
             Settings.InitSettings();
-            OutputPath = Settings.OutputPath;
-            MorrowindPath = Settings.MorrowindPath;
 
             JObject jsonObj = JObject.Parse(jsonString);
-
-            GLOBAL_SCALE = Convert.ToSingle(jsonObj["GLOBAL_SCALE"].ToString());
 
             foreach (JObject fbxList in jsonObj["FBXList"]) {
                 Console.WriteLine($"Converting: {fbxList["FBXPath"]}");

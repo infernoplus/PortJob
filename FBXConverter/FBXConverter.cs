@@ -209,7 +209,7 @@ namespace FBXConverter {
                             Vector3 nextPosition = geometryContent.Vertices.Positions[i];
                             Vector3 posVec3 = Vector3.Transform(
                                 new Vector3(nextPosition.X, nextPosition.Y, nextPosition.Z)
-                                , (ABSOLUTE_VERT_POSITIONS ? fbxMesh.AbsoluteTransform : fbx.Transform) * Matrix.CreateScale(Program.GLOBAL_SCALE)
+                                , (ABSOLUTE_VERT_POSITIONS ? fbxMesh.AbsoluteTransform : fbx.Transform) * Matrix.CreateScale(GLOBAL_SCALE)
                                 );
 
                             posVec3.X = -posVec3.X; // Flip X after applying root transform, bugfix from FBX2FLVER
