@@ -44,7 +44,8 @@ namespace CommonFunc {
         #region Cell
         public static readonly float CELL_SIZE = 8192f * GLOBAL_SCALE;
         public static readonly int CELL_GRID_SIZE = 64;
-        public const bool GENERATE_NICE_TERRAIN = true;
+        public static bool GENERATE_NICE_TERRAIN => Settings.GENERATE_NICE_TERRAIN;
+
         #endregion
     }
 }

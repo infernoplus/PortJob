@@ -1,4 +1,5 @@
 ﻿{
   "morrowind": "P:\\ath\\To\\Morrowind\\",
-  "output": "P:\\ath\\To\\Output\\"
+  "output": "P:\\ath\\To\\Output\\",
+  "generate_nice_terrain": true
 }
