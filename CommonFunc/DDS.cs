@@ -57,7 +57,8 @@ namespace CommonFunc {
         }
 
         public static byte[] MakeTextureFromPixelData(Byte4[] pixels, int width, int height, int? scaleX = null, int? scaleY = null,
-            DXGI_FORMAT format = DXGI_FORMAT.BC2_UNORM_SRGB, TEX_COMPRESS_FLAGS texCompFlag = TEX_COMPRESS_FLAGS.DEFAULT, DDS_FLAGS ddsFlags = DDS_FLAGS.FORCE_DX10_EXT) {
+            DXGI_FORMAT format = DXGI_FORMAT.BC2_UNORM_SRGB, TEX_COMPRESS_FLAGS texCompFlag = TEX_COMPRESS_FLAGS.DEFAULT, DDS_FLAGS ddsFlags = DDS_FLAGS.FORCE_DX10_EXT,
+            TEX_FILTER_FLAGS filterFlags = TEX_FILTER_FLAGS.LINEAR) {
             /* For some damn reason the System.Drawing.Common is a NuGet dll. Something something windows only something */
             Bitmap img = new(width, height);
             for (int x = 0; x < img.Width; x++) {
@@ -79,7 +80,7 @@ namespace CommonFunc {
             GCHandle pinnedArray = GCHandle.Alloc(pngBytes, GCHandleType.Pinned);
             ScratchImage sImage = TexHelper.Instance.LoadFromWICMemory(pinnedArray.AddrOfPinnedObject(), pngBytes.Length, WIC_FLAGS.DEFAULT_SRGB);
             if (scaleX != null && scaleY != null)
-                sImage = sImage.Resize(0, scaleX.Value, scaleY.Value, TEX_FILTER_FLAGS.LINEAR);
+                sImage = sImage.Resize(0, scaleX.Value, scaleY.Value, filterFlags);
 
             sImage = sImage.Compress(format, texCompFlag, 0.5f);
             sImage.OverrideFormat(format);
