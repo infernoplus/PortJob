@@ -55,12 +55,13 @@ namespace CommonFunc {
 
         }
 
-        public static byte[] MakeTextureFromPixelData(Byte4[] pixels, int width, int height, DXGI_FORMAT format = DXGI_FORMAT.BC5_UNORM, TEX_COMPRESS_FLAGS texCompFlag = TEX_COMPRESS_FLAGS.DEFAULT) {
+        public static byte[] MakeTextureFromPixelData(Byte4[] pixels, int width, int height, 
+            DXGI_FORMAT format = DXGI_FORMAT.BC7_UNORM_SRGB, TEX_COMPRESS_FLAGS texCompFlag = TEX_COMPRESS_FLAGS.DEFAULT, DDS_FLAGS ddsFlags = DDS_FLAGS.FORCE_DX10_EXT) {
             /* For some damn reason the System.Drawing.Common is a NuGet dll. Something something windows only something */
             Bitmap img = new(width, height);
             for (int x = 0; x < img.Width; x++) {
                 for (int y = 0; y < img.Height; y++) {
-                    Byte4 color = pixels[x + y];
+                    Byte4 color = pixels[(y * img.Width) + x];
                     Color pixelColor = Color.FromArgb(color.w, color.x, color.y, color.z);
                     img.SetPixel(x, y, pixelColor);
                 }
@@ -75,13 +76,13 @@ namespace CommonFunc {
 
             /* pin the array to memory do the garbage collector can't mess with it, */
             GCHandle pinnedArray = GCHandle.Alloc(pngBytes, GCHandleType.Pinned);
-            ScratchImage sImage = TexHelper.Instance.LoadFromWICMemory(pinnedArray.AddrOfPinnedObject(), pngBytes.Length, WIC_FLAGS.NONE);
+            ScratchImage sImage = TexHelper.Instance.LoadFromWICMemory(pinnedArray.AddrOfPinnedObject(), pngBytes.Length, WIC_FLAGS.DEFAULT_SRGB);
             sImage = sImage.Compress(format, texCompFlag, 0.5f);
             sImage.OverrideFormat(format);
 
             /* Save the DDS to memory stream and then read the stream into a byte array. */
             byte[] bytes;
-            using (UnmanagedMemoryStream uStream = sImage.SaveToDDSMemory(DDS_FLAGS.NONE)) {
+            using (UnmanagedMemoryStream uStream = sImage.SaveToDDSMemory(ddsFlags)) {
                 bytes = new byte[uStream.Length];
                 uStream.Read(bytes);
             }
