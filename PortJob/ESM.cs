@@ -576,7 +576,7 @@ namespace PortJob {
                     colors[cc] = vert.color;
                 }
 
-                multMesh.color = CommonFunc.DDS.MakeTextureFromPixelData(colors, 65, 65);
+                multMesh.color = CommonFunc.DDS.MakeTextureFromPixelData(colors, 65, 65, 512, 512);
 
                 terrain.Add(multMesh);
             }
