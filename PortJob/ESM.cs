@@ -566,7 +566,7 @@ namespace PortJob {
                 TerrainData multMesh = new TerrainData(region + ":" + name, int.Parse(landscape["landscape_flags"].ToString()), vertices, indices);
                 multMesh.mtd = "M[A]_multiply";
                 multMesh.material = "Color Multiply Decal Mesh";
-                multMesh.textures.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>($"colorBlendMap-[{position.x},{position.y}].dds", new Vector2(1f, 1f)));
+                multMesh.textures.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>($"color_blend_map_{position.x.ToString().Replace("-", "n")}_{position.y.ToString().Replace("-","n")}.dds", new Vector2(1f, 1f)));
 
                 /* Generate dds texture using vertex color data */
                 Byte4[] colors = new Byte4[65 * 65];
