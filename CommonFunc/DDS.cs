@@ -59,18 +59,10 @@ namespace CommonFunc {
         /// <summary>
         /// Takes in a Byte4 width and height and returns an BC2_UNORM_SRGB DDS file. There are optional parameters,
         /// including scale (of which you have to provide both x and y for it to scale). Most of the Texture format and
-        /// flags are also optionally available.
+        /// flags are also optionally available. Defaults: format:BC2_UNORM_SRGB texCompFlag:DEFAULT ddsFlags: FORCE_DX10_EXT
+        /// filterFlags: LINEAR
         /// </summary>
-        /// <param name="pixels"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="scaleX"></param>
-        /// <param name="scaleY"></param>
-        /// <param name="format"></param>
-        /// <param name="texCompFlag"></param>
-        /// <param name="ddsFlags"></param>
-        /// <param name="filterFlags"></param>
-        /// <returns></returns>
+        /// <returns>DDS texture as bytes.</returns>
         public static byte[] MakeTextureFromPixelData(Byte4[] pixels, int width, int height, int? scaleX = null, int? scaleY = null,
             DXGI_FORMAT format = DXGI_FORMAT.BC2_UNORM_SRGB, TEX_COMPRESS_FLAGS texCompFlag = TEX_COMPRESS_FLAGS.DEFAULT, DDS_FLAGS ddsFlags = DDS_FLAGS.FORCE_DX10_EXT,
             TEX_FILTER_FLAGS filterFlags = TEX_FILTER_FLAGS.LINEAR) {
@@ -83,7 +75,6 @@ namespace CommonFunc {
                     img.SetPixel(x, y, pixelColor);
                 }
             }
-
             /* Bitmap only supports saving to a file or a stream. Let's just save to a stream and get the stream as and array */
             byte[] pngBytes;
             using (MemoryStream stream = new()) {
@@ -91,9 +82,10 @@ namespace CommonFunc {
                 pngBytes = stream.ToArray();
             }
 
-            /* pin the array to memory do the garbage collector can't mess with it, */
+            /* pin the array to memory so the garbage collector can't mess with it, */
             GCHandle pinnedArray = GCHandle.Alloc(pngBytes, GCHandleType.Pinned);
             ScratchImage sImage = TexHelper.Instance.LoadFromWICMemory(pinnedArray.AddrOfPinnedObject(), pngBytes.Length, WIC_FLAGS.DEFAULT_SRGB);
+
             if (scaleX != null && scaleY != null)
                 sImage = sImage.Resize(0, scaleX.Value, scaleY.Value, filterFlags);
 
