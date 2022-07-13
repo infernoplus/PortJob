@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CommonFunc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,27 +9,13 @@ using SoulsFormats;
 
 using System.IO;
 using System.Numerics;
-
+using DDS = CommonFunc.DDS;
+using MTD = CommonFunc.MTD;
+using static CommonFunc.Const;
 
 namespace PortJob {
     /* Converts landscape data into a flver model */
     class TerrainConverter {
-        const int FLVER_VERSION = 0x20014;
-        const byte TPF_ENCODING = 2;
-        const byte TPF_FLAG_2 = 3;
-
-        const byte FLVER_UNK_0x5C = 0;
-        const int FLVER_UNK_0x68 = 4;
-
-        const string HARDCODE_TEXTURE_KEY = "g_DetailBumpmap";
-        const string HARDCODE_TEXTURE_VAL = "";
-        const byte HARDCODE_TEXTURE_UNK10 = 0x01;
-        const bool HARDCODE_TEXTURE_UNK11 = true;
-
-        const bool ABSOLUTE_VERT_POSITIONS = true;
-
-        const int FACESET_MAX_TRIANGLES = 65535; // Max triangles in a mesh for the DS1 engine.
-
         // Return an object containing the flver, tpfs, and generated ids and names stuff later
         public static void convert(Cell cell, string flverPath, string tpfDir) {
             /* Skip if file already exists */
@@ -116,6 +103,7 @@ namespace PortJob {
 
                 List<TextureKey> TextureChannelMap = MTD.getTextureMap(terrainMesh.mtd + ".mtd");
                 if (TextureChannelMap == null) { Log.Error(6, "Invalid MTD: " + terrainMesh.mtd); }
+
                 foreach (TextureKey TEX in TextureChannelMap) {
                     if (TEX.Value == "g_DisplacementTexture") {
                         matTextures.Add(new TextureKey(TEX.Value, "N:\\LiveTokyo\\data\\model\\common\\tex\\dummy128.tga", TEX.Unk10, TEX.Unk11)); // HARD CODED

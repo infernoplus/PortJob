@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="DefaultTex\def_black.dds" />
+    <None Remove="DefaultTex\def_flat.dds" />
+    <None Remove="DefaultTex\def_grey.dds" />
+    <None Remove="DefaultTex\def_missing.dds" />
+    <None Remove="DefaultTex\def_test.dds" />
+    <None Remove="Resources\DS1_MTD_INFO.json" />
+    <None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
+    <None Remove="Resources\DS3_GX_INFO.json" />
+    <None Remove="Resources\DS3_MTD_INFO.json" />
+    <None Remove="Resources\settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="DefaultTex\def_black.dds" />
+    <EmbeddedResource Include="DefaultTex\def_flat.dds" />
+    <EmbeddedResource Include="DefaultTex\def_grey.dds" />
+    <EmbeddedResource Include="DefaultTex\def_missing.dds">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DefaultTex\def_test.dds" />
+    <EmbeddedResource Include="Resources\DS1_MTD_INFO.json" />
+    <EmbeddedResource Include="Resources\DS3_GX_EXAMPLE_INFO.json" />
+    <EmbeddedResource Include="Resources\DS3_GX_INFO.json" />
+    <EmbeddedResource Include="Resources\DS3_MTD_INFO.json" />
+    <EmbeddedResource Include="Resources\settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    <PackageReference Include="TeximpNet" Version="1.4.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DirectXTexNet\DirectXTexNet\DirectXTexNet.csproj" />
+    <ProjectReference Include="..\SoulsFormat\SoulsFormats\SoulsFormats.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="x64\DirectXTexNetImpl.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="x64\Ijwhost.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="x86\DirectXTexNetImpl.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="x86\Ijwhost.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

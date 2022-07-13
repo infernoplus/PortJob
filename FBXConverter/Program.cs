@@ -6,12 +6,11 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
+using CommonFunc;
 
 namespace FBXConverter {
     internal class Program {
-        public static string MorrowindPath { get; set; }
-        public static string OutputPath { get; set; }
-        public static float GLOBAL_SCALE { get; set; }
         //Modified Example 2: https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-use-anonymous-pipes-for-local-interprocess-communication
         public static void Main(string[] args) {
             string jsonString = null;
@@ -38,13 +37,9 @@ namespace FBXConverter {
 
             //throw new Exception("Test Error");
             if (jsonString == null) throw new Exception("Did not receive json DATA");
+            Settings.InitSettings();
 
             JObject jsonObj = JObject.Parse(jsonString);
-
-            OutputPath = jsonObj["OutputPath"].ToString();
-            MorrowindPath = jsonObj["MorrowindPath"].ToString();
-
-            GLOBAL_SCALE = Convert.ToSingle(jsonObj["GLOBAL_SCALE"].ToString());
 
             foreach (JObject fbxList in jsonObj["FBXList"]) {
                 Console.WriteLine($"Converting: {fbxList["FBXPath"]}");

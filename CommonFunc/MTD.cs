@@ -10,11 +10,14 @@ using System.IO;
 using System.Reflection;
 using System.Diagnostics;
 using System.Collections;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Numerics;
+using Image = DirectXTexNet.Image;
 
-namespace PortJob {
+namespace CommonFunc {
     public static class MTD {
         private static JArray MTD_INFO_LIST;
         private static JObject GX_INFO_LIST;
@@ -120,7 +123,7 @@ namespace PortJob {
         }
 
         private static void loadMTDInfoList() {
-            string jsonString = Utility.GetEmbededResource("PortJob.Resources.DS3_MTD_INFO.json");
+            string jsonString = Utility.GetEmbededResource("CommonFunc.Resources.DS3_MTD_INFO.json");
             JObject json = JObject.Parse(jsonString);
             MTD_INFO_LIST = (JArray)json["mtds"];
         }
@@ -131,14 +134,13 @@ namespace PortJob {
         }
 
         private static void loadGXInfoList() {
-            string jsonString = Utility.GetEmbededResource("PortJob.Resources.DS3_GX_EXAMPLE_INFO.json");
+            string jsonString = Utility.GetEmbededResource("CommonFunc.Resources.DS3_GX_EXAMPLE_INFO.json");
             JObject json = JObject.Parse(jsonString);
             GX_INFO_LIST = json;
         }
 
         public static byte[] GetSRGBTexture(string imagePath) {
-
-            byte[] tex = imagePath.StartsWith("$PortJob") ? Utility.GetEmbededResourceBytes(imagePath.Replace("\\", ".").Substring(1)) : File.ReadAllBytes(imagePath);
+            byte[] tex = GetTexture(imagePath);
 
             GCHandle pinnedArray = GCHandle.Alloc(tex, GCHandleType.Pinned);
 
@@ -153,29 +155,26 @@ namespace PortJob {
             sImage = sImage.Compress(format, texCompFlag, 0.5f);
             sImage.OverrideFormat(format);
 
-            UnmanagedMemoryStream stream = sImage.SaveToDDSMemory(DDS_FLAGS.FORCE_DX10_EXT);
-            byte[] bytes = new byte[stream.Length];
-            pinnedArray.Free();
-            stream.Read(bytes);
+            /* Save the DDS to memory stream and then read the stream into a byte array. */
+            byte[] bytes;
+            using (UnmanagedMemoryStream stream = sImage.SaveToDDSMemory(DDS_FLAGS.FORCE_DX10_EXT)) {
+                bytes = new byte[stream.Length];
+                stream.Read(bytes);
+            }
+               
+            pinnedArray.Free(); //We have to manually free pinned stuff, or it will never be collected.
             return bytes;
         }
 
         public static byte[] GetTexture(string imagePath) {
-            if (imagePath.StartsWith("$PortJob"))
-                return Utility.GetEmbededResourceBytes(imagePath.Replace("\\", ".").Substring(1));
+            if (!Path.IsPathRooted(imagePath))
+                imagePath = imagePath.PathToEmbeddedPath();
+
+            if (imagePath.IsEmbeddedResource())
+                return Utility.GetEmbededResourceBytes(imagePath);
 
             return File.ReadAllBytes(imagePath);
         }
     }
 
-    public class TextureKey {
-        public string Key, Value;
-        public Vector2 uv;
-        public byte Unk10;
-        public bool Unk11;
-        public TextureKey(string k, string v, byte u, bool uu) {
-            Key = k; Value = v; Unk10 = u; Unk11 = uu;
-            uv = Vector2.One;
-        }
-    }
 }

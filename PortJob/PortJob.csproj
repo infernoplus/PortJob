@@ -27,14 +27,6 @@
 	</Target>
 
 	<ItemGroup>
-		<None Remove="DefaultTex\def_black.dds" />
-		<None Remove="DefaultTex\def_flat.dds" />
-		<None Remove="DefaultTex\def_grey.dds" />
-		<None Remove="DefaultTex\def_missing.dds" />
-		<None Remove="DefaultTex\def_test.dds" />
-		<None Remove="Resources\DirectXTexNetImpl.dll" />
-		<None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
-		<None Remove="Resources\DS3_MTD_INFO.json" />
 		<None Remove="settings.json" />
 		<None Remove="TestCol\h30_00_00_00_000000.hkx" />
 		<None Remove="TestCol\l30_00_00_00_000000.hkx" />
@@ -44,14 +36,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="DefaultTex\def_black.dds" />
-		<EmbeddedResource Include="DefaultTex\def_flat.dds" />
-		<EmbeddedResource Include="DefaultTex\def_grey.dds" />
-		<EmbeddedResource Include="DefaultTex\def_missing.dds" />
-		<EmbeddedResource Include="DefaultTex\def_test.dds" />
-		<EmbeddedResource Include="Resources\DS3_GX_EXAMPLE_INFO.json" />
-		<EmbeddedResource Include="Resources\DS3_MTD_INFO.json" />
-		<EmbeddedResource Include="Resources\settings.json" />
 		<EmbeddedResource Include="TestCol\h30_00_00_00_000000.hkx" />
 		<EmbeddedResource Include="TestCol\l30_00_00_00_000000.hkx" />
 		<EmbeddedResource Include="TestCol\n30_00_00_00_000001.hkx" />
@@ -62,45 +46,11 @@
 	<ItemGroup>
 		<PackageReference Include="gfoidl.Base64" Version="1.1.1" />
 		<PackageReference Include="ImpromptuNinjas.ZStd" Version="1.4.5.5" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="TeximpNet" Version="1.4.3" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\DirectXTexNet\DirectXTexNet\DirectXTexNet.csproj" />
+		<ProjectReference Include="..\CommonFunc\CommonFunc.csproj" />
 		<ProjectReference Include="..\SoulsFormat\SoulsFormats\SoulsFormats.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>..\Lib\Newtonsoft.Json.dll</HintPath>
-			<Private>true</Private>
-		</Reference>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Resource Include="Resources\DirectXTexNetImpl.dll" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="x64\DirectXTexNetImpl.deps.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="x64\DirectXTexNetImpl.dll">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Resources\DS1_MTD_INFO.json">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</None>
-		<None Update="x64\DirectXTexNetImpl.pdb">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="x64\DirectXTexNetImpl.runtimeconfig.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="x64\Ijwhost.dll">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
 	</ItemGroup>
 
 </Project>

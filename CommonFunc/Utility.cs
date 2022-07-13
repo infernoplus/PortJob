@@ -10,8 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Binder = SoulsFormats.Binder;
 
-namespace PortJob {
-    static class Utility {
+namespace CommonFunc {
+    public static class Utility {
 
         private static readonly char[] _dirSep = { '\\', '/' };
 
@@ -39,7 +39,7 @@ namespace PortJob {
         /* Temporary code for packing up hkxs */
         public static void PackTestCol(int area, int block) {
             /* Setup area_block and output path*/
-            string outputPath = PortJob.OutputPath;
+            string outputPath = Settings.OutputPath;
             string area_block = $"{area:D2}_{block:D2}";
             string mapName = $"m{area_block}_00_00";
             string hPath = $"{mapName}\\h{area_block}_00_00";
@@ -79,16 +79,6 @@ namespace PortJob {
             }
             nvmBND.Write($"{outputPath}map\\{mapName}\\m{area_block}_00_00.nvmhktbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9); //Whole bnd is compressed. 
         }
-        public static byte[] GetEmbededResourceBytes(string item) {
-            Assembly assembly = Assembly.GetCallingAssembly();
-            using (Stream? stream = assembly.GetManifestResourceStream(item)) {
-                if (stream == null)
-                    throw new NullReferenceException($"Could not find embedded resource: {item} in the {Assembly.GetCallingAssembly().GetName()} assembly");
-                byte[] ba = new byte[stream.Length];
-                stream.Read(ba, 0, ba.Length);
-                return ba;
-            }
-        }
 
         /* If you don't like these summaries, I will replace them with regular comments.
          They show up in the tooltips for the method, though, and are quite helpful at times! */
@@ -108,14 +98,15 @@ namespace PortJob {
 
             return 0;
         }
+
         /// <summary>
-        /// Gets embedded resource from path Example: "PortJob.Resources.settings.json"
+        /// Get Embedded Resource as string. Format is AssemblyName.FolderName.FileName Example: "CommonFunc.Resources.settings.json"
         /// </summary>
         /// <param name="item">ProjectName.FolderName.FileName.ext</param>
         /// <returns>string of the file specified.</returns>
         /// <exception cref="NullReferenceException">Couldn't find the file in the path provided. Make sure you follow the format.</exception>
         public static string GetEmbededResource(string item) {
-            Assembly assembly = Assembly.GetCallingAssembly();
+            Assembly assembly = AppDomain.CurrentDomain.GetAssemblyByName(item.Substring(0, item.IndexOf(".")));
             using (Stream? stream = assembly.GetManifestResourceStream(item)) {
                 if (stream == null)
                     throw new NullReferenceException($"Could not find embedded resource: {item} in the {Assembly.GetCallingAssembly().GetName()} assembly");
@@ -124,6 +115,50 @@ namespace PortJob {
                     return reader.ReadToEnd();
                 }
             }
+        }
+        /// <summary>
+        /// Get Embedded Resource as bytes. Format is AssemblyName.FolderName.FileName
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns>byte array of the embedded resource</returns>
+        /// <exception cref="NullReferenceException"></exception>
+        public static byte[] GetEmbededResourceBytes(string item) {
+            Assembly assembly = AppDomain.CurrentDomain.GetAssemblyByName(item.Substring(0, item.IndexOf(".")));
+            using (Stream? stream = assembly.GetManifestResourceStream(item)) {
+                if (stream == null)
+                    throw new NullReferenceException($"Could not find embedded resource: {item} in the {Assembly.GetCallingAssembly().GetName()} assembly");
+                byte[] ba = new byte[stream.Length];
+                stream.Read(ba, 0, ba.Length);
+                return ba;
+            }
+        }
+
+        /// <summary>
+        /// Get Assembly by name
+        /// </summary>
+        /// <param name="domain"></param>
+        /// <param name="assemblyName"></param>
+        /// <returns></returns>
+        public static Assembly GetAssemblyByName(this AppDomain domain, string assemblyName) {
+            return domain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == assemblyName);
+        }
+
+        public static bool IsEmbeddedResource(this string s) {
+            Assembly executingAssembly = Assembly.GetEntryAssembly();
+            if (s.StartsWith(executingAssembly.GetName().Name))
+                return true;
+
+            AssemblyName[] assemblies = executingAssembly.GetReferencedAssemblies();
+            foreach (var assembly in assemblies) {
+                if (s.StartsWith(assembly.Name))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static string PathToEmbeddedPath(this string path) {
+            return path.Replace("\\", ".");
         }
 
     }

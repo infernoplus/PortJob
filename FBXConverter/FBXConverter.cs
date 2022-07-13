@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommonFunc;
 
 using SoulsFormats;
 
@@ -10,6 +11,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using System.IO;
+using static CommonFunc.Const;
+using DDS = CommonFunc.DDS;
+using MTD = CommonFunc.MTD;
 
 namespace FBXConverter {
 
@@ -20,22 +24,6 @@ namespace FBXConverter {
     /* Morrowinds native NIF format has to be mass converted to FBX first for this program to work. */
     /* Heavily references code from Meowmartius's FBX2FLVER. He's a secret gamer god. */
     class FBXConverter {
-        const int FLVER_VERSION = 0x20014;
-        const byte TPF_ENCODING = 2;
-        const byte TPF_FLAG_2 = 3;
-
-        const byte FLVER_UNK_0x5C = 0;
-        const int FLVER_UNK_0x68 = 4;
-
-        const string HARDCODE_TEXTURE_KEY = "g_DetailBumpmap";
-        const string HARDCODE_TEXTURE_VAL = "";
-        const byte HARDCODE_TEXTURE_UNK10 = 0x01;
-        const bool HARDCODE_TEXTURE_UNK11 = true;
-
-        const bool ABSOLUTE_VERT_POSITIONS = true;
-
-        const int FACESET_MAX_TRIANGLES = 65535; // Max triangles in a mesh for the DS1 engine.
-
         // Return an object containing the flver, tpfs, and generated ids and names stuff later
         public static void convert(string fbxPath, string flverPath, string tpfDir) {
             /* Skip if file already exists */
@@ -221,7 +209,7 @@ namespace FBXConverter {
                             Vector3 nextPosition = geometryContent.Vertices.Positions[i];
                             Vector3 posVec3 = Vector3.Transform(
                                 new Vector3(nextPosition.X, nextPosition.Y, nextPosition.Z)
-                                , (ABSOLUTE_VERT_POSITIONS ? fbxMesh.AbsoluteTransform : fbx.Transform) * Matrix.CreateScale(Program.GLOBAL_SCALE)
+                                , (ABSOLUTE_VERT_POSITIONS ? fbxMesh.AbsoluteTransform : fbx.Transform) * Matrix.CreateScale(GLOBAL_SCALE)
                                 );
 
                             posVec3.X = -posVec3.X; // Flip X after applying root transform, bugfix from FBX2FLVER
@@ -233,7 +221,7 @@ namespace FBXConverter {
                             };
 
                             /* Add placeholder vertex data to FLVER */
-                            foreach (FLVER.LayoutMember memb in MTD.getLayout(mtdName + ".mtd", true)) {
+                            foreach (FLVER.LayoutMember memb in MTD.getLayouts(mtdName + ".mtd", true).Last()) {
                                 switch (memb.Semantic) {
                                     case FLVER.LayoutSemantic.Position: break;
                                     case FLVER.LayoutSemantic.Normal: newVert.Normal = new System.Numerics.Vector3(0, 0, 0); break;
@@ -409,7 +397,7 @@ namespace FBXConverter {
             /* Write Buffer Layouts */
             flver.BufferLayouts = new List<FLVER2.BufferLayout>();
             foreach (FLVER2.Material mat in flver.Materials) {
-                flver.BufferLayouts.Add(MTD.getLayout(mat.MTD, true));
+                flver.BufferLayouts.Add(MTD.getLayouts(mat.MTD, true).Last());
             }
 
             /* Couple of random FLVER flags to set */

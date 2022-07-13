@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CommonFunc;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
@@ -12,13 +13,13 @@ using System.Diagnostics;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using static CommonFunc.Const;
 
 namespace PortJob {
     class PortJob {
-        public static string MorrowindPath { get; set; }
-        public static string OutputPath { get; set; }
-        public static readonly float GLOBAL_SCALE = 0.01f;
         static void Main(string[] args) {
+            //BND4 bnd = BND4.Read(@"G:\Steam\steamapps\common\DARK SOULS III\Game\mod\map\m54_00_00_00\m54_00_00_00_009000.mapbnd.dcx");
+            //FLVER2 flver = FLVER2.Read(bnd.Files.First(x => x.Name.EndsWith(".flver")).Bytes);
             CheckIsDarkSouls3IsRunning();
             DateTime startTime = DateTime.Now;
             SetupPaths();
@@ -113,15 +114,7 @@ namespace PortJob {
         private static List<Worker> _workers = new();
 
         private static void SetupPaths() {
-            string jsonString = Utility.GetEmbededResource("PortJob.Resources.settings.json");
-            JObject settings = JObject.Parse(jsonString);
-            MorrowindPath = settings["morrowind"].ToString();
-            OutputPath = settings["output"].ToString();
-            if (!MorrowindPath.EndsWith("\\"))
-                MorrowindPath += "\\";
-
-            if (!OutputPath.EndsWith("\\"))
-                OutputPath += "\\";
+            Settings.InitSettings();
         }
 
         private static void Convert() {

@@ -4,20 +4,21 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static CommonFunc.Const;
 
-namespace PortJob {
-    class Log {
+namespace CommonFunc {
+    public class Log {
         public static int last = 0;
         private static readonly string EXT = "log";
         private static StreamWriter _writer { get; set; }
         public static void SetupLogStream() {
-            if (!Directory.Exists($"{PortJob.OutputPath}port_logs\\"))
-                Directory.CreateDirectory($"{PortJob.OutputPath}port_logs\\");
+            if (!Directory.Exists($"{OutputPath}port_logs\\"))
+                Directory.CreateDirectory($"{OutputPath}port_logs\\");
 
-            if (Directory.Exists($"{PortJob.OutputPath}port_logs\\sub_logs\\"))
-                Directory.Delete($"{PortJob.OutputPath}port_logs\\sub_logs\\", true);
+            if (Directory.Exists($"{OutputPath}port_logs\\sub_logs\\"))
+                Directory.Delete($"{OutputPath}port_logs\\sub_logs\\", true);
 
-            _writer = new StreamWriter($"{PortJob.OutputPath}port_logs\\main_log.{EXT}", false) {
+            _writer = new StreamWriter($"{OutputPath}port_logs\\main_log.{EXT}", false) {
                 AutoFlush = true
             };
         }
@@ -56,10 +57,10 @@ namespace PortJob {
                 msg += '\n';
 
             string subPath = Path.GetDirectoryName(fileName);
-            if (!Directory.Exists($"{PortJob.OutputPath}port_logs\\sub_logs\\{subPath}\\"))
-                Directory.CreateDirectory($"{PortJob.OutputPath}port_logs\\sub_logs\\{subPath}\\");
+            if (!Directory.Exists($"{OutputPath}port_logs\\sub_logs\\{subPath}\\"))
+                Directory.CreateDirectory($"{OutputPath}port_logs\\sub_logs\\{subPath}\\");
 
-            File.AppendAllText($"{PortJob.OutputPath}port_logs\\sub_logs\\{fileName}.{EXT}", msg);
+            File.AppendAllText($"{OutputPath}port_logs\\sub_logs\\{fileName}.{EXT}", msg);
         }
     }
 }

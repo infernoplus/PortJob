@@ -30,7 +30,7 @@ namespace PortJob {
         private void CallFBXConverter() {
             _pipeClient = new Process {
                 StartInfo = new ProcessStartInfo {
-                    FileName = $"{Environment.CurrentDirectory}\\FBXConverter\\FBXConverter.exe",
+                    FileName = $"{Environment.CurrentDirectory}\\FBXConverter.exe",
                     UseShellExecute = false,
                     CreateNoWindow = true, 
                     RedirectStandardError = true, //Cannot re-direct standard output while checking IsDone, or this child process will freeze.  
