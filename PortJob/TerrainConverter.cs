@@ -157,6 +157,17 @@ namespace PortJob {
                 /* Write GXList to FLVER */
                 FLVER2.GXList gxinfo = MTD.getGXList(terrainMesh.mtd + ".mtd");
                 flver.GXLists.Add(gxinfo);
+                if(terrainMesh.mtd == "M[ARSN]_m") { // Kinda hacky. Set gx bytes for blending to 0 so we get the most gradual blend possible
+                    foreach(FLVER2.GXItem item in gxinfo) {
+                        if(item.ID == "GX01") {
+                            item.Data[0] = 0;
+                            item.Data[1] = 0;
+                            item.Data[2] = 0;
+                            item.Data[3] = 0;
+                            break;
+                        }
+                    }
+                }
 
                 /* Write position data to FLVER */
                 //Log.Info(5, "Writing vertices");
@@ -251,8 +262,12 @@ namespace PortJob {
                     bool isBaseUv = submeshVertexHighQualityBaseUVs.Count == 0;
 
                     System.Numerics.Vector3 uv = new(vert.coordinate.X, vert.coordinate.Y, 0);
+                    if (terrainMesh.mtd == "M[A]_multiply") {   // Disgusting hack! clamp uv to slightly less than 1.0/0.0 so that the texture edges don't bleed from repeat
+                        uv.X = Math.Min(Math.Max(0.001f, uv.X), 0.999f);
+                        uv.Y = Math.Min(Math.Max(0.001f, uv.Y), 0.999f);
+                    }
 
-                    for(int j=0;j<flverMesh.Vertices[i].UVs.Count;j++) {
+                    for (int j=0;j<flverMesh.Vertices[i].UVs.Count;j++) {
                         flverMesh.Vertices[i].UVs[j] = uv;
                     }
                     flverMesh.Vertices[i].UVs.Add(uv); // One extra just in case lol

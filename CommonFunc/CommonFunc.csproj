@@ -14,6 +14,7 @@
     <None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
     <None Remove="Resources\DS3_GX_INFO.json" />
     <None Remove="Resources\DS3_MTD_INFO.json" />
+    <None Remove="Resources\mtdbnd.dcx" />
     <None Remove="Resources\settings.json" />
   </ItemGroup>
 
@@ -29,6 +30,7 @@
     <EmbeddedResource Include="Resources\DS3_GX_EXAMPLE_INFO.json" />
     <EmbeddedResource Include="Resources\DS3_GX_INFO.json" />
     <EmbeddedResource Include="Resources\DS3_MTD_INFO.json" />
+    <EmbeddedResource Include="Resources\mtdbnd.dcx" />
     <EmbeddedResource Include="Resources\settings.json" />
   </ItemGroup>
 

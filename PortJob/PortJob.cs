@@ -416,6 +416,16 @@ namespace PortJob {
                 //Utility.PackTestCol(msb.area, msb.block);
             }
 
+            /* Write custom mtdbnd */
+            string mtdDir = OutputPath + "mtd\\";
+            string mtdPath = mtdDir + "allmaterialbnd.mtdbnd.dcx";
+            if (!Directory.Exists(mtdDir)) { Directory.CreateDirectory(mtdDir); }
+            if (File.Exists(mtdPath)) { File.Delete(mtdPath); }
+            byte[] hBytes = Utility.GetEmbededResourceBytes("CommonFunc.Resources.mtdbnd.dcx");
+            Log.Info(0, "Writing MTDBND to: " + mtdPath);
+            File.WriteAllBytes(mtdPath, hBytes);
+
+
             foreach (NVAData nva in nvas) {
                 string nvaPath = $"{OutputPath}map\\m{nva.area:D2}_{nva.block:D2}_00_00\\m{nva.area:D2}_{nva.block:D2}_00_00.nva.dcx";
                 Log.Info(0, "Writing MSB to: " + nvaPath);

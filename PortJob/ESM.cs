@@ -13,6 +13,7 @@ using System.Threading;
 using gfoidl.Base64;
 using ImpromptuNinjas.ZStd;
 using static CommonFunc.Const;
+using DirectXTexNet;
 
 namespace PortJob {
     /* Loads and handles the JSON file of the morrowind.esm that tes3conv outputs */
@@ -566,17 +567,23 @@ namespace PortJob {
                 TerrainData multMesh = new TerrainData(region + ":" + name, int.Parse(landscape["landscape_flags"].ToString()), vertices, indices);
                 multMesh.mtd = "M[A]_multiply";
                 multMesh.material = "Color Multiply Decal Mesh";
-                multMesh.textures.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>($"color_blend_map_{position.x.ToString().Replace("-", "n")}_{position.y.ToString().Replace("-","n")}.dds", new Vector2(1f, 1f)));
+                multMesh.textures.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>($"terrain_color_blend_map_{position.x.ToString().Replace("-", "n")}_{position.y.ToString().Replace("-","n")}.dds", new Vector2(1f, 1f)));
 
                 /* Generate dds texture using vertex color data */
                 Byte4[] colors = new Byte4[65 * 65];
-                for (int cc = 0; cc < vertices.Count; cc++) {
-                    TerrainVertex vert = vertices[cc];
-
-                    colors[cc] = vert.color;
+                int cc = 0;
+                for(int yy=CELL_GRID_SIZE;yy>=0;yy--) {
+                    for (int xx = 0; xx <= CELL_GRID_SIZE; xx++) {
+                        TerrainVertex vert = vertices[(yy*(CELL_GRID_SIZE+1))+xx];
+                        const float reduction = 0.2f;
+                        int r = byte.MaxValue - (byte)((byte.MaxValue - vert.color.x) * reduction);
+                        int g = byte.MaxValue - (byte)((byte.MaxValue - vert.color.y) * reduction);
+                        int b = byte.MaxValue - (byte)((byte.MaxValue - vert.color.z) * reduction);
+                        colors[cc++] = new Byte4(r, g, b, Byte.MaxValue);
+                    }
                 }
 
-                multMesh.color = CommonFunc.DDS.MakeTextureFromPixelData(colors, 65, 65, 512, 512);
+                multMesh.color = CommonFunc.DDS.MakeTextureFromPixelData(colors, 65, 65, 512, 512, filterFlags: TEX_FILTER_FLAGS.CUBIC);
 
                 terrain.Add(multMesh);
             }

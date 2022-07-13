@@ -86,6 +86,12 @@ namespace CommonFunc {
         public Byte4(byte a) {
             x = a; y = a; z = a; w = a;
         }
+
+        public Byte4(int x, int y, int z, int w) {
+            
+            this.x = (byte)Math.Max(0, Math.Min(Byte.MaxValue, x)); this.y = (byte)Math.Max(0, Math.Min(Byte.MaxValue, y)); this.z = (byte)Math.Max(0, Math.Min(Byte.MaxValue, z)); this.w = (byte)Math.Max(0, Math.Min(Byte.MaxValue, w));
+        }
+
         public Byte4(byte x, byte y, byte z, byte w) {
             this.x = x; this.y = y; this.z = z; this.w = w;
         }
