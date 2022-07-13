@@ -31,6 +31,7 @@
 		<None Remove="DefaultTex\def_flat.dds" />
 		<None Remove="DefaultTex\def_grey.dds" />
 		<None Remove="DefaultTex\def_missing.dds" />
+		<None Remove="DefaultTex\def_test.dds" />
 		<None Remove="Resources\DirectXTexNetImpl.dll" />
 		<None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
 		<None Remove="Resources\DS3_MTD_INFO.json" />
@@ -47,6 +48,7 @@
 		<EmbeddedResource Include="DefaultTex\def_flat.dds" />
 		<EmbeddedResource Include="DefaultTex\def_grey.dds" />
 		<EmbeddedResource Include="DefaultTex\def_missing.dds" />
+		<EmbeddedResource Include="DefaultTex\def_test.dds" />
 		<EmbeddedResource Include="Resources\DS3_GX_EXAMPLE_INFO.json" />
 		<EmbeddedResource Include="Resources\DS3_MTD_INFO.json" />
 		<EmbeddedResource Include="Resources\settings.json" />

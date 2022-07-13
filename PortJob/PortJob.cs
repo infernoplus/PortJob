@@ -26,8 +26,8 @@ namespace PortJob {
 
             Convert();
 
-            //FLVER2 myFlver = FLVER2.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\mod\\map\\m54_00_00_00\\m54_00_00_00_009000-mapbnd-dcx\\m54_00_00_00_009000.flver");
-            //FLVER2 fromFlver = GetDonorFlver(Directory.GetFiles("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\map\\m31_00_00_00", "*.mapbnd.dcx"));
+            //FLVER2 myFlver = FLVER2.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\mod\\map\\m54_00_00_00\\m54_00_00_00_000009-mapbnd-dcx\\m54_00_00_00_000009.flver");
+            //FLVER2 fromFlver = FlverSearch(Directory.GetFiles("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\map", "*.mapbnd.dcx", SearchOption.AllDirectories));
 
             TimeSpan length = DateTime.Now - startTime;
             Log.Info(0, $"Porting time: {length}");
@@ -35,8 +35,8 @@ namespace PortJob {
 
         }
 
-
-        private static FLVER2 GetDonorFlver(string[] files) {
+        /* Random testing and debug stuff */
+        private static FLVER2 FlverSearch(string[] files) {
             foreach (string file in files) {
                 BND4 bnd = BND4.Read(file);
 
@@ -44,15 +44,35 @@ namespace PortJob {
                     if (binderFile.Name.ToLower().Contains("flver")) {
                         FLVER2 flver = FLVER2.Read(binderFile.Bytes);
 
-                        foreach (FLVER2.Material mat in flver.Materials) {
-                            Console.WriteLine(file);
-                            if (mat.MTD.ToLower().EndsWith("m[arsn]_m.mtd"))
-                                return flver;
+                        /*foreach(FLVER2.Mesh mesh in flver.Meshes) {
+                            foreach(FLVER.Vertex vert in mesh.Vertices) {
+                                if(vert.Colors.Count > 1) {
+                                    Console.WriteLine("Multiple Vertex Colors " + file);
+                                    Console.WriteLine("    " + flver.Materials[mesh.MaterialIndex].MTD + " :: " + flver.Materials[mesh.MaterialIndex].Name);
+                                    Console.WriteLine("    [" + vert.Colors[0].R + ", " + vert.Colors[0].G + ", " + vert.Colors[0].B + "]");
+                                    Console.WriteLine("    [" + vert.Colors[1].R + ", " + vert.Colors[1].G + ", " + vert.Colors[1].B + "]");
+                                    break;
+                                }
+                                if (vert.Colors.Count > 0 && vert.Colors[0].R != vert.Colors[0].B && vert.Colors[0].R is not(1f or 0f) && vert.Colors[0].G is not (1f or 0f)) {
+                                    Console.WriteLine("Varied vertex color data in: " + file);
+                                    Console.WriteLine("    " + flver.Materials[mesh.MaterialIndex].MTD + " :: " + flver.Materials[mesh.MaterialIndex].Name);
+                                    Console.WriteLine("    [" + vert.Colors[0].R + ", " + vert.Colors[0].G + ", " + vert.Colors[0].B + "]");
+                                    break;
+                                }
+                            }
+                        }*/
+
+                        //foreach (FLVER2.Material mat in flver.Materials) {
+                            //Console.WriteLine(file);
+                            //if (mat.MTD.ToLower().EndsWith("m[arsn]_m.mtd"))
+                                //return flver;
+
+
                             //   Console.WriteLine($"Material found {binderFile.Name} {file} {mat.Name}");
 
                             //if (mat.MTD.ToLower().Contains("m[a]"))
                             //    Console.WriteLine($"Material found {binderFile.Name} {file} {mat.Name}");
-                        }
+                        //}
                     }
                 }
             }

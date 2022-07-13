@@ -109,36 +109,13 @@ namespace PortJob {
                     Log.Info(4, "Mesh exceeds vertex limit [" + flverMesh.Vertices.Count + " > " + FACESET_MAX_TRIANGLES + "], it will be auto-split. ");
                 }
 
-                /* Handle materials */
-                string matName = null;
-                string mtdName = null;
-
-                List<TextureKey> matTextures = new();
-
-                mtdName = "M[ARSN]_m";
-                string texA = terrainMesh.textures[0];
-                string texB = terrainMesh.textures[1];
-                matName = Utility.PathToFileName(texA) + "->" + Utility.PathToFileName(texB);
-
                 //Log.Info(5, "[MTD: " + mtdName + ", Material: " + matName + "]" + " { " + terrainMesh.texturesIndices[0] + ", " + terrainMesh.texturesIndices[1] + " }");
 
-                /* Handle textures */
-                string blackTex = "$PortJob\\DefaultTex\\def_black.dds"; // @TODO IMPORTANT! generic textures!
-                string greyTex = "$PortJob\\DefaultTex\\def_grey.dds";
-                string flatTex = "$PortJob\\DefaultTex\\def_flat.dds";
-                Dictionary<string, KeyValuePair<string, Vector2>> boopers = new();
-                boopers.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>(texA, new Vector2(32f, 32f)));
-                boopers.Add("g_DiffuseTexture2", new KeyValuePair<string, Vector2>(texB, new Vector2(32f, 32f)));
-                boopers.Add("g_SpecularTexture", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
-                boopers.Add("g_SpecularTexture2", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
-                boopers.Add("g_ShininessTexture", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
-                boopers.Add("g_ShininessTexture2", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
-                boopers.Add("g_BumpmapTexture", new KeyValuePair<string, Vector2>(flatTex, new Vector2(32f, 32f)));
-                boopers.Add("g_BumpmapTexture2", new KeyValuePair<string, Vector2>(flatTex, new Vector2(32f, 32f)));
-                boopers.Add("g_BlendMaskTexture", new KeyValuePair<string, Vector2>(greyTex, new Vector2(1f, 1f)));
+                /* Handle materials and textures*/
+                List<TextureKey> matTextures = new();
 
-                List<TextureKey> TextureChannelMap = MTD.getTextureMap(mtdName + ".mtd");
-                if (TextureChannelMap == null) { Log.Error(6, "Invalid MTD: " + mtdName); }
+                List<TextureKey> TextureChannelMap = MTD.getTextureMap(terrainMesh.mtd + ".mtd");
+                if (TextureChannelMap == null) { Log.Error(6, "Invalid MTD: " + terrainMesh.mtd); }
                 foreach (TextureKey TEX in TextureChannelMap) {
                     if (TEX.Value == "g_DisplacementTexture") {
                         matTextures.Add(new TextureKey(TEX.Value, "N:\\LiveTokyo\\data\\model\\common\\tex\\dummy128.tga", TEX.Unk10, TEX.Unk11)); // HARD CODED
@@ -150,11 +127,11 @@ namespace PortJob {
                         matTextures.Add(new TextureKey(TEX.Value, "N:\\SPRJ\\data\\Other\\SysTex\\SYSTEX_DummyNormal.tga", TEX.Unk10, TEX.Unk11)); // I AM THE MEMER
                     }
                     else {
-                        string tex = boopers[TEX.Value].Key;
+                        string tex = terrainMesh.textures[TEX.Value].Key;
 
                         string shortTexName = "mw_" + Utility.PathToFileName(tex);
                         TextureKey texKey = new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11);
-                        texKey.uv = boopers[TEX.Value].Value;
+                        texKey.uv = terrainMesh.textures[TEX.Value].Value;
                         matTextures.Add(texKey);
                         //flverMaterials.Add(matName, 0);
 
@@ -179,7 +156,7 @@ namespace PortJob {
                 flverMesh.MaterialIndex = flver.Materials.Count;
 
                 /* Write material to FLVER */
-                FLVER2.Material mat = new(matName, mtdName + ".mtd", 232) {
+                FLVER2.Material mat = new(terrainMesh.material, terrainMesh.mtd + ".mtd", 232) {
                     GXIndex = gxIndex
                 };
 
@@ -190,7 +167,7 @@ namespace PortJob {
                 flver.Materials.Add(mat);
 
                 /* Write GXList to FLVER */
-                FLVER2.GXList gxinfo = MTD.getGXList(mtdName + ".mtd");
+                FLVER2.GXList gxinfo = MTD.getGXList(terrainMesh.mtd + ".mtd");
                 flver.GXLists.Add(gxinfo);
 
                 /* Write position data to FLVER */
@@ -207,7 +184,7 @@ namespace PortJob {
                     };
 
                     /* Add placeholder vertex data to FLVER */
-                    foreach (FLVER.LayoutMember memb in MTD.getLayouts(mtdName + ".mtd", true)[0]) {
+                    foreach (FLVER.LayoutMember memb in MTD.getLayouts(terrainMesh.mtd + ".mtd", true)[0]) {
                         switch (memb.Semantic) {
                             case FLVER.LayoutSemantic.Position: break;
                             case FLVER.LayoutSemantic.Normal: newVert.Normal = new System.Numerics.Vector3(0, 0, 0); break;
@@ -256,18 +233,19 @@ namespace PortJob {
                     Vector3 tangent;
                     //Vector3 binormal;
 
-                    Vector3 c1 = Vector3.Cross(flverMesh.Vertices[i].Normal, new Vector3(0.0f, 0.0f, 1.0f)); 
+                    Vector3 c1 = Vector3.Cross(flverMesh.Vertices[i].Normal, new Vector3(0.0f, 0.0f, 1.0f));
                     Vector3 c2 = Vector3.Cross(flverMesh.Vertices[i].Normal, new Vector3(0.0f, 1.0f, 0.0f));
 
-                    if (Math.Sqrt((c1.X*c1.X)+(c1.Y*c1.Y)+(c1.Z*c1.Z)) > Math.Sqrt((c2.X * c2.X) + (c2.Y * c2.Y) + (c2.Z * c2.Z))) {
+                    if (Math.Sqrt((c1.X * c1.X) + (c1.Y * c1.Y) + (c1.Z * c1.Z)) > Math.Sqrt((c2.X * c2.X) + (c2.Y * c2.Y) + (c2.Z * c2.Z))) {
                         tangent = c1;
                     } else {
                         tangent = c2;
                     }
 
                     tangent = Vector3.Normalize(tangent);
-                    flverMesh.Vertices[i].Tangents[0] = new Vector4(tangent.X, tangent.Y, tangent.Z, 1.0f);
-                    flverMesh.Vertices[i].Tangents[1] = new Vector4(tangent.X, tangent.Y, tangent.Z, 1.0f);
+                    for (int j = 0; j < flverMesh.Vertices[i].Tangents.Count; j++) {
+                        flverMesh.Vertices[i].Tangents[j] = new Vector4(tangent.X, tangent.Y, tangent.Z, 1.0f);
+                    }
 
                     //binormal = MathUtil.crossProduct(norm, tangent);
                     //binormal = MathUtil.normalize(binormal);
@@ -286,10 +264,10 @@ namespace PortJob {
 
                     System.Numerics.Vector3 uv = new(vert.coordinate.X, vert.coordinate.Y, 0);
 
-                    flverMesh.Vertices[i].UVs[0] = uv;
-                    flverMesh.Vertices[i].UVs[1] = uv;
-                    flverMesh.Vertices[i].UVs[2] = uv;
-                    flverMesh.Vertices[i].UVs.Add(uv);
+                    for(int j=0;j<flverMesh.Vertices[i].UVs.Count;j++) {
+                        flverMesh.Vertices[i].UVs[j] = uv;
+                    }
+                    flverMesh.Vertices[i].UVs.Add(uv); // One extra just in case lol
 
                     if (isBaseUv) {
                         submeshVertexHighQualityBaseUVs.Add(
@@ -297,8 +275,10 @@ namespace PortJob {
                     }
 
                     // Color
-                    float blend = terrainMesh.texturesIndices[0] == vert.texture ? 0f : (terrainMesh.texturesIndices[1] == vert.texture ? 1f : 0f);
-                    flverMesh.Vertices[i].Colors[0] = new FLVER.VertexColor(blend, 1f, 0f, 1f);
+                    float blend = terrainMesh.mtd == "M[ARSN]_m"?(terrainMesh.texturesIndices[0] == vert.texture ? 0f : (terrainMesh.texturesIndices[1] == vert.texture ? 1f : 0f)):1f;
+                    for (int j = 0; j < flverMesh.Vertices[i].Colors.Count; j++) {
+                        flverMesh.Vertices[i].Colors[j] = new FLVER.VertexColor(blend, 1f, 1f, 1f);
+                    }
                 }
 
                 /* Set blank weights for all vertices */

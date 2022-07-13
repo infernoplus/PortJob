@@ -433,7 +433,8 @@ namespace PortJob {
                 }
 
                 /* Index Data */
-                Dictionary<UShort2, List<int>> sets = new();
+                List<int> indices = new();                             // Full indices data, for vcol decal mult mesh
+                Dictionary<UShort2, List<int>> sets = new();           // Segmented indices data, for regular meshes
                 for (int yy = 0; yy < GRID_SIZE / 4; yy++) {
                     for (int xx = 0; xx < (GRID_SIZE / 4) - 1; xx++) {
                         // Pre-generate some sets to make optimizations possible below~
@@ -502,6 +503,7 @@ namespace PortJob {
 
                             for (int i = 0; i < 3; i++) {
                                 set.Add(tris[t, i]);
+                                indices.Add(tris[t, i]);
                             }
                         }
                     }
@@ -526,9 +528,11 @@ namespace PortJob {
                         }
                     }
 
+                    /* Create terrain mesh and find textures */
                     TerrainData mesh = new TerrainData(region + ":" + name, int.Parse(landscape["landscape_flags"].ToString()), cv, ci);
 
                     string texDir = $"{PortJob.MorrowindPath}\\Data Files\\textures\\";
+                    string[] texPaths = new string[2];
 
                     for (int i = 0; i < 2; i++) {
                         ushort tex = set.Key.Array()[i];
@@ -537,12 +541,39 @@ namespace PortJob {
                         if (ltexRecord != null) {
                             texPath = texDir + ltexRecord["texture"].ToString().Replace(".tga", ".dds");
                         }
-                        mesh.textures[i] = texPath;
+                        texPaths[i] = texPath;
                         mesh.texturesIndices[i] = tex;
                     }
 
+                    /* Material Information */
+                    mesh.mtd = "M[ARSN]_m";
+                    mesh.material = Utility.PathToFileName(texPaths[0]) + "->" + Utility.PathToFileName(texPaths[1]);
+
+                    /* Setup material textures */
+                    const string blackTex = "$PortJob\\DefaultTex\\def_black.dds";
+                    const string greyTex = "$PortJob\\DefaultTex\\def_grey.dds";
+                    const string flatTex = "$PortJob\\DefaultTex\\def_flat.dds";
+
+                    mesh.textures.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>(texPaths[0], new Vector2(32f, 32f)));
+                    mesh.textures.Add("g_DiffuseTexture2", new KeyValuePair<string, Vector2>(texPaths[1], new Vector2(32f, 32f)));
+                    mesh.textures.Add("g_SpecularTexture", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                    mesh.textures.Add("g_SpecularTexture2", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                    mesh.textures.Add("g_ShininessTexture", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                    mesh.textures.Add("g_ShininessTexture2", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                    mesh.textures.Add("g_BumpmapTexture", new KeyValuePair<string, Vector2>(flatTex, new Vector2(32f, 32f)));
+                    mesh.textures.Add("g_BumpmapTexture2", new KeyValuePair<string, Vector2>(flatTex, new Vector2(32f, 32f)));
+                    mesh.textures.Add("g_BlendMaskTexture", new KeyValuePair<string, Vector2>(greyTex, new Vector2(1f, 1f)));
+
                     terrain.Add(mesh);
                 }
+
+                /* Generate vertex color multiply decal mesh */
+                // Blame From for this. Not supporting vertex colors in shaders is a crime against GPUs
+                TerrainData multMesh = new TerrainData(region + ":" + name, int.Parse(landscape["landscape_flags"].ToString()), vertices, indices);
+                multMesh.mtd = "M[A]_multiply";
+                multMesh.material = "Color Multiply Decal Mesh";
+                multMesh.textures.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>("$PortJob\\DefaultTex\\def_test.dds", new Vector2(1f, 1f)));
+                terrain.Add(multMesh);
             }
             generated = true;
         }
@@ -602,7 +633,8 @@ namespace PortJob {
         public int flag;
         public List<TerrainVertex> vertices;
         public List<int> indices;
-        public string[] textures;
+        public string material, mtd;
+        public Dictionary<string, KeyValuePair<string, Vector2>> textures;
         public ushort[] texturesIndices;
 
         public TerrainData(string name, int flag, List<TerrainVertex> vertices = null, List<int> indices = null) {
@@ -610,7 +642,7 @@ namespace PortJob {
             this.flag = flag;
             this.vertices = vertices != null ? vertices : new();
             this.indices = indices != null ? indices : new();
-            textures = new string[2];
+            textures = new();
             texturesIndices = new ushort[2];
         }
     }
