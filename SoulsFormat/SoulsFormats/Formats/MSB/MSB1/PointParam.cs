@@ -102,7 +102,7 @@ namespace SoulsFormats
             /// </summary>
             public Region DeepCopy()
             {
-                Region region = (Region)MemberwiseClone();
+                var region = (Region)MemberwiseClone();
                 region.Shape = Shape.DeepCopy();
                 return region;
             }

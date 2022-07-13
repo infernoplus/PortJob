@@ -92,52 +92,52 @@ namespace SoulsFormats
                 switch (type)
                 {
                     case ModelType.MapPiece:
-                        Model mapPiece = new Model(br);
+                        var mapPiece = new Model(br);
                         MapPieces.Add(mapPiece);
                         return mapPiece;
 
                     case ModelType.Object:
-                        Model obj = new Model(br);
+                        var obj = new Model(br);
                         Objects.Add(obj);
                         return obj;
 
                     case ModelType.Enemy:
-                        Model enemy = new Model(br);
+                        var enemy = new Model(br);
                         Enemies.Add(enemy);
                         return enemy;
 
                     case ModelType.Item:
-                        Model item = new Model(br);
+                        var item = new Model(br);
                         Items.Add(item);
                         return item;
 
                     case ModelType.Player:
-                        Model player = new Model(br);
+                        var player = new Model(br);
                         Players.Add(player);
                         return player;
 
                     case ModelType.Collision:
-                        Model collision = new Model(br);
+                        var collision = new Model(br);
                         Collisions.Add(collision);
                         return collision;
 
                     case ModelType.Navmesh:
-                        Model navmesh = new Model(br);
+                        var navmesh = new Model(br);
                         Navmeshes.Add(navmesh);
                         return navmesh;
 
                     case ModelType.DummyObject:
-                        Model dummyObj = new Model(br);
+                        var dummyObj = new Model(br);
                         DummyObjects.Add(dummyObj);
                         return dummyObj;
 
                     case ModelType.DummyEnemy:
-                        Model dummyEne = new Model(br);
+                        var dummyEne = new Model(br);
                         DummyEnemies.Add(dummyEne);
                         return dummyEne;
 
                     case ModelType.Other:
-                        Model other = new Model(br);
+                        var other = new Model(br);
                         Others.Add(other);
                         return other;
 

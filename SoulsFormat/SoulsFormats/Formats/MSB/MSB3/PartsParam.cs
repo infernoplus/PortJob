@@ -314,7 +314,7 @@ namespace SoulsFormats
             /// </summary>
             public Part DeepCopy()
             {
-                Part part = (Part)MemberwiseClone();
+                var part = (Part)MemberwiseClone();
                 part.DrawGroups = (uint[])DrawGroups.Clone();
                 part.DispGroups = (uint[])DispGroups.Clone();
                 part.BackreadGroups = (uint[])BackreadGroups.Clone();
@@ -635,7 +635,7 @@ namespace SoulsFormats
                 /// </summary>
                 public SceneGparamConfig DeepCopy()
                 {
-                    SceneGparamConfig config = (SceneGparamConfig)MemberwiseClone();
+                    var config = (SceneGparamConfig)MemberwiseClone();
                     config.EventIDs = (sbyte[])EventIDs.Clone();
                     return config;
                 }
@@ -685,7 +685,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    MapPiece piece = (MapPiece)part;
+                    var piece = (MapPiece)part;
                     piece.Gparam = Gparam.DeepCopy();
                 }
 
@@ -766,7 +766,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    ObjectBase obj = (ObjectBase)part;
+                    var obj = (ObjectBase)part;
                     obj.Gparam = Gparam.DeepCopy();
                     obj.AnimIDs = (short[])AnimIDs.Clone();
                     obj.ModelSfxParamRelativeIDs = (short[])ModelSfxParamRelativeIDs.Clone();
@@ -909,7 +909,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    EnemyBase enemy = (EnemyBase)part;
+                    var enemy = (EnemyBase)part;
                     enemy.Gparam = Gparam.DeepCopy();
                 }
 
@@ -1231,7 +1231,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    Collision collision = (Collision)part;
+                    var collision = (Collision)part;
                     collision.Gparam = Gparam.DeepCopy();
                     collision.SceneGparam = SceneGparam.DeepCopy();
                 }
@@ -1381,7 +1381,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    ConnectCollision connect = (ConnectCollision)part;
+                    var connect = (ConnectCollision)part;
                     connect.MapID = (byte[])MapID.Clone();
                 }
 

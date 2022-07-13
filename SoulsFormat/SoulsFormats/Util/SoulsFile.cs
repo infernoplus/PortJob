@@ -31,7 +31,7 @@ namespace SoulsFormats
                 return false;
 
             BinaryReaderEx br = new BinaryReaderEx(false, bytes);
-            TFormat dummy = new TFormat();
+            var dummy = new TFormat();
             return dummy.Is(SFUtil.GetDecompressedBR(br, out _));
         }
 
@@ -46,7 +46,7 @@ namespace SoulsFormats
                     return false;
 
                 BinaryReaderEx br = new BinaryReaderEx(false, stream);
-                TFormat dummy = new TFormat();
+                var dummy = new TFormat();
                 return dummy.Is(SFUtil.GetDecompressedBR(br, out _));
             }
         }
@@ -90,7 +90,7 @@ namespace SoulsFormats
 
         private static bool IsRead(BinaryReaderEx br, out TFormat file)
         {
-            TFormat test = new TFormat();
+            var test = new TFormat();
             br = SFUtil.GetDecompressedBR(br, out DCX.Type compression);
             if (test.Is(br))
             {
@@ -112,7 +112,7 @@ namespace SoulsFormats
         /// </summary>
         public static bool IsRead(byte[] bytes, out TFormat file)
         {
-            BinaryReaderEx br = new BinaryReaderEx(false, bytes);
+            var br = new BinaryReaderEx(false, bytes);
             return IsRead(br, out file);
         }
 
@@ -123,7 +123,7 @@ namespace SoulsFormats
         {
             using (FileStream fs = File.OpenRead(path))
             {
-                BinaryReaderEx br = new BinaryReaderEx(false, fs);
+                var br = new BinaryReaderEx(false, fs);
                 return IsRead(br, out file);
             }
         }

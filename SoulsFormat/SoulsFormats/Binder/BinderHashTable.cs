@@ -31,13 +31,13 @@ namespace SoulsFormats
             if (groupCount == 0)
                 throw new InvalidOperationException("Could not determine hash group count.");
 
-            List<PathHash>[] hashLists = new List<PathHash>[groupCount];
+            var hashLists = new List<PathHash>[groupCount];
             for (int i = 0; i < groupCount; i++)
                 hashLists[i] = new List<PathHash>();
 
             for (int i = 0; i < files.Count; i++)
             {
-                PathHash pathHash = new PathHash(i, files[i].Name);
+                var pathHash = new PathHash(i, files[i].Name);
                 uint group = pathHash.Hash % groupCount;
                 hashLists[group].Add(pathHash);
             }
@@ -45,8 +45,8 @@ namespace SoulsFormats
             for (int i = 0; i < groupCount; i++)
                 hashLists[i].Sort((ph1, ph2) => ph1.Hash.CompareTo(ph2.Hash));
 
-            List<HashGroup> hashGroups = new List<HashGroup>();
-            List<PathHash> pathHashes = new List<PathHash>();
+            var hashGroups = new List<HashGroup>();
+            var pathHashes = new List<PathHash>();
 
             int count = 0;
             foreach (List<PathHash> hashList in hashLists)

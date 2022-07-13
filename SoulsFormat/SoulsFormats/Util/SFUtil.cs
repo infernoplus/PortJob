@@ -73,9 +73,9 @@ namespace SoulsFormats
             }
 
             string ext = "";
-            using (MemoryStream ms = new MemoryStream(bytes))
+            using (var ms = new MemoryStream(bytes))
             {
-                BinaryReaderEx br = new BinaryReaderEx(bigEndian, ms);
+                var br = new BinaryReaderEx(bigEndian, ms);
                 string magic = null;
                 if (br.Length >= 4)
                     magic = br.ReadASCII(4);
@@ -295,7 +295,7 @@ namespace SoulsFormats
             bw.WriteByte(0x78);
             bw.WriteByte(formatByte);
 
-            using (DeflateStream deflateStream = new DeflateStream(bw.Stream, CompressionMode.Compress, true))
+            using (var deflateStream = new DeflateStream(bw.Stream, CompressionMode.Compress, true))
             {
                 deflateStream.Write(input, 0, input.Length);
             }
@@ -313,10 +313,10 @@ namespace SoulsFormats
             br.AssertByte(0x01, 0x5E, 0x9C, 0xDA);
             byte[] compressed = br.ReadBytes(compressedSize - 2);
 
-            using (MemoryStream decompressedStream = new MemoryStream())
+            using (var decompressedStream = new MemoryStream())
             {
-                using (MemoryStream compressedStream = new MemoryStream(compressed))
-                using (DeflateStream deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
+                using (var compressedStream = new MemoryStream(compressed))
+                using (var deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
                 {
                     deflateStream.CopyTo(decompressedStream);
                 }
@@ -357,7 +357,7 @@ namespace SoulsFormats
         /// </summary>
         public static Dictionary<int, T> Dictionize<T>(List<T> items)
         {
-            Dictionary<int, T> dict = new Dictionary<int, T>(items.Count);
+            var dict = new Dictionary<int, T>(items.Count);
             for (int i = 0; i < items.Count; i++)
                 dict[i] = items[i];
             return dict;
@@ -425,9 +425,9 @@ namespace SoulsFormats
                 aes.IV = iv;
 
                 ICryptoTransform decryptor = aes.CreateDecryptor();
-                using (MemoryStream encStream = new MemoryStream(encrypted, 32, encrypted.Length - 32))
-                using (CryptoStream cryptoStream = new CryptoStream(encStream, decryptor, CryptoStreamMode.Read))
-                using (MemoryStream decStream = new MemoryStream())
+                using (var encStream = new MemoryStream(encrypted, 32, encrypted.Length - 32))
+                using (var cryptoStream = new CryptoStream(encStream, decryptor, CryptoStreamMode.Read))
+                using (var decStream = new MemoryStream())
                 {
                     cryptoStream.CopyTo(decStream);
                     return decStream.ToArray();
@@ -449,10 +449,10 @@ namespace SoulsFormats
                 aes.GenerateIV();
 
                 ICryptoTransform encryptor = aes.CreateEncryptor();
-                using (MemoryStream decStream = new MemoryStream(decrypted))
-                using (CryptoStream cryptoStream = new CryptoStream(decStream, encryptor, CryptoStreamMode.Read))
-                using (MemoryStream encStream = new MemoryStream())
-                using (MD5 md5 = MD5.Create())
+                using (var decStream = new MemoryStream(decrypted))
+                using (var cryptoStream = new CryptoStream(decStream, encryptor, CryptoStreamMode.Read))
+                using (var encStream = new MemoryStream())
+                using (var md5 = MD5.Create())
                 {
                     encStream.Write(aes.IV, 0, 16);
                     cryptoStream.CopyTo(encStream);

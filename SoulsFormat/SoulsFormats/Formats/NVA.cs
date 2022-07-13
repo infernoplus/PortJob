@@ -103,8 +103,8 @@ namespace SoulsFormats
             Entries2 = new Section2(br);
             new Section3(br);
             Connectors = new ConnectorSection(br);
-            ConnectorPointSection connectorPoints = new ConnectorPointSection(br);
-            ConnectorConditionSection connectorConditions = new ConnectorConditionSection(br);
+            var connectorPoints = new ConnectorPointSection(br);
+            var connectorConditions = new ConnectorConditionSection(br);
             Entries7 = new Section7(br);
             MapNodeSection mapNodes;
             if (Version == NVAVersion.OldBloodborne)
@@ -124,12 +124,12 @@ namespace SoulsFormats
         /// </summary>
         protected override void Write(BinaryWriterEx bw)
         {
-            ConnectorPointSection connectorPoints = new ConnectorPointSection();
-            ConnectorConditionSection connectorConditions = new ConnectorConditionSection();
+            var connectorPoints = new ConnectorPointSection();
+            var connectorConditions = new ConnectorConditionSection();
             foreach (Connector connector in Connectors)
                 connector.GivePointsAndConds(connectorPoints, connectorConditions);
 
-            MapNodeSection mapNodes = new MapNodeSection(Version == NVAVersion.Sekiro ? 2 : 1);
+            var mapNodes = new MapNodeSection(Version == NVAVersion.Sekiro ? 2 : 1);
             foreach (Navmesh navmesh in Navmeshes)
                 navmesh.GiveMapNodes(mapNodes);
 

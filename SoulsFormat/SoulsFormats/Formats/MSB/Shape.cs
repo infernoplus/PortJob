@@ -355,7 +355,7 @@ namespace SoulsFormats
                 /// </summary>
                 public override Shape DeepCopy()
                 {
-                    Composite comp = new Composite();
+                    var comp = new Composite();
                     for (int i = 0; i < 8; i++)
                         comp.Children[i] = Children[i].DeepCopy();
                     return comp;

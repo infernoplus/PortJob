@@ -28,7 +28,7 @@ namespace SoulsFormats.MWC
             int offset6 = br.ReadInt32();
             Unk1C = br.ReadInt32();
 
-            List<int> offsets = new List<int> { fileSize, offset1, offset2, offset3, offset5, offset6 };
+            var offsets = new List<int> { fileSize, offset1, offset2, offset3, offset5, offset6 };
             offsets.Sort();
 
             if (offset1 != 0)

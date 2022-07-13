@@ -59,7 +59,7 @@ namespace SoulsFormats
                         throw new InvalidDataException($"Layout.Enum type {Type} may not be used in a TDF.");
                 }
 
-                PARAMTDF tdf = new PARAMTDF { Name = name, Type = tdfType };
+                var tdf = new PARAMTDF { Name = name, Type = tdfType };
                 foreach (Item item in this)
                 {
                     tdf.Entries.Add(new PARAMTDF.Entry(item.Name, item.Value));

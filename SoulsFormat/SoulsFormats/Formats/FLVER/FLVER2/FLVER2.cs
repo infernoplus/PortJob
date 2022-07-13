@@ -150,7 +150,7 @@ namespace SoulsFormats
                 Dummies.Add(new FLVER.Dummy(br, Header.Version));
 
             Materials = new List<Material>(materialCount);
-            Dictionary<int, int> gxListIndices = new Dictionary<int, int>();
+            var gxListIndices = new Dictionary<int, int>();
             GXLists = new List<GXList>();
             for (int i = 0; i < materialCount; i++)
                 Materials.Add(new Material(br, Header, GXLists, gxListIndices));
@@ -163,11 +163,11 @@ namespace SoulsFormats
             for (int i = 0; i < meshCount; i++)
                 Meshes.Add(new Mesh(br, Header));
 
-            List<FaceSet> faceSets = new List<FaceSet>(faceSetCount);
+            var faceSets = new List<FaceSet>(faceSetCount);
             for (int i = 0; i < faceSetCount; i++)
                 faceSets.Add(new FaceSet(br, Header, vertexIndicesSize, dataOffset));
 
-            List<VertexBuffer> vertexBuffers = new List<VertexBuffer>(vertexBufferCount);
+            var vertexBuffers = new List<VertexBuffer>(vertexBufferCount);
             for (int i = 0; i < vertexBufferCount; i++)
                 vertexBuffers.Add(new VertexBuffer(br));
 
@@ -175,7 +175,7 @@ namespace SoulsFormats
             for (int i = 0; i < bufferLayoutCount; i++)
                 BufferLayouts.Add(new BufferLayout(br));
 
-            List<Texture> textures = new List<Texture>(textureCount);
+            var textures = new List<Texture>(textureCount);
             for (int i = 0; i < textureCount; i++)
                 textures.Add(new Texture(br, Header));
 
@@ -356,7 +356,7 @@ namespace SoulsFormats
             }
 
             bw.Pad(0x10);
-            List<int> gxOffsets = new List<int>();
+            var gxOffsets = new List<int>();
             foreach (GXList gxList in GXLists)
             {
                 gxOffsets.Add((int)bw.Position);

@@ -176,7 +176,7 @@ namespace SoulsFormats
         private Dictionary<int, string> ReadSTR(BinaryReaderEx br)
         {
             long start = ReadBlockHeader(br, "STR\0", out int count, out int size);
-            Dictionary<int, string> strings = new Dictionary<int, string>(count);
+            var strings = new Dictionary<int, string>(count);
             for (int i = 0; i < count; i++)
             {
                 int offset = (int)(br.Position - start);
@@ -189,7 +189,7 @@ namespace SoulsFormats
         private Dictionary<string, int> WriteSTR(BinaryWriterEx bw)
         {
             long start = WriteBlockHeader(bw, "STR\0");
-            Dictionary<string, int> stringOffsets = new Dictionary<string, int>();
+            var stringOffsets = new Dictionary<string, int>();
             void writeString(string str)
             {
                 if (str == null)
@@ -267,7 +267,7 @@ namespace SoulsFormats
         private List<Texture> ReadTEXI(BinaryReaderEx br, Dictionary<int, string> strings)
         {
             long start = ReadBlockHeader(br, "TEXI", out int count, out int size);
-            List<Texture> textures = new List<Texture>(count);
+            var textures = new List<Texture>(count);
             for (int i = 0; i < count; i++)
             {
                 textures.Add(new Texture(br, strings));
@@ -287,7 +287,7 @@ namespace SoulsFormats
         private Queue<int> WriteSHPR(BinaryWriterEx bw, DRBVersion version, Dictionary<string, int> stringOffsets)
         {
             long start = WriteBlobBlock(bw, "SHPR");
-            Queue<int> shprOffsets = new Queue<int>();
+            var shprOffsets = new Queue<int>();
             void writeShape(Shape shape)
             {
                 int offset = (int)(bw.Position - start);
@@ -311,7 +311,7 @@ namespace SoulsFormats
         private Queue<int> WriteCTPR(BinaryWriterEx bw)
         {
             long start = WriteBlobBlock(bw, "CTPR");
-            Queue<int> ctprOffsets = new Queue<int>();
+            var ctprOffsets = new Queue<int>();
             void writeControl(Control control)
             {
                 int offset = (int)(bw.Position - start);
@@ -335,7 +335,7 @@ namespace SoulsFormats
         private Queue<int> WriteSCDP(BinaryWriterEx bw)
         {
             long start = WriteBlobBlock(bw, "SCDP");
-            Queue<int> scdpOffsets = new Queue<int>();
+            var scdpOffsets = new Queue<int>();
 
             foreach (Scdl scdl in Scdls)
             {
@@ -357,7 +357,7 @@ namespace SoulsFormats
         private Dictionary<int, Shape> ReadSHAP(BinaryReaderEx br, DRBVersion version, Dictionary<int, string> strings, long shprStart)
         {
             long start = ReadBlockHeader(br, "SHAP", out int count, out int size);
-            Dictionary<int, Shape> shapes = new Dictionary<int, Shape>(count);
+            var shapes = new Dictionary<int, Shape>(count);
             for (int i = 0; i < count; i++)
             {
                 int offset = (int)(br.Position - start);
@@ -370,7 +370,7 @@ namespace SoulsFormats
         private Queue<int> WriteSHAP(BinaryWriterEx bw, Dictionary<string, int> stringOffsets, Queue<int> shprOffsets, out Queue<int> dlgoShapOffsets)
         {
             long start = WriteBlockHeader(bw, "SHAP");
-            Queue<int> dlgShapOffsets = new Queue<int>();
+            var dlgShapOffsets = new Queue<int>();
             dlgoShapOffsets = new Queue<int>();
             int writeShape(Shape shape)
             {
@@ -395,7 +395,7 @@ namespace SoulsFormats
         private Dictionary<int, Control> ReadCTRL(BinaryReaderEx br, Dictionary<int, string> strings, long ctprStart)
         {
             long start = ReadBlockHeader(br, "CTRL", out int count, out int size);
-            Dictionary<int, Control> controls = new Dictionary<int, Control>(count);
+            var controls = new Dictionary<int, Control>(count);
             for (int i = 0; i < count; i++)
             {
                 int offset = (int)(br.Position - start);
@@ -408,7 +408,7 @@ namespace SoulsFormats
         private Queue<int> WriteCTRL(BinaryWriterEx bw, Dictionary<string, int> stringOffsets, Queue<int> ctprOffsets, out Queue<int> dlgoCtrlOffsets)
         {
             long start = WriteBlockHeader(bw, "CTRL");
-            Queue<int> dlgCtrlOffsets = new Queue<int>();
+            var dlgCtrlOffsets = new Queue<int>();
             dlgoCtrlOffsets = new Queue<int>();
             int writeControl(Control control)
             {
@@ -433,7 +433,7 @@ namespace SoulsFormats
         private Dictionary<int, Anik> ReadANIK(BinaryReaderEx br, Dictionary<int, string> strings)
         {
             long start = ReadBlockHeader(br, "ANIK", out int count, out int size);
-            Dictionary<int, Anik> aniks = new Dictionary<int, Anik>(count);
+            var aniks = new Dictionary<int, Anik>(count);
             for (int i = 0; i < count; i++)
             {
                 int offset = (int)(br.Position - start);
@@ -447,7 +447,7 @@ namespace SoulsFormats
         {
             long start = WriteBlockHeader(bw, "ANIK");
             int count = 0;
-            Queue<int> anikOffsets = new Queue<int>();
+            var anikOffsets = new Queue<int>();
 
             foreach (Anim anim in Anims)
             {
@@ -468,7 +468,7 @@ namespace SoulsFormats
         private Dictionary<int, Anio> ReadANIO(BinaryReaderEx br, Dictionary<int, Anik> aniks)
         {
             long start = ReadBlockHeader(br, "ANIO", out int count, out int size);
-            Dictionary<int, Anio> anios = new Dictionary<int, Anio>(count);
+            var anios = new Dictionary<int, Anio>(count);
             for (int i = 0; i < count; i++)
             {
                 int offset = (int)(br.Position - start);
@@ -482,7 +482,7 @@ namespace SoulsFormats
         {
             long start = WriteBlockHeader(bw, "ANIO");
             int count = 0;
-            Queue<int> anioOffsets = new Queue<int>();
+            var anioOffsets = new Queue<int>();
 
             foreach (Anim anim in Anims)
             {
@@ -500,7 +500,7 @@ namespace SoulsFormats
         private List<Anim> ReadANIM(BinaryReaderEx br, Dictionary<int, string> strings, Dictionary<int, Anio> anios)
         {
             long start = ReadBlockHeader(br, "ANIM", out int count, out int size);
-            List<Anim> anims = new List<Anim>(count);
+            var anims = new List<Anim>(count);
             for (int i = 0; i < count; i++)
             {
                 anims.Add(new Anim(br, strings, anios));
@@ -522,7 +522,7 @@ namespace SoulsFormats
         private Dictionary<int, Scdk> ReadSCDK(BinaryReaderEx br, Dictionary<int, string> strings, long scdpStart)
         {
             long start = ReadBlockHeader(br, "SCDK", out int count, out int size);
-            Dictionary<int, Scdk> scdks = new Dictionary<int, Scdk>(count);
+            var scdks = new Dictionary<int, Scdk>(count);
             for (int i = 0; i < count; i++)
             {
                 int offset = (int)(br.Position - start);
@@ -536,7 +536,7 @@ namespace SoulsFormats
         {
             long start = WriteBlockHeader(bw, "SCDK");
             int count = 0;
-            Queue<int> scdkOffsets = new Queue<int>();
+            var scdkOffsets = new Queue<int>();
 
             foreach (Scdl scdl in Scdls)
             {
@@ -557,7 +557,7 @@ namespace SoulsFormats
         private Dictionary<int, Scdo> ReadSCDO(BinaryReaderEx br, Dictionary<int, string> strings, Dictionary<int, Scdk> scdks)
         {
             long start = ReadBlockHeader(br, "SCDO", out int count, out int size);
-            Dictionary<int, Scdo> scdos = new Dictionary<int, Scdo>(count);
+            var scdos = new Dictionary<int, Scdo>(count);
             for (int i = 0; i < count; i++)
             {
                 int offset = (int)(br.Position - start);
@@ -571,7 +571,7 @@ namespace SoulsFormats
         {
             long start = WriteBlockHeader(bw, "SCDO");
             int count = 0;
-            Queue<int> scdoOffsets = new Queue<int>();
+            var scdoOffsets = new Queue<int>();
 
             foreach (Scdl scdl in Scdls)
             {
@@ -589,7 +589,7 @@ namespace SoulsFormats
         private List<Scdl> ReadSCDL(BinaryReaderEx br, Dictionary<int, string> strings, Dictionary<int, Scdo> scdos)
         {
             long start = ReadBlockHeader(br, "SCDL", out int count, out int size);
-            List<Scdl> scdls = new List<Scdl>(count);
+            var scdls = new List<Scdl>(count);
             for (int i = 0; i < count; i++)
             {
                 scdls.Add(new Scdl(br, strings, scdos));
@@ -611,7 +611,7 @@ namespace SoulsFormats
         private Dictionary<int, Dlgo> ReadDLGO(BinaryReaderEx br, Dictionary<int, string> strings, Dictionary<int, Shape> shapes, Dictionary<int, Control> controls)
         {
             long start = ReadBlockHeader(br, "DLGO", out int count, out int size);
-            Dictionary<int, Dlgo> dlgos = new Dictionary<int, Dlgo>(count);
+            var dlgos = new Dictionary<int, Dlgo>(count);
             for (int i = 0; i < count; i++)
             {
                 int offset = (int)(br.Position - start);
@@ -625,7 +625,7 @@ namespace SoulsFormats
         {
             long start = WriteBlockHeader(bw, "DLGO");
             int count = 0;
-            Queue<int> dlgoOffsets = new Queue<int>();
+            var dlgoOffsets = new Queue<int>();
 
             foreach (Dlg dlg in Dlgs)
             {
@@ -643,7 +643,7 @@ namespace SoulsFormats
         private List<Dlg> ReadDLG(BinaryReaderEx br, Dictionary<int, string> strings, Dictionary<int, Shape> shapes, Dictionary<int, Control> controls, Dictionary<int, Dlgo> dlgos)
         {
             long start = ReadBlockHeader(br, "DLG\0", out int count, out int size);
-            List<Dlg> dlgs = new List<Dlg>(count);
+            var dlgs = new List<Dlg>(count);
             for (int i = 0; i < count; i++)
             {
                 dlgs.Add(new Dlg(br, strings, shapes, controls, dlgos));

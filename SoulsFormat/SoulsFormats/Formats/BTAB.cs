@@ -68,7 +68,7 @@ namespace SoulsFormats
             bw.WritePattern(0x24, 0x00);
 
             long stringsStart = bw.Position;
-            List<long> stringOffsets = new List<long>(Entries.Count * 2);
+            var stringOffsets = new List<long>(Entries.Count * 2);
             foreach (Entry entry in Entries)
             {
                 long partNameOffset = bw.Position - stringsStart;

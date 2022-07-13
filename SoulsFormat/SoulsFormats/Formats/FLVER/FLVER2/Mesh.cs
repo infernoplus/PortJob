@@ -128,10 +128,10 @@ namespace SoulsFormats
                 vertexBufferIndices = null;
 
                 // Make sure no semantics repeat that aren't known to
-                List<FLVER.LayoutSemantic> semantics = new List<FLVER.LayoutSemantic>();
+                var semantics = new List<FLVER.LayoutSemantic>();
                 foreach (VertexBuffer buffer in VertexBuffers)
                 {
-                    foreach (FLVER.LayoutMember member in layouts[buffer.LayoutIndex])
+                    foreach (var member in layouts[buffer.LayoutIndex])
                     {
                         if (member.Semantic != FLVER.LayoutSemantic.UV
                             && member.Semantic != FLVER.LayoutSemantic.Tangent
@@ -157,7 +157,7 @@ namespace SoulsFormats
 
             internal void ReadVertices(BinaryReaderEx br, int dataOffset, List<BufferLayout> layouts, FLVERHeader header)
             {
-                IEnumerable<FLVER.LayoutMember> layoutMembers = layouts.SelectMany(l => l);
+                var layoutMembers = layouts.SelectMany(l => l);
                 int uvCap = layoutMembers.Where(m => m.Semantic == FLVER.LayoutSemantic.UV).Count();
                 int tanCap = layoutMembers.Where(m => m.Semantic == FLVER.LayoutSemantic.Tangent).Count();
                 int colorCap = layoutMembers.Where(m => m.Semantic == FLVER.LayoutSemantic.VertexColor).Count();
@@ -233,7 +233,7 @@ namespace SoulsFormats
                 {
                     FaceSet faceSet = FaceSets.Find(fs => fs.Flags == fsFlags) ?? FaceSets[0];
                     List<int> indices = faceSet.Triangulate(Vertices.Count < ushort.MaxValue);
-                    List<FLVER.Vertex[]> vertices = new List<FLVER.Vertex[]>(indices.Count);
+                    var vertices = new List<FLVER.Vertex[]>(indices.Count);
                     for (int i = 0; i < indices.Count - 2; i += 3)
                     {
                         int vi1 = indices[i];

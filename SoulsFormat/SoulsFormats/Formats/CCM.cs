@@ -96,11 +96,11 @@ namespace SoulsFormats
             Glyphs = new Dictionary<int, Glyph>(glyphCount);
             if (Version == CCMVer.DemonsSouls || Version == CCMVer.DarkSouls1)
             {
-                List<CodeGroup> codeGroups = new List<CodeGroup>(codeGroupCount);
+                var codeGroups = new List<CodeGroup>(codeGroupCount);
                 for (int i = 0; i < codeGroupCount; i++)
                     codeGroups.Add(new CodeGroup(br));
 
-                List<Glyph> glyphs = new List<Glyph>(glyphCount);
+                var glyphs = new List<Glyph>(glyphCount);
                 for (int i = 0; i < glyphCount; i++)
                 {
                     Vector2 uv1 = br.ReadVector2();
@@ -122,7 +122,7 @@ namespace SoulsFormats
             }
             else if (Version == CCMVer.DarkSouls2)
             {
-                Dictionary<int, TexRegion> texRegions = new Dictionary<int, TexRegion>(texRegionCount);
+                var texRegions = new Dictionary<int, TexRegion>(texRegionCount);
                 for (int i = 0; i < texRegionCount; i++)
                     texRegions[(int)br.Position] = new TexRegion(br);
 
@@ -179,11 +179,11 @@ namespace SoulsFormats
             bw.WriteByte(TexCount);
             bw.WriteByte(0);
 
-            List<int> codes = new List<int>(Glyphs.Keys);
+            var codes = new List<int>(Glyphs.Keys);
             codes.Sort();
             if (Version == CCMVer.DemonsSouls || Version == CCMVer.DarkSouls1)
             {
-                List<CodeGroup> codeGroups = new List<CodeGroup>();
+                var codeGroups = new List<CodeGroup>();
                 for (int i = 0; i < Glyphs.Count;)
                 {
                     int startCode = codes[i];
@@ -211,8 +211,8 @@ namespace SoulsFormats
             }
             else if (Version == CCMVer.DarkSouls2)
             {
-                Dictionary<int, TexRegion> texRegionsByCode = new Dictionary<int, TexRegion>(Glyphs.Count);
-                HashSet<TexRegion> texRegions = new HashSet<TexRegion>();
+                var texRegionsByCode = new Dictionary<int, TexRegion>(Glyphs.Count);
+                var texRegions = new HashSet<TexRegion>();
                 foreach (int code in codes)
                 {
                     Glyph glyph = Glyphs[code];
@@ -220,13 +220,13 @@ namespace SoulsFormats
                     short y1 = (short)Math.Round(glyph.UV1.Y * TexHeight);
                     short x2 = (short)Math.Round(glyph.UV2.X * TexWidth);
                     short y2 = (short)Math.Round(glyph.UV2.Y * TexHeight);
-                    TexRegion region = new TexRegion(x1, y1, x2, y2);
+                    var region = new TexRegion(x1, y1, x2, y2);
                     texRegionsByCode[code] = region;
                     texRegions.Add(region);
                 }
 
                 bw.FillInt16("TexRegionCount", (short)texRegions.Count);
-                Dictionary<TexRegion, int> texRegionOffsets = new Dictionary<TexRegion, int>(texRegions.Count);
+                var texRegionOffsets = new Dictionary<TexRegion, int>(texRegions.Count);
                 foreach (TexRegion region in texRegions)
                 {
                     texRegionOffsets[region] = (int)bw.Position;
@@ -393,7 +393,7 @@ namespace SoulsFormats
 
             public override int GetHashCode()
             {
-                int hashCode = 268039418;
+                var hashCode = 268039418;
                 hashCode = hashCode * -1521134295 + X1.GetHashCode();
                 hashCode = hashCode * -1521134295 + Y1.GetHashCode();
                 hashCode = hashCode * -1521134295 + X2.GetHashCode();

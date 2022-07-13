@@ -72,8 +72,8 @@ namespace SoulsFormats
         /// </summary>
         protected override void Write(BinaryWriterEx bw)
         {
-            List<int> offsetIndex = new List<int>();
-            SortedDictionary<int, List<int>> memberOffsetsIndex = new SortedDictionary<int, List<int>>();
+            var offsetIndex = new List<int>();
+            var memberOffsetsIndex = new SortedDictionary<int, List<int>>();
 
             bw.BigEndian = BigEndian;
             bw.WriteASCII("ACB\0");

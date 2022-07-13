@@ -154,13 +154,13 @@ namespace SoulsFormats
             bw.WriteInt32(0);
             bw.WriteInt32(0);
 
-            List<CustomData> allCustomData = new List<CustomData>();
-            List<long> customDataValueOffsets = new List<long>();
+            var allCustomData = new List<CustomData>();
+            var customDataValueOffsets = new List<long>();
 
             for (int i = 0; i < Resources.Count; i++)
                 Resources[i].Write(bw, i, allCustomData, customDataValueOffsets);
 
-            Dictionary<Disposition, long> offsetsByDispos = new Dictionary<Disposition, long>();
+            var offsetsByDispos = new Dictionary<Disposition, long>();
             for (int i = 0; i < Cuts.Count; i++)
                 Cuts[i].Write(bw, Version, offsetsByDispos, i, allCustomData, customDataValueOffsets);
 

@@ -139,8 +139,8 @@ namespace SoulsFormats
             bw.WriteInt32(Unk18);
             bw.WriteInt32(Unk1C);
 
-            long[] edgeIndicesAOffsets = new long[Edges.Count];
-            long[] edgeIndicesBOffsets = new long[Edges.Count];
+            var edgeIndicesAOffsets = new long[Edges.Count];
+            var edgeIndicesBOffsets = new long[Edges.Count];
             for (int i = 0; i < Edges.Count; i++)
             {
                 edgeIndicesAOffsets[i] = bw.Position;
@@ -149,8 +149,8 @@ namespace SoulsFormats
                 bw.WriteInt32s(Edges[i].UnkIndicesB);
             }
 
-            long[] nodeNodeIndicesOffsets = new long[Nodes.Count];
-            long[] nodeEdgeIndicesOffsets = new long[Nodes.Count];
+            var nodeNodeIndicesOffsets = new long[Nodes.Count];
+            var nodeEdgeIndicesOffsets = new long[Nodes.Count];
             for (int i = 0; i < Nodes.Count; i++)
             {
                 Node node = Nodes[i];

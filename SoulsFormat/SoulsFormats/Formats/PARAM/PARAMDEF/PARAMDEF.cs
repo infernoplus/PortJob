@@ -187,7 +187,7 @@ namespace SoulsFormats
             }
 
             long fieldStringsStart = bw.Position;
-            Dictionary<string, long> sharedStringOffsets = new Dictionary<string, long>();
+            var sharedStringOffsets = new Dictionary<string, long>();
             for (int i = 0; i < Fields.Count; i++)
                 Fields[i].WriteStrings(bw, this, i, sharedStringOffsets);
 
@@ -246,7 +246,7 @@ namespace SoulsFormats
         /// </summary>
         public static PARAMDEF XmlDeserialize(string path)
         {
-            XmlDocument xml = new XmlDocument();
+            var xml = new XmlDocument();
             xml.Load(path);
             return XmlSerializer.Deserialize(xml);
         }
@@ -265,8 +265,8 @@ namespace SoulsFormats
         public void XmlSerialize(string path, int xmlVersion)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            XmlWriterSettings xws = new XmlWriterSettings { Indent = true };
-            using (XmlWriter xw = XmlWriter.Create(path, xws))
+            var xws = new XmlWriterSettings { Indent = true };
+            using (var xw = XmlWriter.Create(path, xws))
                 XmlSerializer.Serialize(this, xw, xmlVersion);
         }
     }

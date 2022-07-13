@@ -87,7 +87,7 @@ namespace SoulsFormats.Other
 
         public List<int> Triangulate(Mesh mesh, List<Vertex> vertices)
         {
-            List<int> triangles = new List<int>();
+            var triangles = new List<int>();
             bool flip = false;
             for (int i = mesh.StartIndex; i < mesh.StartIndex + mesh.IndexCount - 2; i++)
             {
