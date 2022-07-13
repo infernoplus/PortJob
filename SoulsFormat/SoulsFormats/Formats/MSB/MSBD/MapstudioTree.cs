@@ -118,7 +118,7 @@ namespace SoulsFormats
             /// </summary>
             public Tree DeepCopy()
             {
-                Tree tree = (Tree)MemberwiseClone();
+                var tree = (Tree)MemberwiseClone();
                 tree.UnkShorts = new List<short>(UnkShorts);
                 return tree;
             }

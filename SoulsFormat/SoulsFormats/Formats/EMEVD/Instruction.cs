@@ -247,9 +247,9 @@ namespace SoulsFormats
             /// </summary>
             public void PackArgs(IEnumerable<object> args, bool bigEndian = false)
             {
-                using (MemoryStream ms = new MemoryStream())
+                using (var ms = new MemoryStream())
                 {
-                    BinaryWriterEx bw = new BinaryWriterEx(bigEndian, ms);
+                    var bw = new BinaryWriterEx(bigEndian, ms);
                     foreach (object arg in args)
                     {
                         switch (arg)
@@ -288,10 +288,10 @@ namespace SoulsFormats
             /// </summary>
             public List<object> UnpackArgs(IEnumerable<ArgType> argStruct, bool bigEndian = false)
             {
-                List<object> result = new List<object>();
-                using (MemoryStream ms = new MemoryStream(ArgData))
+                var result = new List<object>();
+                using (var ms = new MemoryStream(ArgData))
                 {
-                    BinaryReaderEx br = new BinaryReaderEx(bigEndian, ms);
+                    var br = new BinaryReaderEx(bigEndian, ms);
                     foreach (ArgType arg in argStruct)
                     {
                         switch (arg)

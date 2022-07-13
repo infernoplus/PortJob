@@ -23,7 +23,7 @@ namespace SoulsFormats
         public BND3Reader(string path)
         {
             FileStream fs = File.OpenRead(path);
-            BinaryReaderEx br = new BinaryReaderEx(false, fs);
+            var br = new BinaryReaderEx(false, fs);
             Read(br);
         }
 
@@ -32,8 +32,8 @@ namespace SoulsFormats
         /// </summary>
         public BND3Reader(byte[] bytes)
         {
-            MemoryStream ms = new MemoryStream(bytes);
-            BinaryReaderEx br = new BinaryReaderEx(false, ms);
+            var ms = new MemoryStream(bytes);
+            var br = new BinaryReaderEx(false, ms);
             Read(br);
         }
 

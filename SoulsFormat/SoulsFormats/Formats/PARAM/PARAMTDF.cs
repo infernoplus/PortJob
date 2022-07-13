@@ -96,7 +96,7 @@ namespace SoulsFormats
         /// </summary>
         public string Write()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.AppendLine($"\"{Name}\"");
             sb.AppendLine($"\"{Type}\"");
             foreach (Entry entry in Entries)

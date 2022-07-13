@@ -269,7 +269,7 @@ namespace SoulsFormats
             /// </summary>
             public Event DeepCopy()
             {
-                Event evnt = (Event)MemberwiseClone();
+                var evnt = (Event)MemberwiseClone();
                 DeepCopyTo(evnt);
                 return evnt;
             }
@@ -550,7 +550,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Event evnt)
                 {
-                    Generator generator = (Generator)evnt;
+                    var generator = (Generator)evnt;
                     generator.SpawnRegionNames = (string[])SpawnRegionNames.Clone();
                     generator.SpawnPartNames = (string[])SpawnPartNames.Clone();
                 }
@@ -778,7 +778,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Event evnt)
                 {
-                    PatrolInfo walkRoute = (PatrolInfo)evnt;
+                    var walkRoute = (PatrolInfo)evnt;
                     walkRoute.WalkRegionNames = (string[])WalkRegionNames.Clone();
                     walkRoute.WREntries = new WREntry[WREntries.Length];
                     for (int i = 0; i < WREntries.Length; i++)
@@ -930,7 +930,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Event evnt)
                 {
-                    PlatoonInfo groupTour = (PlatoonInfo)evnt;
+                    var groupTour = (PlatoonInfo)evnt;
                     groupTour.GroupPartNames = (string[])GroupPartNames.Clone();
                 }
 
@@ -1118,7 +1118,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Event evnt)
                 {
-                    PlacementGroup event21 = (PlacementGroup)evnt;
+                    var event21 = (PlacementGroup)evnt;
                     event21.Event21PartNames = (string[])Event21PartNames.Clone();
                 }
 
@@ -1213,7 +1213,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Event evnt)
                 {
-                    Talk talk = (Talk)evnt;
+                    var talk = (Talk)evnt;
                     talk.EnemyNames = (string[])EnemyNames.Clone();
                     talk.TalkIDs = (int[])TalkIDs.Clone();
                 }

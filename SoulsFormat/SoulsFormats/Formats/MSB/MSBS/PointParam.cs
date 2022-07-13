@@ -358,7 +358,7 @@ namespace SoulsFormats
             /// </summary>
             public Region DeepCopy()
             {
-                Region region = (Region)MemberwiseClone();
+                var region = (Region)MemberwiseClone();
                 region.Shape = Shape.DeepCopy();
                 region.UnkA = new List<short>(UnkA);
                 region.UnkB = new List<short>(UnkB);
@@ -690,7 +690,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Region region)
                 {
-                    Sound sound = (Sound)region;
+                    var sound = (Sound)region;
                     sound.ChildRegionNames = (string[])ChildRegionNames.Clone();
                 }
 

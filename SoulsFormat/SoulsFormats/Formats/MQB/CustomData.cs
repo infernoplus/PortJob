@@ -184,7 +184,7 @@ namespace SoulsFormats
                 }
                 else if (Type == DataType.Color)
                 {
-                    Color color = (Color)Value;
+                    var color = (Color)Value;
                     valueOffset = bw.Position;
                     bw.WriteByte(color.R);
                     bw.WriteByte(color.G);

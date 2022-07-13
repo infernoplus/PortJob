@@ -220,7 +220,7 @@ namespace SoulsFormats
             {
                 if (TriangleStrip)
                 {
-                    List<int> triangles = new List<int>();
+                    var triangles = new List<int>();
                     bool flip = false;
                     for (int i = 0; i < Indices.Count - 2; i++)
                     {

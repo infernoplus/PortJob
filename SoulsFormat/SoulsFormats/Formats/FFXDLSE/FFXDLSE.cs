@@ -42,7 +42,7 @@ namespace SoulsFormats
             br.AssertInt32(1);
             short classNameCount = br.ReadInt16();
 
-            List<string> classNames = new List<string>(classNameCount);
+            var classNames = new List<string>(classNameCount);
             for (int i = 0; i < classNameCount; i++)
             {
                 int length = br.ReadInt32();
@@ -54,7 +54,7 @@ namespace SoulsFormats
 
         protected override void Write(BinaryWriterEx bw)
         {
-            List<string> classNames = new List<string>();
+            var classNames = new List<string>();
             Effect.AddClassNames(classNames);
 
             bw.BigEndian = false;

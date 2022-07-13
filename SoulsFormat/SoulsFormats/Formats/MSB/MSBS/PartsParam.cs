@@ -327,7 +327,7 @@ namespace SoulsFormats
             /// </summary>
             public Part DeepCopy()
             {
-                Part part = (Part)MemberwiseClone();
+                var part = (Part)MemberwiseClone();
                 part.EntityGroupIDs = (int[])EntityGroupIDs.Clone();
                 DeepCopyTo(part);
                 return part;
@@ -662,7 +662,7 @@ namespace SoulsFormats
                 /// </summary>
                 public UnkStruct1 DeepCopy()
                 {
-                    UnkStruct1 unk1 = (UnkStruct1)MemberwiseClone();
+                    var unk1 = (UnkStruct1)MemberwiseClone();
                     unk1.CollisionMask = (uint[])CollisionMask.Clone();
                     return unk1;
                 }
@@ -724,7 +724,7 @@ namespace SoulsFormats
                 /// </summary>
                 public UnkStruct2 DeepCopy()
                 {
-                    UnkStruct2 unk2 = (UnkStruct2)MemberwiseClone();
+                    var unk2 = (UnkStruct2)MemberwiseClone();
                     unk2.DispGroups = (int[])DispGroups.Clone();
                     return unk2;
                 }
@@ -841,7 +841,7 @@ namespace SoulsFormats
                 /// </summary>
                 public SceneGparamConfig DeepCopy()
                 {
-                    SceneGparamConfig config = (SceneGparamConfig)MemberwiseClone();
+                    var config = (SceneGparamConfig)MemberwiseClone();
                     config.EventIDs = (sbyte[])EventIDs.Clone();
                     return config;
                 }
@@ -987,7 +987,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    MapPiece piece = (MapPiece)part;
+                    var piece = (MapPiece)part;
                     piece.Unk1 = Unk1.DeepCopy();
                     piece.Gparam = Gparam.DeepCopy();
                     piece.Unk7 = Unk7.DeepCopy();
@@ -1091,7 +1091,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    ObjectBase obj = (ObjectBase)part;
+                    var obj = (ObjectBase)part;
                     obj.Gparam = Gparam.DeepCopy();
                 }
 
@@ -1180,7 +1180,7 @@ namespace SoulsFormats
                 private protected override void DeepCopyTo(Part part)
                 {
                     base.DeepCopyTo(part);
-                    Object obj = (Object)part;
+                    var obj = (Object)part;
                     obj.Unk1 = Unk1.DeepCopy();
                 }
 
@@ -1305,7 +1305,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    EnemyBase enemy = (EnemyBase)part;
+                    var enemy = (EnemyBase)part;
                     enemy.Gparam = Gparam.DeepCopy();
                 }
 
@@ -1430,7 +1430,7 @@ namespace SoulsFormats
                 private protected override void DeepCopyTo(Part part)
                 {
                     base.DeepCopyTo(part);
-                    Enemy enemy = (Enemy)part;
+                    var enemy = (Enemy)part;
                     enemy.Unk1 = Unk1.DeepCopy();
                 }
 
@@ -1617,7 +1617,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    Collision collision = (Collision)part;
+                    var collision = (Collision)part;
                     collision.Unk1 = Unk1.DeepCopy();
                     collision.Unk2 = Unk2.DeepCopy();
                     collision.Gparam = Gparam.DeepCopy();
@@ -1780,7 +1780,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    ConnectCollision connect = (ConnectCollision)part;
+                    var connect = (ConnectCollision)part;
                     connect.Unk2 = Unk2.DeepCopy();
                     connect.MapID = (byte[])MapID.Clone();
                 }

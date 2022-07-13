@@ -425,7 +425,7 @@ namespace SoulsFormats.Other
         public List<Vertex[]> GetFaces(Faceset faceset, List<Vertex> vertices)
         {
             List<ushort> indices = Triangulate(faceset, vertices);
-            List<Vertex[]> faces = new List<Vertex[]>();
+            var faces = new List<Vertex[]>();
             for (int i = 0; i < indices.Count; i += 3)
             {
                 faces.Add(new Vertex[]
@@ -441,7 +441,7 @@ namespace SoulsFormats.Other
         public List<ushort> Triangulate(Faceset faceset, List<Vertex> vertices)
         {
             bool flip = false;
-            List<ushort> triangles = new List<ushort>();
+            var triangles = new List<ushort>();
             for (int i = faceset.StartIndex; i < faceset.StartIndex + faceset.IndexCount - 2; i++)
             {
                 ushort vi1 = Indices[i];

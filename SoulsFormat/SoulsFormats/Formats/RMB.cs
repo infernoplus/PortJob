@@ -120,7 +120,7 @@ namespace SoulsFormats
 
                 List<State> readStates(short count, int offset)
                 {
-                    List<State> states = new List<State>(count);
+                    var states = new List<State>(count);
                     if (count > 0)
                     {
                         br.Position = offset;

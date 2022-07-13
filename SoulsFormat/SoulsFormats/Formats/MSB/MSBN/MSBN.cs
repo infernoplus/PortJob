@@ -119,7 +119,7 @@ namespace SoulsFormats
 
             internal List<T> Read(BinaryReaderEx br, int offsets)
             {
-                List<T> entries = new List<T>(offsets);
+                var entries = new List<T>(offsets);
                 for (int i = 0; i < offsets; i++)
                 {
                     int offset = br.ReadInt32();

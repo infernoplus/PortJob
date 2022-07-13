@@ -23,7 +23,7 @@ namespace SoulsFormats
         /// </summary>
         public static bool Is(byte[] bytes)
         {
-            BinaryReaderEx br = new BinaryReaderEx(true, bytes);
+            var br = new BinaryReaderEx(true, bytes);
             return Is(br);
         }
 
@@ -34,7 +34,7 @@ namespace SoulsFormats
         {
             using (FileStream stream = File.OpenRead(path))
             {
-                BinaryReaderEx br = new BinaryReaderEx(true, stream);
+                var br = new BinaryReaderEx(true, stream);
                 return Is(br);
             }
         }

@@ -40,7 +40,7 @@ namespace SoulsFormats
         /// </summary>
         public static BHD5 Read(Stream bhdStream, Game game)
         {
-            BinaryReaderEx br = new BinaryReaderEx(false, bhdStream);
+            var br = new BinaryReaderEx(false, bhdStream);
             return new BHD5(br, game);
         }
 
@@ -49,7 +49,7 @@ namespace SoulsFormats
         /// </summary>
         public void Write(Stream bhdStream)
         {
-            BinaryWriterEx bw = new BinaryWriterEx(false, bhdStream);
+            var bw = new BinaryWriterEx(false, bhdStream);
             Write(bw);
             bw.Finish();
         }

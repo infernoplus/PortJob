@@ -205,7 +205,7 @@ namespace SoulsFormats
             /// </summary>
             public Part DeepCopy()
             {
-                Part part = (Part)MemberwiseClone();
+                var part = (Part)MemberwiseClone();
                 part.DrawGroups = (uint[])DrawGroups.Clone();
                 part.DispGroups = (uint[])DispGroups.Clone();
                 DeepCopyTo(part);
@@ -710,7 +710,7 @@ namespace SoulsFormats
 
                 private protected override void DeepCopyTo(Part part)
                 {
-                    ConnectCollision connect = (ConnectCollision)part;
+                    var connect = (ConnectCollision)part;
                     connect.MapID = (byte[])MapID.Clone();
                 }
 
