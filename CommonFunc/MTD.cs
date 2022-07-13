@@ -10,9 +10,12 @@ using System.IO;
 using System.Reflection;
 using System.Diagnostics;
 using System.Collections;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Numerics;
+using Image = DirectXTexNet.Image;
 
 namespace CommonFunc {
     public static class MTD {
@@ -152,10 +155,14 @@ namespace CommonFunc {
             sImage = sImage.Compress(format, texCompFlag, 0.5f);
             sImage.OverrideFormat(format);
 
-            UnmanagedMemoryStream stream = sImage.SaveToDDSMemory(DDS_FLAGS.FORCE_DX10_EXT);
-            byte[] bytes = new byte[stream.Length];
-            pinnedArray.Free();
-            stream.Read(bytes);
+            /* Save the DDS to memory stream and then read the stream into a byte array. */
+            byte[] bytes;
+            using (UnmanagedMemoryStream stream = sImage.SaveToDDSMemory(DDS_FLAGS.FORCE_DX10_EXT)) {
+                bytes = new byte[stream.Length];
+                stream.Read(bytes);
+            }
+               
+            pinnedArray.Free(); //We have to manually free pinned stuff, or it will never be collected.
             return bytes;
         }
 
