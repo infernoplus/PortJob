@@ -81,6 +81,16 @@ namespace CommonFunc {
         }
     }
 
+    public class Byte4 {
+        public readonly byte x, y, z, w;
+        public Byte4(byte a) {
+            x = a; y = a; z = a; w = a;
+        }
+        public Byte4(byte x, byte y, byte z, byte w) {
+            this.x = x; this.y = y; this.z = z; this.w = w;
+        }
+    }
+
     public class TextureKey {
         public string Key, Value;
         public Vector2 uv;

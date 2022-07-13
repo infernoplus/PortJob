@@ -55,13 +55,13 @@ namespace CommonFunc {
 
         }
 
-        public static byte[] MakeTextureFromPixelData(Vector4[] pixels, int width, int height, DXGI_FORMAT format = DXGI_FORMAT.BC5_UNORM, TEX_COMPRESS_FLAGS texCompFlag = TEX_COMPRESS_FLAGS.DEFAULT) {
+        public static byte[] MakeTextureFromPixelData(Byte4[] pixels, int width, int height, DXGI_FORMAT format = DXGI_FORMAT.BC5_UNORM, TEX_COMPRESS_FLAGS texCompFlag = TEX_COMPRESS_FLAGS.DEFAULT) {
             /* For some damn reason the System.Drawing.Common is a NuGet dll. Something something windows only something */
-            Bitmap img = new(width, width);
+            Bitmap img = new(width, height);
             for (int x = 0; x < img.Width; x++) {
                 for (int y = 0; y < img.Height; y++) {
-                    Vector4 color = pixels[x + y];
-                    Color pixelColor = Color.FromArgb((int)color.X, (int)color.Y, (int)color.W, (int)color.Z);
+                    Byte4 color = pixels[x + y];
+                    Color pixelColor = Color.FromArgb(color.w, color.x, color.y, color.z);
                     img.SetPixel(x, y, pixelColor);
                 }
             }

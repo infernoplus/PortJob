@@ -330,12 +330,9 @@ namespace PortJob {
                         float jjj = (sbyte)zstdNormal[bB++];
                         float kkk = (sbyte)zstdNormal[bB++];
 
-                        Vector3 color = new Vector3(1f, 1f, 1f); // Default
+                        Byte4 color = new Byte4(Byte.MaxValue); // Default
                         if (zstdColor != null) {
-                            float rrr = (sbyte)zstdColor[bC++];
-                            float ggg = (sbyte)zstdColor[bC++];
-                            float bbb = (sbyte)zstdColor[bC++];
-                            color = new Vector3(rrr, ggg, bbb);
+                            color = new Byte4(zstdColor[bC++], zstdColor[bC++], zstdColor[bC++], byte.MaxValue);
                         }
 
                         vertices.Add(new TerrainVertex(position, grid, Vector3.Normalize(new Vector3(iii, jjj, kkk)), new Vector2(xx * (1f / CELL_GRID_SIZE), yy * (1f / CELL_GRID_SIZE)), color, ltex[Math.Min((xx) / 4, 15), Math.Min((CELL_GRID_SIZE - yy) / 4, 15)]));
@@ -569,7 +566,18 @@ namespace PortJob {
                 TerrainData multMesh = new TerrainData(region + ":" + name, int.Parse(landscape["landscape_flags"].ToString()), vertices, indices);
                 multMesh.mtd = "M[A]_multiply";
                 multMesh.material = "Color Multiply Decal Mesh";
-                multMesh.textures.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>("CommonFunc\\DefaultTex\\def_test.dds", new Vector2(1f, 1f)));
+                multMesh.textures.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>($"colorBlendMap-[{position.x},{position.y}].dds", new Vector2(1f, 1f)));
+
+                /* Generate dds texture using vertex color data */
+                Byte4[] colors = new Byte4[65 * 65];
+                for (int cc = 0; cc < vertices.Count; cc++) {
+                    TerrainVertex vert = vertices[cc];
+
+                    colors[cc] = vert.color;
+                }
+
+                multMesh.color = CommonFunc.DDS.MakeTextureFromPixelData(colors, 65, 65);
+
                 terrain.Add(multMesh);
             }
             generated = true;
@@ -631,6 +639,7 @@ namespace PortJob {
         public List<TerrainVertex> vertices;
         public List<int> indices;
         public string material, mtd;
+        public byte[] color;
         public Dictionary<string, KeyValuePair<string, Vector2>> textures;
         public ushort[] texturesIndices;
 
@@ -649,11 +658,11 @@ namespace PortJob {
         public Int2 grid; // position on this cells grid
         public Vector3 normal;
         public Vector2 coordinate;
-        public Vector3 color;
+        public Byte4 color; // Bytes of a texture that contains the converted vertex color information
 
         public ushort texture;
 
-        public TerrainVertex(Vector3 position, Int2 grid, Vector3 normal, Vector2 coordinate, Vector3 color, ushort texture) {
+        public TerrainVertex(Vector3 position, Int2 grid, Vector3 normal, Vector2 coordinate, Byte4 color, ushort texture) {
             this.position = position;
             this.grid = grid;
             this.normal = normal;

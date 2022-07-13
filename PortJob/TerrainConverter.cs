@@ -129,7 +129,7 @@ namespace PortJob {
                         nuTpf.Encoding = TPF_ENCODING;
                         nuTpf.Flag2 = TPF_FLAG_2;
                         bool srgb = !(TEX.Value.ToLower().Contains("blend") || TEX.Value.ToLower().Contains("normal") || TEX.Value.ToLower().Contains("bumpmap"));
-                        byte[] texBytes = srgb ? MTD.GetSRGBTexture(tex) : MTD.GetTexture(tex);
+                        byte[] texBytes = terrainMesh.mtd == "M[A]_multiply" ? terrainMesh.color : (srgb ? MTD.GetSRGBTexture(tex) : MTD.GetTexture(tex)); // Satan
 
                         int texFormat = DDS.GetTpfFormatFromDdsBytes(texBytes);
 
