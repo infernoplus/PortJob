@@ -56,6 +56,21 @@ namespace CommonFunc {
 
         }
 
+        /// <summary>
+        /// Takes in a Byte4 width and height and returns an BC2_UNORM_SRGB DDS file. There are optional parameters,
+        /// including scale (of which you have to provide both x and y for it to scale). Most of the Texture format and
+        /// flags are also optionally available.
+        /// </summary>
+        /// <param name="pixels"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="scaleX"></param>
+        /// <param name="scaleY"></param>
+        /// <param name="format"></param>
+        /// <param name="texCompFlag"></param>
+        /// <param name="ddsFlags"></param>
+        /// <param name="filterFlags"></param>
+        /// <returns></returns>
         public static byte[] MakeTextureFromPixelData(Byte4[] pixels, int width, int height, int? scaleX = null, int? scaleY = null,
             DXGI_FORMAT format = DXGI_FORMAT.BC2_UNORM_SRGB, TEX_COMPRESS_FLAGS texCompFlag = TEX_COMPRESS_FLAGS.DEFAULT, DDS_FLAGS ddsFlags = DDS_FLAGS.FORCE_DX10_EXT,
             TEX_FILTER_FLAGS filterFlags = TEX_FILTER_FLAGS.LINEAR) {
