@@ -162,10 +162,41 @@ namespace PortJob {
                 NVA nva = new(); //One nva per msb. I put this up here so you can easily add the navmeshes in the loop.  
                 List<FBXInfo> fbxList = new();
 
+                /* Process content */
+                ESM.Type[] VALID_MAP_PIECE_TYPES = { ESM.Type.Static, ESM.Type.Door, ESM.Type.Container };
+
+                /* FBX Model conversion pre-pass */
+                /* We have to create our flvers and hkx files from the nif/fbx models first so that we can verify they exist when placing them in the MSB */
                 for (int c = 0; c < layout.cells.Count; c++) {
                     if (c > 12) { break; } //DEBUG DEBUG @TODO DEBUG
                     Cell cell = layout.cells[c];
-                    Log.Info(0, "Processing Cell: " + cell.region + (cell.name!=""?":" + cell.name:"") + " -> [" + cell.position.x + ", " + cell.position.y + "]", "test");
+                    Log.Info(0, "Loading Cell: " + cell.region + (cell.name != "" ? ":" + cell.name : "") + " -> [" + cell.position.x + ", " + cell.position.y + "]", "test");
+                    cell.Generate(esm);
+                    foreach (Content content in cell.content) {
+                        if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
+                        if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
+
+                        /* Name and model name stuff */
+                        if (!modelMap.ContainsKey(content.mesh)) {
+                            string mpModel = NewMapPieceID();
+                            string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
+                            string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
+                            if (!File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) fbxList.Add(new FBXInfo(fbxPath, flverPath, tpfDir));
+
+                            modelMap.Add(content.mesh, mpModel);
+                        }
+                    }
+                }
+
+                _workers.Add(new FBXConverterWorker(OutputPath, MorrowindPath, GLOBAL_SCALE, fbxList));
+                WaitForWorkers();
+                // CREATE COLLISION FROM OBJS AND WRITE THE HKX FILES TO THE FOLDER HERE!         @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+                /* MSB population pass */
+                for (int c = 0; c < layout.cells.Count; c++) {
+                    if (c > 12) { break; } //DEBUG DEBUG @TODO DEBUG
+                    Cell cell = layout.cells[c];
+                    Log.Info(0, "Populating Cell: " + cell.region + (cell.name!=""?":" + cell.name:"") + " -> [" + cell.position.x + ", " + cell.position.y + "]", "test");
                     cell.Generate(esm);
 
                     /* Name and model name stuff */
@@ -185,7 +216,7 @@ namespace PortJob {
                     flat.HitFilterID = 8;
                     flat.ModelName = cModel;
                     flat.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
-                    flat.Position = cell.center + OFFSET + new Vector3(0f, 5f, 0f);
+                    flat.Position = cell.center + OFFSET + new Vector3(0f, -15f, 0f);
                     flat.Rotation = ROTATION;
                     flat.MapStudioLayer = uint.MaxValue;
                     for (int k = 0; k < cell.drawGroups.Length; k++) {
@@ -278,6 +309,31 @@ namespace PortJob {
 
                         AddResource(msb, terrainRes);
                         msb.Parts.MapPieces.Add(terrain);
+
+                        /* Generate cell terrain collision */
+                        MSB3.Part.Collision terrainCol = new();
+                        MSB3.Model.Collision terrainColRes = new();
+                        terrainCol.HitFilterID = 8;
+                        terrainCol.ModelName = "h" + terrainModel;
+                        terrainCol.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
+                        terrainCol.Position = cell.center + OFFSET + new Vector3(0f, 0f, 0f);
+                        terrainCol.Rotation = ROTATION;
+                        terrainCol.MapStudioLayer = uint.MaxValue;
+                        for (int k = 0; k < cell.drawGroups.Length; k++) {
+                            terrainCol.DrawGroups[k] = cell.drawGroups[k];
+                            terrainCol.DispGroups[k] = cell.drawGroups[k];
+                            terrainCol.BackreadGroups[k] = cell.drawGroups[k];
+                        }
+
+                        terrainCol.Name = "h" + terrainModel;
+                        terrainCol.LodParamID = -1;
+                        terrainCol.UnkE0E = -1;
+
+                        terrainColRes.Name = terrainCol.ModelName;
+                        terrainColRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{terrainCol.ModelName}.hkt";
+
+                        AddResource(msb, terrainColRes);
+                        msb.Parts.Collisions.Add(terrainCol);
                     }
 
                     /* Enemy for testing */
@@ -315,10 +371,6 @@ namespace PortJob {
                     AddResource(msb, enemyRes);
                     msb.Parts.Enemies.Add(enemy);
 
-                    /* Process content */
-                    ESM.Type[] VALID_MAP_PIECE_TYPES = { ESM.Type.Static, ESM.Type.Door, ESM.Type.Container };
-
-
                     foreach (Content content in cell.content) {
                         if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
                         if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
@@ -328,12 +380,7 @@ namespace PortJob {
                         if (modelMap.ContainsKey(content.mesh)) {
                             mpModel = modelMap[content.mesh];
                         } else {
-                            mpModel = NewMapPieceID();
-                            string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
-                            string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
-                            if (!File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) fbxList.Add(new FBXInfo(fbxPath, flverPath, tpfDir));
-
-                            modelMap.Add(content.mesh, mpModel);
+                            throw new Exception("Missing flver!");
                         }
 
                         string mpName;
@@ -367,10 +414,36 @@ namespace PortJob {
 
                         AddResource(msb, mpRes);
                         msb.Parts.MapPieces.Add(mp);
+
+                        /* Create collision (if the file exists) */
+                        // CHECK FOR THE COLLISION FILE THAT HAS THE SAME ID AS THE MAP PIECE ABOVE, IF IT EXISTS POPULATE THE MAP WITH IT
+                        if (false) {
+                            MSB3.Part.Collision col = new();
+                            MSB3.Model.Collision colRes = new();
+                            col.HitFilterID = 8;
+                            col.ModelName = "h" + mpModel;
+                            col.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
+                            col.Position = content.position;
+                            col.Rotation = content.rotation;
+                            col.MapStudioLayer = uint.MaxValue;
+                            for (int k = 0; k < cell.drawGroups.Length; k++) {
+                                col.DrawGroups[k] = cell.drawGroups[k];
+                                col.DispGroups[k] = cell.drawGroups[k];
+                                col.BackreadGroups[k] = cell.drawGroups[k];
+                            }
+
+                            col.Name = col.ModelName;
+                            col.LodParamID = -1;
+                            col.UnkE0E = -1;
+
+                            colRes.Name = col.ModelName;
+                            colRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{col.ModelName}.hkt";
+
+                            AddResource(msb, colRes);
+                            msb.Parts.Collisions.Add(col);
+                        }
                     }
                 }
-
-                _workers.Add(new FBXConverterWorker(OutputPath, MorrowindPath, GLOBAL_SCALE, fbxList));
 
                 /* Just add one Navmesh to each nva. Model and Name are not a string, so no '_0000' format, and we have to use a unique ID here. */
                 int nModelID = 0;
