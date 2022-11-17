@@ -19,7 +19,7 @@ namespace PortJob {
         private Process _pipeClient { get; set; }
         private string _jsonString { get; }
         public FBXConverterWorker(string outputPath, string morrowindPath, float globalScale, List<FBXInfo> fbxList) {
-            _jsonString = JsonConvert.SerializeObject(new { OutputPath = outputPath, MorrowindPath = morrowindPath, GLOBAL_SCALE = globalScale, FBXList = fbxList });
+            _jsonString = JsonConvert.SerializeObject(new { OutputPath = outputPath, MorrowindPath = morrowindPath, GLOBAL_SCALE = globalScale, FBXList = fbxList  });
             _thread = new Thread(CallFBXConverter) {
                 IsBackground = true,
             };
