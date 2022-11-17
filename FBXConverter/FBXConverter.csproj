@@ -30,4 +30,26 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ColConverter\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ColConverter\AssetCc2_fixed.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ColConverter\hknp2fsnp.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ColConverter\mats.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ColConverter\obj2fsnp.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ColConverter\obj2fsnp.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

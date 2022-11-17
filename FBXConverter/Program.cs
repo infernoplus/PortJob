@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using CommonFunc;
+using FBXConverter.Solvers;
+using Microsoft.Xna.Framework;
 
 namespace FBXConverter {
     internal class Program {
