@@ -19,7 +19,7 @@ namespace PortJob {
         // Return an object containing the flver, tpfs, and generated ids and names stuff later
         public static void convert(Cell cell, string flverPath, string tpfDir) {
             /* Skip if file already exists */
-            // Lol
+            if (File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) { return; }
 
             /* Create a blank FLVER */
             FLVER2 flver = new();
