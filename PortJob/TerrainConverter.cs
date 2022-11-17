@@ -412,6 +412,9 @@ namespace PortJob {
                 tpf.Write(tpfPath, DCX.Type.DCX_DFLT_10000_24_9);
             }
 
+            /* Create collision obj */
+            TerrainToOBJ.convert(flverPath.Replace(".flver", ".obj"), cell.terrain[0]);
+
             Log.Info(2, $"Generated Terrain with [{cell.terrain.Count}] meshes -> {Utility.PathToFileName(flverPath)}");
         }
     }
