@@ -54,7 +54,7 @@ namespace FBXConverter {
             void FBXHierarchySearch(NodeContent node) {
                 foreach (NodeContent fbxComponent in node.Children) {
                     if (fbxComponent.Name.ToLower() == "collision") {
-                        continue;
+                        continue; // Collision is handled by ColToOBJ
                     }
                     if (fbxComponent is MeshContent meshContent) {
                         FBX_Meshes.Add(new FLVER2.Mesh(), meshContent);
@@ -435,6 +435,9 @@ namespace FBXConverter {
                 //Log.Info(2, "Writing TPF to: " + tpfPath);
                 tpf.Write(tpfPath, DCX.Type.DCX_DFLT_10000_24_9);
             }
+
+            /* Do collision */
+            ColToOBJ.convert(fbxPath, fbxPath.Replace(".fbx", ".obj"), fbx);
         }
     }
 
