@@ -427,7 +427,7 @@ namespace FBXConverter {
 
             string internalFlverPath = flverName + ".flver"; //"N:\\FDP\\data\\INTERROOT_win64\\map\\" + mapName + "\\" + flverName + "\\Model\\" + flverName + ".flver" //full internal path
             bnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, internalFlverPath, flver.Write()));
-            bnd.Write(flverPath.Replace("flver", "mapbnd.dcx"), DCX.Type.DCX_DFLT_10000_44_9);
+            bnd.Write(flverPath.Replace(".flver", ".mapbnd.dcx"), DCX.Type.DCX_DFLT_10000_44_9);
             //flver.Write(flverPath, DCX.Type.DCX_DFLT_10000_24_9);
             foreach (TPF tpf in tpfs) {
                 string tpfPath = tpfDir + tpf.Textures[0].Name + ".tpf.dcx";
@@ -437,7 +437,7 @@ namespace FBXConverter {
             }
 
             /* Do collision */
-            ColToOBJ.convert(fbxPath, fbxPath.Replace(".fbx", ".obj"), fbx);
+            ColToOBJ.convert(fbxPath, flverPath.Replace(".flver", ".obj"), fbx);
         }
     }
 
