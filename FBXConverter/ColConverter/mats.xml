@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mats>
+	<matnames>
+		<mat name="Dummy" id="0"/>
+		<mat name="Cobblestone" id="1"/>
+		<mat name="Stone" id="2"/>
+		<mat name="Soil" id="3"/>
+		<mat name="Wood" id="4"/>
+		<mat name="Grassland" id="5"/>
+		<mat name="Gravel" id="6"/>
+		<mat name="Missing" id="7"/>
+		<mat name="Trees" id="8"/>
+		<mat name="Swamp" id="9"/>
+		<mat name="Nest" id="10"/>
+		<mat name="Iron" id="11"/>
+		<mat name="Flesh" id="12"/>
+		<mat name="Sand" id="13"/>
+		<mat name="Bones" id="14"/>
+		<mat name="Ash" id="15"/>
+		<mat name="RoofTiles" id="16"/>
+		<mat name="Cloth" id="17"/>
+		<mat name="FallenLeaves" id="18"/>
+		<mat name="Bell" id="19"/>
+		<mat name="WaterPuddle" id="20"/>
+		<mat name="WaterAnkles" id="21"/>
+		<mat name="WaterKnees" id="22"/>
+		<mat name="PoisonSwampShallow" id="23"/>
+		<mat name="PoisonSwampDeep" id="24"/>
+		<mat name="PoisonSwampKnees" id="25"/>
+		<mat name="PoisonSwampPuddle" id="26"/>
+		<mat name="WaterWaist" id="27"/>
+		<mat name="Carpet" id="28"/>
+		<mat name="Without" id="29"/>
+		<mat name="Eclipse" id="30"/>
+		<mat name="GodGraveNet" id="31"/>
+	</matnames>
+	<matprops>
+		<prop name="Safe1" id="100"/>
+		<prop name="Safe2" id="200"/>
+		<prop name="Safe3" id="300"/>
+		<prop name="Slide1" id="400"/>
+		<prop name="Slide2" id="500"/>
+	</matprops>
+</mats>
