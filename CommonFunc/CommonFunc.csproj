@@ -16,6 +16,21 @@
     <None Remove="Resources\DS3_MTD_INFO.json" />
     <None Remove="Resources\mtdbnd.dcx" />
     <None Remove="Resources\settings.json" />
+    <None Update="ColConverter\AssetCc2_fixed.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ColConverter\hknp2fsnp.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ColConverter\mats.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ColConverter\obj2fsnp.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ColConverter\obj2fsnp.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
