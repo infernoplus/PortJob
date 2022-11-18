@@ -413,7 +413,9 @@ namespace PortJob {
             }
 
             /* Create collision obj */
-            TerrainToOBJ.convert(flverPath.Replace(".flver", ".obj"), cell.terrain[0]);
+            string outputPath = Path.GetDirectoryName(flverPath);
+            string objPath = $"{outputPath}\\{flverName.Replace("m", "h")}.obj";
+            TerrainToOBJ.convert(objPath, cell.terrain[0]);
 
             Log.Info(2, $"Generated Terrain with [{cell.terrain.Count}] meshes -> {Utility.PathToFileName(flverPath)}");
         }

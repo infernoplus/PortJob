@@ -212,75 +212,7 @@ namespace PortJob {
                     //cName = "_0000";
                     partMap.Add(cModel, 0);
 
-                    /* Flat ground for testing */
-                    MSB3.Part.Collision flat = new();
-                    MSB3.Model.Collision flatRes = new();
-                    flat.HitFilterID = 8;
-                    flat.ModelName = cModel;
-                    flat.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
-                    flat.Position = cell.center + OFFSET + new Vector3(0f, -15f, 0f);
-                    flat.Rotation = ROTATION;
-                    flat.MapStudioLayer = uint.MaxValue;
-                    for (int k = 0; k < cell.drawGroups.Length; k++) {
-                        flat.DrawGroups[k] = cell.drawGroups[k];
-                        flat.DispGroups[k] = cell.drawGroups[k];
-                        flat.BackreadGroups[k] = cell.drawGroups[k];
-                    }
-
-                    flat.Name = cModel;// + cName;
-                    flat.LodParamID = -1;
-                    flat.UnkE0E = -1;
-
-                    flatRes.Name = flat.ModelName;
-                    flatRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{cModel}.hkt";
-
-                    //WriteTestCollision(cModel, area, block);
-                    AddResource(msb, flatRes);
-                    msb.Parts.Collisions.Add(flat);
-
-                    /* Flat connect collision for testing */
-                    for (int k = 0; k < cell.connects.Count; k++) {
-                        string ccModel = cModel;
-
-                        if (!partMap.ContainsKey(ccModel))
-                            throw new Exception("Connect col must reference an exisiting collision");
-
-                        string ccName = "_" + (partMap[ccModel]++.ToString("D4"));
-                        //ccName = "_0000";
-                        //ccName = "_" + (partMap[ccModel]++.ToString("D4"));
-                        //} else {
-                        //    ccName = "_0000";
-                        //    partMap.Add(ccModel, 1);
-                        //}
-
-                        MSB3.Part.ConnectCollision con = new();
-                        MSB3.Model.Collision conRes = new();
-
-                        con.CollisionName = flat.Name;
-                        con.MapID[0] = (byte)area;
-                        con.MapID[1] = (byte)(cell.connects[k].id);
-                        con.MapID[2] = 0;
-                        con.MapID[3] = 0;
-                        con.Name = ccModel + ccName;
-                        //con.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB"; // Looks like connnect collision does not ever use sibs
-                        con.ModelName = ccModel;
-                        con.Position = cell.center + OFFSET + new Vector3(0f, 5f, 0f); ;
-                        con.Rotation = ROTATION;
-                        con.MapStudioLayer = 4294967295;                          // Not a clue what this does... Should probably ask about it
-                        for (int l = 0; l < cell.drawGroups.Length; l++) {
-                            con.DrawGroups[l] = cell.drawGroups[l];
-                            con.DispGroups[l] = cell.drawGroups[l];
-                            con.BackreadGroups[l] = 0;                            // Seems like DS3 doesn't use this for collision at all
-                        }
-                        con.LodParamID = -1;
-                        con.UnkE0E = -1;
-
-                        conRes.Name = con.ModelName;
-                        conRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{ccModel}.hkt";
-
-                        AddResource(msb, conRes);
-                        msb.Parts.ConnectCollisions.Add(con);
-                    }
+                    //MSB3.Part.Collision flat = AddTestcol(cModel, area, block, cell, OFFSET, ROTATION, msb, partMap);
 
                     /* Generate cell terrain map piece */
                     if (cell.terrain != null) {
@@ -338,40 +270,7 @@ namespace PortJob {
                         msb.Parts.Collisions.Add(terrainCol);
                     }
 
-                    /* Enemy for testing */
-                    string eModel = "c1100";
-                    string eName = $"_{c:D4}";
-
-                    MSB3.Part.Enemy enemy = new();
-                    MSB3.Model.Enemy enemyRes = new();
-
-                    enemy.CollisionName = flat.Name;
-                    enemy.ThinkParamID = 110050;
-                    enemy.NPCParamID = 110010;
-                    enemy.TalkID = 0;
-                    enemy.CharaInitID = -1;
-                    enemy.UnkT78 = 128;
-                    enemy.UnkT84 = 1;
-                    enemy.Name = eModel + eName;
-                    enemy.SibPath = "";
-                    enemy.ModelName = eModel;
-                    enemy.Position = cell.center + new Vector3(0f, 5f, 0f); ;
-                    enemy.MapStudioLayer = 4294967295;
-
-                    for (int k = 0; k < cell.drawGroups.Length; k++) {
-                        enemy.DrawGroups[k] = 0;
-                        enemy.DispGroups[k] = 0;
-                        enemy.BackreadGroups[k] = 0;
-                    }
-
-                    enemy.LodParamID = -1;
-                    enemy.UnkE0E = -1;
-
-                    enemyRes.Name = enemy.ModelName;
-                    enemyRes.SibPath = "";
-
-                    AddResource(msb, enemyRes);
-                    msb.Parts.Enemies.Add(enemy);
+                    //MakeTestEnemy(c, cell, msb);
 
                     List<string> usedCol = new();
                     foreach (Content content in cell.content) {
@@ -420,7 +319,7 @@ namespace PortJob {
 
                         /* Create collision (if the file exists) */
                         // CHECK FOR THE COLLISION FILE THAT HAS THE SAME ID AS THE MAP PIECE ABOVE, IF IT EXISTS POPULATE THE MAP WITH IT
-                        if (File.Exists($"{area_block_folder}m{area:D2}_{block:D2}_00_00_{mpModel}.obj") && !usedCol.Contains(mpModel)) {
+                        if (File.Exists($"{area_block_folder}h{area:D2}_{block:D2}_00_00_{mpModel}.obj") && !usedCol.Contains(mpModel)) {
                             usedCol.Add(mpModel);
                             MSB3.Part.Collision col = new();
                             MSB3.Model.Collision colRes = new();
@@ -508,6 +407,118 @@ namespace PortJob {
 
             File.WriteAllText(mapViewListPath, mapViewList);
             File.WriteAllText(worldMsbListPath, worldMsbList);
+        }
+        private static void MakeTestEnemy(int c, Cell cell, MSB3 msb) {
+
+            /* Enemy for testing */
+            string eModel = "c1100";
+            string eName = $"_{c:D4}";
+
+            MSB3.Part.Enemy enemy = new();
+            MSB3.Model.Enemy enemyRes = new();
+
+            //enemy.CollisionName = flat.Name;
+            enemy.ThinkParamID = 110050;
+            enemy.NPCParamID = 110010;
+            enemy.TalkID = 0;
+            enemy.CharaInitID = -1;
+            enemy.UnkT78 = 128;
+            enemy.UnkT84 = 1;
+            enemy.Name = eModel + eName;
+            enemy.SibPath = "";
+            enemy.ModelName = eModel;
+            enemy.Position = cell.center + new Vector3(0f, 5f, 0f);
+            ;
+            enemy.MapStudioLayer = 4294967295;
+
+            for (int k = 0; k < cell.drawGroups.Length; k++) {
+                enemy.DrawGroups[k] = 0;
+                enemy.DispGroups[k] = 0;
+                enemy.BackreadGroups[k] = 0;
+            }
+
+            enemy.LodParamID = -1;
+            enemy.UnkE0E = -1;
+
+            enemyRes.Name = enemy.ModelName;
+            enemyRes.SibPath = "";
+
+            AddResource(msb, enemyRes);
+            msb.Parts.Enemies.Add(enemy);
+        }
+        private static MSB3.Part.Collision AddTestcol(string cModel, int area, int block, Cell cell, Vector3 OFFSET, Vector3 ROTATION, MSB3 msb, Dictionary<string, int> partMap) {
+
+            /* Flat ground for testing */
+            MSB3.Part.Collision flat = new();
+            MSB3.Model.Collision flatRes = new();
+            flat.HitFilterID = 8;
+            flat.ModelName = cModel;
+            flat.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
+            flat.Position = cell.center + OFFSET + new Vector3(0f, -15f, 0f);
+            flat.Rotation = ROTATION;
+            flat.MapStudioLayer = uint.MaxValue;
+            for (int k = 0; k < cell.drawGroups.Length; k++) {
+                flat.DrawGroups[k] = cell.drawGroups[k];
+                flat.DispGroups[k] = cell.drawGroups[k];
+                flat.BackreadGroups[k] = cell.drawGroups[k];
+            }
+
+            flat.Name = cModel; // + cName;
+            flat.LodParamID = -1;
+            flat.UnkE0E = -1;
+
+            flatRes.Name = flat.ModelName;
+            flatRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{cModel}.hkt";
+
+            //WriteTestCollision(cModel, area, block);
+            AddResource(msb, flatRes);
+            msb.Parts.Collisions.Add(flat);
+
+            /* Flat connect collision for testing */
+            for (int k = 0; k < cell.connects.Count; k++) {
+                string ccModel = cModel;
+
+                if (!partMap.ContainsKey(ccModel))
+                    throw new Exception("Connect col must reference an exisiting collision");
+
+                string ccName = "_" + (partMap[ccModel]++.ToString("D4"));
+                //ccName = "_0000";
+                //ccName = "_" + (partMap[ccModel]++.ToString("D4"));
+                //} else {
+                //    ccName = "_0000";
+                //    partMap.Add(ccModel, 1);
+                //}
+
+                MSB3.Part.ConnectCollision con = new();
+                MSB3.Model.Collision conRes = new();
+
+                con.CollisionName = flat.Name;
+                con.MapID[0] = (byte)area;
+                con.MapID[1] = (byte)(cell.connects[k].id);
+                con.MapID[2] = 0;
+                con.MapID[3] = 0;
+                con.Name = ccModel + ccName;
+                //con.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB"; // Looks like connnect collision does not ever use sibs
+                con.ModelName = ccModel;
+                con.Position = cell.center + OFFSET + new Vector3(0f, 5f, 0f);
+                ;
+                con.Rotation = ROTATION;
+                con.MapStudioLayer = 4294967295; // Not a clue what this does... Should probably ask about it
+                for (int l = 0; l < cell.drawGroups.Length; l++) {
+                    con.DrawGroups[l] = cell.drawGroups[l];
+                    con.DispGroups[l] = cell.drawGroups[l];
+                    con.BackreadGroups[l] = 0; // Seems like DS3 doesn't use this for collision at all
+                }
+                con.LodParamID = -1;
+                con.UnkE0E = -1;
+
+                conRes.Name = con.ModelName;
+                conRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{ccModel}.hkt";
+
+                AddResource(msb, conRes);
+                msb.Parts.ConnectCollisions.Add(con);
+            }
+            return flat;
         }
         /// <summary>
         /// Adds temporary pre-generated flat nav mesh to NVA

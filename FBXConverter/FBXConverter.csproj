@@ -31,10 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ColConverter\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="ColConverter\AssetCc2_fixed.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

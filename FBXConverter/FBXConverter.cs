@@ -437,7 +437,9 @@ namespace FBXConverter {
             }
 
             /* Do collision */
-            ColToOBJ.convert(fbxPath, flverPath.Replace(".flver", ".obj"), fbx);
+            string outputPath = Path.GetDirectoryName(flverPath);
+            string objPath = $"{outputPath}\\{flverName.Replace("m", "h")}.obj";
+            ColToOBJ.convert(fbxPath, objPath, fbx);
         }
     }
 
