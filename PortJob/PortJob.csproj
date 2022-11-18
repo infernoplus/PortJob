@@ -44,6 +44,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CliWrap" Version="3.5.0" />
 		<PackageReference Include="gfoidl.Base64" Version="1.1.1" />
 		<PackageReference Include="ImpromptuNinjas.ZStd" Version="1.4.5.5" />
 	</ItemGroup>

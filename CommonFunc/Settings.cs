@@ -11,6 +11,7 @@ namespace CommonFunc {
         public static string OutputPath { get; set; }
         public static string MorrowindPath { get; set; }
         public static bool GENERATE_NICE_TERRAIN { get; private set; }
+        public static bool NO_SKIP { get; private set; } = true;
         public static void InitSettings() {
 
 

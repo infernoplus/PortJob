@@ -10,6 +10,7 @@ using System.Web;
 using CommonFunc;
 using FBXConverter.Solvers;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Design;
 
 namespace FBXConverter {
     internal class Program {
@@ -50,7 +51,7 @@ namespace FBXConverter {
                 Console.WriteLine($"Converting: {fbxList["FBXPath"]}");
                 FBXConverter.convert(fbxList["FBXPath"].ToString(), fbxList["FlverPath"].ToString(), fbxList["TpfDir"].ToString());
             }
-
+            
             //string argString = string.Join("", args);
             //args = argString.Split('|');
             //SetupPaths();

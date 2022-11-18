@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using static CommonFunc.Const;
 
 namespace PortJob {
@@ -26,7 +27,6 @@ namespace PortJob {
             Log.SetupLogStream();
 
             Convert();
-
             //FLVER2 myFlver = FLVER2.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\mod\\map\\m54_00_00_00\\m54_00_00_00_000009-mapbnd-dcx\\m54_00_00_00_000009.flver");
             //FLVER2 fromFlver = FlverSearch(Directory.GetFiles("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\map", "*.mapbnd.dcx", SearchOption.AllDirectories));
 
@@ -135,6 +135,8 @@ namespace PortJob {
             foreach (Layout layout in layouts) {
                 /* Generate a new MSB and fill out required default data */
                 int block = i++;
+                
+                string area_block_folder = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\";
                 MSB3 msb = new();
 
                 if (block is not (0)) { continue; } //for rapid debugging 
@@ -180,7 +182,7 @@ namespace PortJob {
                         if (!modelMap.ContainsKey(content.mesh)) {
                             string mpModel = NewMapPieceID();
                             string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
-                            string flverPath = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
+                            string flverPath = $"{area_block_folder}m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
                             if (!File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) fbxList.Add(new FBXInfo(fbxPath, flverPath, tpfDir));
 
                             modelMap.Add(content.mesh, mpModel);
@@ -232,7 +234,7 @@ namespace PortJob {
                     flatRes.Name = flat.ModelName;
                     flatRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{cModel}.hkt";
 
-                    WriteTestCollision(cModel, area, block);
+                    //WriteTestCollision(cModel, area, block);
                     AddResource(msb, flatRes);
                     msb.Parts.Collisions.Add(flat);
 
@@ -285,7 +287,7 @@ namespace PortJob {
                         string terrainModel = (9000 + c).ToString("D6");
                         string terrainName = "_0000";
 
-                        TerrainConverter.convert(cell, $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\m{area:D2}_{block:D2}_00_00_{terrainModel}.flver", tpfDir);
+                        TerrainConverter.convert(cell, $"{area_block_folder}m{area:D2}_{block:D2}_00_00_{terrainModel}.flver", tpfDir);
 
                         MSB3.Part.MapPiece terrain = new();
                         MSB3.Model.MapPiece terrainRes = new();
@@ -371,6 +373,7 @@ namespace PortJob {
                     AddResource(msb, enemyRes);
                     msb.Parts.Enemies.Add(enemy);
 
+                    List<string> usedCol = new();
                     foreach (Content content in cell.content) {
                         if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
                         if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
@@ -417,7 +420,8 @@ namespace PortJob {
 
                         /* Create collision (if the file exists) */
                         // CHECK FOR THE COLLISION FILE THAT HAS THE SAME ID AS THE MAP PIECE ABOVE, IF IT EXISTS POPULATE THE MAP WITH IT
-                        if (false) {
+                        if (File.Exists($"{area_block_folder}m{area:D2}_{block:D2}_00_00_{mpModel}.obj") && !usedCol.Contains(mpModel)) {
+                            usedCol.Add(mpModel);
                             MSB3.Part.Collision col = new();
                             MSB3.Model.Collision colRes = new();
                             col.HitFilterID = 8;
@@ -445,32 +449,9 @@ namespace PortJob {
                     }
                 }
 
-                /* Just add one Navmesh to each nva. Model and Name are not a string, so no '_0000' format, and we have to use a unique ID here. */
-                int nModelID = 0;
-                if (block == 8)
-                    nModelID = 91;
-
-                if (int.TryParse($"{area}{block}{nModelID:D6}", out int id)) //This is just for testing so we don't go over int.MaxValue.
-                {
-                    nva.Navmeshes.Add(new NVA.Navmesh() {
-                        NameID = id,
-                        ModelID = nModelID,
-                        Position = block == 3 ? new Vector3(798, 3, -185) : new Vector3(),//new Vector3(716, 2, -514),// player.Position, //using player position, here. Change this to cell.center in loop.
-                        VertexCount = 1,
-                        //Unk38 = 12399,
-                        //Unk4C = true
-                    });
-                }
-
-                WriteTestNavMesh(nModelID, area, block);
-
-                /* There has to be an entry for each vertex in each navmesh in nav.Navmashes */
-                foreach (NVA.Navmesh navmesh in nva.Navmeshes) {
-                    for (int j = 0; j < navmesh.VertexCount; j++) {
-                        nva.Entries1.Add(new NVA.Entry1());
-                    }
-                }
-
+                //AddTempNavMeshToNVA(block, area, nva);
+                ColConverter.Run(area_block_folder);
+                
                 Log.Info(0, $"Completed: m{area:D2}_{block:D2}_00_00.msb");
                 Log.Info(2, "MapPieces: " + msb.Parts.MapPieces.Count);
                 Log.Info(2, "Collisions: " + msb.Parts.Collisions.Count);
@@ -485,8 +466,8 @@ namespace PortJob {
                 string msbPath = $"{OutputPath}map\\MapStudio\\m{msb.area:D2}_{msb.block:D2}_00_00.msb.dcx";
                 Log.Info(0, "Writing MSB to: " + msbPath);
                 msb.msb.Write(msbPath, DCX.Type.DCX_DFLT_10000_44_9);
-
-                //Utility.PackTestCol(msb.area, msb.block);
+                Utility.PackAreaCol(msb.area, msb.block);
+                //Utility.PackTestColAndNavMeshes(msb.area, msb.block);
             }
 
             /* Write custom mtdbnd */
@@ -504,10 +485,10 @@ namespace PortJob {
                 Log.Info(0, "Writing MSB to: " + nvaPath);
                 nva.nva.Write(nvaPath, DCX.Type.DCX_DFLT_10000_44_9);
 
-                Utility.PackTestCol(nva.area, nva.block);
+                Utility.PackAreaCol(nva.area, nva.block);
             }
 
-            WaitForWorkers();
+            //WaitForWorkers();
             PackTextures(area); // This should be run once per area, currently needs to be reworked to support some like area division stuff but not important right now
 
             /* Generate and write loadlists */
@@ -528,7 +509,48 @@ namespace PortJob {
             File.WriteAllText(mapViewListPath, mapViewList);
             File.WriteAllText(worldMsbListPath, worldMsbList);
         }
+        /// <summary>
+        /// Adds temporary pre-generated flat nav mesh to NVA
+        /// </summary>
+        /// <param name="block"></param>
+        /// <param name="area"></param>
+        /// <param name="nva"></param>
+        private static void AddTempNavMeshToNVA(int block, int area, NVA nva) {
 
+            /* Just add one Navmesh to each nva. Model and Name are not a string, so no '_0000' format, and we have to use a unique ID here. */
+            int nModelID = 0;
+            if (block == 8)
+                nModelID = 91;
+
+            if (int.TryParse($"{area}{block}{nModelID:D6}", out int id)) //This is just for testing so we don't go over int.MaxValue.
+            {
+                nva.Navmeshes.Add(new NVA.Navmesh() {
+                    NameID = id,
+                    ModelID = nModelID,
+                    Position = block == 3 ? new Vector3(798, 3, -185) : new Vector3(), //new Vector3(716, 2, -514),// player.Position, //using player position, here. Change this to cell.center in loop.
+                    VertexCount = 1,
+                    //Unk38 = 12399,
+                    //Unk4C = true
+                });
+            }
+
+            //WriteTestNavMesh(nModelID, area, block);
+
+            /* There has to be an entry for each vertex in each navmesh in nav.Navmashes */
+            foreach (NVA.Navmesh navmesh in nva.Navmeshes) {
+                for (int j = 0; j < navmesh.VertexCount; j++) {
+                    nva.Entries1.Add(new NVA.Entry1());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Copies the pre-rendered flat test collision from embedded resources into the map\mXX_XX_00_00\hkx\col\ folder so it can be packaged later.
+        /// </summary>
+        /// <param name="cModel"></param>
+        /// <param name="area"></param>
+        /// <param name="block"></param>
+        /// <exception cref="Exception"></exception>
         private static void WriteTestCollision(string cModel, int area, int block) {
             /* Setup area_block and output path*/
             string area_block = $"{area:D2}_{block:D2}";
@@ -545,6 +567,13 @@ namespace PortJob {
             Directory.CreateDirectory($"{OutputPath}\\map\\{mapName}\\hkx\\col\\");
             File.WriteAllBytes($"{OutputPath}\\map\\{mapName}\\hkx\\col\\{hPath}_{hModelId:D6}.hkx.dcx", hBytes);
         }
+        /// <summary>
+        /// Copies the pre-rendered flat test nav mesh from embedded resources into the map\mXX_XX_00_00\hkx\nav\ folder so it can be packaged later.
+        /// </summary>
+        /// <param name="cModel"></param>
+        /// <param name="area"></param>
+        /// <param name="block"></param>
+        /// <exception cref="Exception"></exception>
         private static void WriteTestNavMesh(int nModelId, int area, int block) {
             /* Setup area_block and output path*/
             string area_block = $"{area:D2}_{block:D2}";
