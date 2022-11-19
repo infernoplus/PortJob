@@ -212,7 +212,7 @@ namespace PortJob {
                     //cName = "_0000";
                     partMap.Add(cModel, 0);
 
-                    //MSB3.Part.Collision flat = AddTestcol(cModel, area, block, cell, OFFSET, ROTATION, msb, partMap);
+                    MSB3.Part.Collision flat = AddTestcol((8000 + c).ToString("D6"), area, block, cell, OFFSET, ROTATION, msb, partMap);
 
                     /* Generate cell terrain map piece */
                     if (cell.terrain != null) {
@@ -446,7 +446,7 @@ namespace PortJob {
             msb.Parts.Enemies.Add(enemy);
         }
         private static MSB3.Part.Collision AddTestcol(string cModel, int area, int block, Cell cell, Vector3 OFFSET, Vector3 ROTATION, MSB3 msb, Dictionary<string, int> partMap) {
-
+            partMap.Add(cModel, 0);
             /* Flat ground for testing */
             MSB3.Part.Collision flat = new();
             MSB3.Model.Collision flatRes = new();
@@ -469,7 +469,7 @@ namespace PortJob {
             flatRes.Name = flat.ModelName;
             flatRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{cModel}.hkt";
 
-            //WriteTestCollision(cModel, area, block);
+            WriteTestCollision(cModel, area, block);
             AddResource(msb, flatRes);
             msb.Parts.Collisions.Add(flat);
 
@@ -571,11 +571,11 @@ namespace PortJob {
                 throw new Exception($"Could not parse cModel ID: {cModel}");
 
             string hPreGenPath = $"PortJob.TestCol.h30_00_00_00_{0:D6}.hkx";
-            string hPath = $"{mapName}-h{area_block}_00_00";
+            string hPath = $"h{area_block}_00_00";
             byte[] hBytes = Utility.GetEmbededResourceBytes(hPreGenPath);
             hBytes = DCX.Compress(hBytes, DCX.Type.DCX_DFLT_10000_44_9); //File is compressed inside the bdt.
-            Directory.CreateDirectory($"{OutputPath}\\map\\{mapName}\\hkx\\col\\");
-            File.WriteAllBytes($"{OutputPath}\\map\\{mapName}\\hkx\\col\\{hPath}_{hModelId:D6}.hkx.dcx", hBytes);
+            Directory.CreateDirectory($"{OutputPath}\\map\\{mapName}\\");
+            File.WriteAllBytes($"{OutputPath}\\map\\{mapName}\\{hPath}_{hModelId:D6}.hkx.dcx", hBytes);
         }
         /// <summary>
         /// Copies the pre-rendered flat test nav mesh from embedded resources into the map\mXX_XX_00_00\hkx\nav\ folder so it can be packaged later.

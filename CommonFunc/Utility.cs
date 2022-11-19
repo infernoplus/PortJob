@@ -53,10 +53,10 @@ namespace CommonFunc {
                 byte[] bytes = File.ReadAllBytes(col);
                 string name = Path.GetFileName(col).Substring(1);
 
-                BinderFile hBinder = new(flags: Binder.FileFlags.Flag1, id: startId, name: $"{hPath}\\h{name}", bytes: bytes); //in-line parameter names help here to tell what is going on, but are not necessary.
+                BinderFile hBinder = new(flags: Binder.FileFlags.Flag1, id: startId, name: $"{mapName}\\h{name}", bytes: bytes); //in-line parameter names help here to tell what is going on, but are not necessary.
                 hBXF.Files.Add(hBinder);
 
-                BinderFile lBinder = new(flags: Binder.FileFlags.Flag1, id: startId, name: $"{lPath}\\l{name}", bytes: bytes);
+                BinderFile lBinder = new(flags: Binder.FileFlags.Flag1, id: startId, name: $"{mapName}\\l{name}", bytes: bytes);
                 lBXF.Files.Add(lBinder);
                 startId++;
             }
