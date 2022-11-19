@@ -212,7 +212,7 @@ namespace PortJob {
                     //cName = "_0000";
                     partMap.Add(cModel, 0);
 
-                    MSB3.Part.Collision flat = AddTestcol("h" + (8000 + c).ToString("D6"), area, block, cell, OFFSET, ROTATION, msb, partMap);
+                    //MSB3.Part.Collision flat = AddTestcol("h" + (8000 + c).ToString("D6"), area, block, cell, OFFSET, ROTATION, msb, partMap);
 
                     /* Generate cell terrain map piece */
                     if (cell.terrain != null) {
