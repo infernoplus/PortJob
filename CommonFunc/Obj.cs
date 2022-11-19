@@ -18,6 +18,9 @@ namespace CommonFunc {
             gs = new();
         }
 
+        /* @TODO: it might be a good idea (not sure though) to write a method that optimizes the obj by 'welding' vertices. basically just look for duplicate vertex data and remove it + adjust indices */
+        public void optimize() { }
+
         /* Takes data in this class and writes an obj file of it to the path specified */
         public void write(string outPath) {
             StringBuilder sb = new();

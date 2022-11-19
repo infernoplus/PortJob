@@ -250,8 +250,8 @@ namespace PortJob {
                         terrainCol.HitFilterID = 8;
                         terrainCol.ModelName = "h" + terrainModel;
                         terrainCol.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
-                        terrainCol.Position = cell.center + OFFSET + new Vector3(0f, 0f, 0f);
-                        terrainCol.Rotation = ROTATION;
+                        terrainCol.Position = terrain.Position;
+                        terrainCol.Rotation = terrain.Rotation;
                         terrainCol.MapStudioLayer = uint.MaxValue;
                         for (int k = 0; k < cell.drawGroups.Length; k++) {
                             terrainCol.DrawGroups[k] = cell.drawGroups[k];
@@ -259,7 +259,7 @@ namespace PortJob {
                             terrainCol.BackreadGroups[k] = cell.drawGroups[k];
                         }
 
-                        terrainCol.Name = "h" + terrainModel;
+                        terrainCol.Name = terrainCol.ModelName + terrainName;
                         terrainCol.LodParamID = -1;
                         terrainCol.UnkE0E = -1;
 
@@ -272,7 +272,6 @@ namespace PortJob {
 
                     //MakeTestEnemy(c, cell, msb);
 
-                    List<string> usedCol = new();
                     foreach (Content content in cell.content) {
                         if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
                         if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
@@ -319,8 +318,7 @@ namespace PortJob {
 
                         /* Create collision (if the file exists) */
                         // CHECK FOR THE COLLISION FILE THAT HAS THE SAME ID AS THE MAP PIECE ABOVE, IF IT EXISTS POPULATE THE MAP WITH IT
-                        if (File.Exists($"{area_block_folder}h{area:D2}_{block:D2}_00_00_{mpModel}.obj") && !usedCol.Contains(mpModel)) {
-                            usedCol.Add(mpModel);
+                        if (File.Exists($"{area_block_folder}h{area:D2}_{block:D2}_00_00_{mpModel}.obj")) {
                             MSB3.Part.Collision col = new();
                             MSB3.Model.Collision colRes = new();
                             col.HitFilterID = 8;
@@ -335,7 +333,7 @@ namespace PortJob {
                                 col.BackreadGroups[k] = cell.drawGroups[k];
                             }
 
-                            col.Name = col.ModelName;
+                            col.Name = col.ModelName + mpName;
                             col.LodParamID = -1;
                             col.UnkE0E = -1;
 
@@ -349,6 +347,7 @@ namespace PortJob {
                 }
 
                 //AddTempNavMeshToNVA(block, area, nva);
+                Log.Info(0, $"Compiling HKX files for MSB[{block}]", "test");
                 ColConverter.Run(area_block_folder);
                 
                 Log.Info(0, $"Completed: m{area:D2}_{block:D2}_00_00.msb");

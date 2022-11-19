@@ -57,7 +57,7 @@ namespace FBXConverter {
                             int vni = indices[i + j] + obj.vns.Count;
                             v[j] = new ObjV(vi, vti, vni);
                         }
-                        g.fs.Add(new ObjF(v[2], v[1], v[0]));  // Reverse order because idk, either obj or fbx is backwards. don't know which
+                        g.fs.Add(new ObjF(v[0], v[1], v[2]));
                     }
 
                     /* Add vertex data */
@@ -65,17 +65,26 @@ namespace FBXConverter {
                     obj.vts.Add(textureCoordinate.ToNumerics());
 
                     for (int i = 0; i < geometryNode.Vertices.Positions.Count; i++) {
+                        // Get position and transform it
                         Vector3 vertex = geometryNode.Vertices.Positions[i];
-                        VertexChannel channel = geometryNode.Vertices.Channels[0];  // Assuming channel 0 will always be normals because... it's collision data... should be correct lol
-                        Vector3 vertexNormal = (Vector3)channel[i];
-
                         Vector3 vertexTransformed = Vector3.Transform(
                             vertex
                             , (ABSOLUTE_VERT_POSITIONS ? meshContent.AbsoluteTransform : fbx.Transform) * Matrix.CreateScale(GLOBAL_SCALE)
                         );
+                        vertexTransformed.X = -vertexTransformed.X; // X is flipped. Don't know why but it is correct and we do it in all other model conversions.
+
+                        // Get normal and rotate it (x is flipped so normals have to be rotated to match)
+                        VertexChannel channel = geometryNode.Vertices.Channels[0];  // Assuming channel 0 will always be normals because... it's collision data... should be correct lol
+                        Vector3 vertexNormal = (Vector3)channel[i];
+                        Matrix normalRotMatrix = Matrix.CreateRotationX(-MathHelper.PiOver2);
+                        Vector3 normalInputVector = new(-vertexNormal.X, vertexNormal.Y, vertexNormal.Z);
+
+                        Vector3 rotatedNormal = Vector3.Normalize(
+                            Vector3.TransformNormal(normalInputVector, normalRotMatrix)
+                        );
 
                         obj.vs.Add(vertexTransformed.ToNumerics());
-                        obj.vns.Add(vertexNormal.ToNumerics());
+                        obj.vns.Add(rotatedNormal.ToNumerics());
                     }
                 }
                 obj.gs.Add(g);
