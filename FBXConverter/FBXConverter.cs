@@ -158,8 +158,17 @@ namespace FBXConverter {
                                 }
 
                                 //if (texKvp.Key == null) { Log.Error(6, "Missing key: " + TEX.Value); continue;                                }
-                                string tex = texKvp.Value.Filename;
-                                string shortTexName = "mw_" + Utility.PathToFileName(texKvp.Value.Filename);
+                                string tex, shortTexName;
+                                if (texKvp.Value == null) {
+                                    tex = "CommonFunc\\DefaultTex\\def_missing.dds";
+                                    shortTexName = "def_missing";
+                                    Console.WriteLine("  ## NO TEXTURES! YIKES!");
+                                }
+                                else {
+                                    tex = texKvp.Value.Filename;
+                                    shortTexName = "mw_" + Utility.PathToFileName(texKvp.Value.Filename);
+                                }
+                                
                                 matTextures.Add(new TextureKey(TEX.Value, shortTexName, TEX.Unk10, TEX.Unk11));
                                 //flverMaterials.Add(matName, 0);
 
@@ -439,7 +448,7 @@ namespace FBXConverter {
             /* Do collision */
             string outputPath = Path.GetDirectoryName(flverPath);
             string objPath = $"{outputPath}\\{flverName.Replace("m", "h")}.obj";
-            ColToOBJ.convert(fbxPath, objPath, fbx);
+            ColToOBJ.convert(objPath, fbx);
         }
     }
 

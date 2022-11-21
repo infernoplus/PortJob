@@ -10,14 +10,7 @@ namespace PortJob {
     /* This class takes the list of exterior cells that ESM generates and calculates the layout for MSBs to use */
     /* Calculates information for which msbs contain which cells, what connect collisions to put in which cells, and what drawgroups each cell will have */
     public class Layout {
-        public static List<Layout> CalculateLayout(ESM esm) {
-            /* Const settings */
-            // Nord how the fuck do I make these actual const class values it keeps giving me errors reeeeeeeeeeeeeeeeeeeeeeeeeee
-
-            // re: moved them into the class as static readonly. I think this is what you want? In C# Const is compile time, so you can't initialize any classes
-            // and it doesn't like doing any math with non const or read-only properties. We can use static readonly, instead, but they have to be class fields.
-            // So we just have to move them outside of this method. 
-
+        public static List<Layout> Calculate(ESM esm) {
             Log.Info(0, "Calculating cell grid layouts...");
 
             Box MSB_GRID_SIZE = new(
@@ -39,7 +32,6 @@ namespace PortJob {
             };
 
             int INT_SIZE = 32;
-            int NUM_DRAW_GROUPS = 8;
             int MAX_DRAW = INT_SIZE * NUM_DRAW_GROUPS;   // Maximum number of drawgroups 
 
             /* Gen Lists */
@@ -47,14 +39,6 @@ namespace PortJob {
             List<Layout> layouts = new();
 
             /* Helper functions */
-            /*Layout GetLayoutById(int id) { // Deletable i think
-                for (int i = 0; i < layouts.Count; i++) {
-                    if (layouts[i].id == id) { return layouts[i]; }
-                }
-                Console.WriteLine("FAILED TO FIND MSB BY ID: " + id);
-                return null;
-            };*/
-
             Cell getCellByPosition(Int2 position) {
                 for (int i = 0; i < cells.Count; i++) {
                     Cell cell = cells[i];
@@ -155,15 +139,6 @@ namespace PortJob {
                     i = -1;
                 }
             }
-
-            /* Sanity Test */
-            /*List<Cell> fuckers = new(); // you can delete this now i think lol
-            for (int i = 0; i < cells.Count; i++) {
-                if(cells[i].layout == null) {
-                    fuckers.Add(cells[i]);
-                }
-            }
-            Console.WriteLine("fuckers: " + fuckers.Count);*/
 
             /* Find cell border pairs and connect collisions */
             for (int i = 0; i < layouts.Count; i++) {

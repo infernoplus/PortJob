@@ -130,6 +130,10 @@ namespace PortJob {
             }
         }
 
+        public List<Cell> GetInteriorCells() {
+            return interiorCells;
+        }
+
         public List<Cell> GetExteriorCells() {
             return exteriorCells;
         }
@@ -208,7 +212,7 @@ namespace PortJob {
         public readonly string region;
         public readonly Int2 position;  // Position on the cell grid
 
-        public readonly Vector3 center; // Float center point of cell
+        public readonly Vector3 center; // Float center point of cell in world space
 
         public readonly int flag;
         public readonly int[] flags;
@@ -261,6 +265,8 @@ namespace PortJob {
         }
 
         public void Generate(ESM esm) {
+            if (generated) { return; }
+
             JArray refc = (JArray)(raw["references"]);
             for (int i = 0; i < refc.Count; i++) {
                 JObject reference = (JObject)(refc[i]);
@@ -588,6 +594,26 @@ namespace PortJob {
                 terrain.Add(multMesh);
             }
             generated = true;
+        }
+
+        /* Returns a position on the terrain at the center of the cell. Used for debug player spawn point */
+        public Vector3 getCenterOnCell() {
+            if (terrain.Count < 1) { return center; } // TEMP, many int cells will have no terrain and we will pull a player spawn from elsewhere
+
+            /* I don't like this approach as it does not account for duplicate vertices across multiple meshes but it's okay for now. Also it's slow and brute force and bad. */
+            const float radius = 1.25f;
+            float avg = 0f;
+            int c = 0;
+            foreach(TerrainData t in terrain) {
+                foreach(TerrainVertex v in t.vertices) {
+                    if (Vector2.Distance(new Vector2(v.position.X, v.position.Z), Vector2.Zero) <= radius) {
+                        avg += v.position.Y;
+                        c++;
+                    }
+                }
+            }
+
+            return new Vector3(center.X, avg / c, center.Z);
         }
 
         /* Stupid thing to try and make this run a little faster */

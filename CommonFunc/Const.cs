@@ -10,6 +10,9 @@ namespace CommonFunc {
         public static readonly float GLOBAL_SCALE = 0.01f;
         public static string OutputPath => Settings.OutputPath;
         public static string MorrowindPath => Settings.MorrowindPath;
+
+        public static readonly int DEBUG_MAX_EXT_CELLS = 16;
+        public static readonly int DEBUG_MAX_INT_CELLS = 16;
         #endregion
 
         #region TerrainConverter
@@ -42,10 +45,14 @@ namespace CommonFunc {
         #endregion
 
         #region Cell
+        public static readonly int NUM_DRAW_GROUPS = 8;
+        public static readonly int MAX_MSB_COUNT = 32;
         public static readonly float CELL_SIZE = 8192f * GLOBAL_SCALE;
         public static readonly int CELL_GRID_SIZE = 64;
         public static bool GENERATE_NICE_TERRAIN => Settings.GENERATE_NICE_TERRAIN;
-
+        public static readonly float INTERIOR_CELL_OVERSIZE = 8f; // Extra space beyond content position bounding box, because i dont' want to actually open every model and calculate real bounds~
+        public static readonly float INTERIOR_CELL_BUFFER = 8f; // Spacing between cells
+        
         #endregion
     }
 }

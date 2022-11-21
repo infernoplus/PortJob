@@ -14,14 +14,16 @@ namespace FBXConverter {
     class ColToOBJ {
         /* Converts all the MeshContent children of an FBX NodeContent THAT IS SPECIFICALLY NAMED 'collision' into an OBJ */
         /* Used to convert the collision data of a nif into OBJ so it can then be converted into an hkx by an external program */
-        public static void convert(string fbxPath, string objPath, NodeContent fbx) {
+        public static void convert(string objPath, NodeContent fbx) {
             /* Grab all collision mesh content from FBX */
             Dictionary<ObjG, MeshContent> FBX_Meshes = new();
             Vector3 rootPosition = fbx.Transform.Translation;
 
+            bool collisionNodeExists = false;
             void FBXHierarchySearch(NodeContent node, bool isCollisionChild) {
                 foreach (NodeContent fbxComponent in node.Children) {
                     if (fbxComponent.Name.ToLower() == "collision") {
+                        collisionNodeExists = true;
                         FBXHierarchySearch(fbxComponent, true);
                     }
                     if (fbxComponent is MeshContent meshContent && isCollisionChild) {
@@ -34,7 +36,10 @@ namespace FBXConverter {
             }
             FBXHierarchySearch(fbx, false);
 
-            /* If we don't find any collision meshes then we don't do nothing */
+            /* If we don't find a collision node then we will instead use the visual mesh for collsion. Thanks todd... */
+            if(!collisionNodeExists) { FBXHierarchySearch(fbx, true); }
+
+            /* Discard if empty */
             if(FBX_Meshes.Count < 1) { return; }
 
             /* Convert meshes into an obj */
