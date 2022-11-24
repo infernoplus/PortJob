@@ -15,10 +15,13 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using static CommonFunc.Const;
+using SoulsIds;
 
 namespace PortJob {
     class PortJob {
-        public static readonly ESM.Type[] VALID_MAP_PIECE_TYPES = { ESM.Type.Static, ESM.Type.Door, ESM.Type.Container };
+        public static readonly ESM.Type[] CONVERT_TO_MAP = { ESM.Type.Static, ESM.Type.Container };
+        public static readonly ESM.Type[] CONVERT_TO_OBJ = { ESM.Type.Door };
+        public static readonly ESM.Type[] CONVERT_ALL = { ESM.Type.Static, ESM.Type.Container, ESM.Type.Door };
 
         static void Main(string[] args) {
             //BND4 bnd = BND4.Read(@"G:\Steam\steamapps\common\DARK SOULS III\Game\mod\map\m54_00_00_00\m54_00_00_00_009000.mapbnd.dcx");
@@ -99,216 +102,147 @@ namespace PortJob {
             }
         }
 
-        private static void WaitForWorkers() {
-            while (_workers.Count > 0) {
-                for (int i = _workers.Count - 1; i >= 0; i--) {
-                    if (_workers[i].IsDone) {
-                        if (_workers[i].ExitCode != 0) {
-                            Console.WriteLine($"Worker exited with error code {_workers[i].ExitCode}");
-                            Console.WriteLine(_workers[i].ErrorMessage);
-                        }
-                        _workers.RemoveAt(i);
-                    }
-                }
-            }
-        }
-
-        private static List<Worker> _workers = new();
-
         private static void SetupPaths() {
             Settings.InitSettings();
         }
 
         private static void Convert() {
+            /* Load overrides */
+            Override.Override.load();
+
             /* Load ESM */
             ESM esm = new(MorrowindPath + "morrowind.json");
 
-            /* Call Layout to calculate data we will use to create all exterior MSBs. */
+            /* Call Layout & Layint to calculate data we will use to create all exterior and interior MSBs. */
             List<Layout> layouts = Layout.Calculate(esm);
             List<Layint> layints = Layint.Calculate(esm, MAX_MSB_COUNT - layouts.Count);
 
+            /* Call Mass Convert to convert all models, textures, and collisions and return info about all those files. */
+            Cache cache = MassConvert.Convert(esm, layouts, layints);
+
             List<MSBData> msbs = new();
             List<NVAData> nvas = new();
-
-            string tpfDir = OutputPath + "map\\tx\\";
+            HashSet<TextureInfo> extTextures = new();
+            HashSet<TextureInfo> intTextures = new();
 
             /* Generate Exterior MSBs from layouts */
             {
                 const int area = 54;
 
-                int i = 0;
-                foreach (Layout layout in layouts) {
-                    /* Generate a new MSB and fill out required default data */
-                    int block = i++;
+                for (int block=0;block<layouts.Count;block++) {
+                    if (!DEBUG_GEN_EXT_LAYOUT(block)) { continue; } //for rapid debugging
 
-                    string area_block_folder = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\";
+                    Layout layout = layouts[block];
                     MSB3 msb = new();
-
-                    if (block is not (1)) { continue; } //for rapid debugging 
+                    NVA nva = new();   //One nva per msb. I put this up here so you can easily add the navmeshes in the loop. 
 
                     Log.Info(0, $"=== Generating Exterior MSB[{block}] === [{layout.cells.Count} cells]", "test");
 
-                    /* Write cells in this layout to the MSB */
-                    Dictionary<string, string> modelMap = new();
-                    Dictionary<string, int> partMap = new();
+                    /* File resource lists */
+                    HashSet<ModelInfo> usedMapPieces = new();
+                    HashSet<CollisionInfo> usedCollision = new();
+                    List<TerrainInfo> usedTerrain = new();         // Terrain is 1 to 1 usage so no need to use hashset. Also no need to track counts below.
 
-                    /* This offset and rotation will be applies to all collision below this. Left for testing purposes */
-                    Vector3 OFFSET = new(0, 0, 0);
-                    Vector3 ROTATION = new(0, 0, 0);
-
-                    NVA nva = new(); //One nva per msb. I put this up here so you can easily add the navmeshes in the loop.  
-                    List<FBXInfo> fbxList = new();
-
-
-                    /* FBX Model conversion pre-pass */
-                    /* We have to create our flvers and hkx files from the nif/fbx models first so that we can verify they exist when placing them in the MSB */
-                    for (int c = 0; c < layout.cells.Count; c++) {
-                        if (c > DEBUG_MAX_EXT_CELLS) { break; }
-                        Cell cell = layout.cells[c];
-                        Log.Info(0, "Loading Exterior Cell: " + cell.region + (cell.name != "" ? ":" + cell.name : "") + " -> [" + cell.position.x + ", " + cell.position.y + "]", "test");
-                        cell.Generate(esm);
-                        foreach (Content content in cell.content) {
-                            if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
-                            if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
-
-                            /* Name and model name stuff */
-                            if (!modelMap.ContainsKey(content.mesh)) {
-                                string mpModel = NewMapPieceID();
-                                string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
-                                string flverPath = $"{area_block_folder}m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
-                                if (!File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) fbxList.Add(new FBXInfo(fbxPath, flverPath, tpfDir));
-
-                                modelMap.Add(content.mesh, mpModel);
-                            }
-                        }
+                    /* Part counters */
+                    Dictionary<ModelInfo, int> mapPieceCounts = new();
+                    int GetMapPieceCount(ModelInfo modelInfo) {
+                        if(mapPieceCounts.ContainsKey(modelInfo)) { return mapPieceCounts[modelInfo]++; }
+                        else { mapPieceCounts.Add(modelInfo, 1); return 0; }
+                    }
+                    Dictionary<CollisionInfo, int> collisionCounts = new();
+                    int GetCollisionCount(CollisionInfo collisionInfo) {
+                        if (collisionCounts.ContainsKey(collisionInfo)) { return collisionCounts[collisionInfo]++; } else { collisionCounts.Add(collisionInfo, 1); return 0; }
+                    }
+                    Dictionary<ObjectInfo, int> objectCounts = new();
+                    int GetObjectCount(ObjectInfo objectInfo) {
+                        if (objectCounts.ContainsKey(objectInfo)) { return objectCounts[objectInfo]++; } else { objectCounts.Add(objectInfo, 1); return 0; }
                     }
 
-                    _workers.Add(new FBXConverterWorker(OutputPath, MorrowindPath, GLOBAL_SCALE, fbxList));
-                    WaitForWorkers();
 
                     /* Pick the debug spawn point for this MSB. We try to place this in a city or named cell */
-                    Cell spawnCell = layout.cells[0];
+                    Cell spawnCell = null;
                     for (int c = 0; c < layout.cells.Count; c++) {
                         if (c > DEBUG_MAX_EXT_CELLS) { break; }
                         Cell cell = layout.cells[c];
-                        if (cell.name != "") { spawnCell = cell; break; }
+                        if (spawnCell == null && cell.name != "" && !Override.DebugCells.IsAvoid(cell.name)) { spawnCell = cell; }
+                        if(Override.DebugCells.IsPrefer(cell.name)) { spawnCell = cell; }
                     }
+                    spawnCell.Load(esm);
 
                     /* Create player default spawn point */
                     MSB3.Part.Player player = new();
-                    MSB3.Model.Player playerRes = new();
                     player.ModelName = "c0000";
                     player.Position = spawnCell.getCenterOnCell();
                     player.Name = "c0000_0000";
-                    playerRes.Name = player.ModelName;
-                    playerRes.SibPath = "N:\\FDP\\data\\Model\\chr\\c0000\\sib\\c0000.SIB";
-                    msb.Models.Players.Add(playerRes);
                     msb.Parts.Players.Add(player);
 
                     /* MSB population pass */
                     for (int c = 0; c < layout.cells.Count; c++) {
                         if (c > DEBUG_MAX_EXT_CELLS) { break; }
+
                         Cell cell = layout.cells[c];
+                        cell.Load(esm);
                         Log.Info(0, "Populating Exterior Cell: " + cell.region + (cell.name != "" ? ":" + cell.name : "") + " -> [" + cell.position.x + ", " + cell.position.y + "]", "test");
 
-                        /* Name and model name stuff */
-                        string cModel = NewCollisionID();
-                        //string cName;
-                        if (partMap.ContainsKey(cModel)) {
-                            throw new Exception("No duplicate non-connect col");
+                        /* Add cell terrain map piece */
+                        TerrainInfo terrainInfo = cache.GetTerrainInfo(cell.position);
+
+                        MSB3.Part.MapPiece terrain = new();
+                        terrain.ModelName = $"m{terrainInfo.id:D6}";
+                        terrain.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{terrainInfo.id:D6}.SIB";
+                        terrain.Position = cell.center;
+                        terrain.Rotation = Vector3.Zero;
+                        terrain.MapStudioLayer = uint.MaxValue;
+                        for (int k = 0; k < cell.drawGroups.Length; k++) {
+                            terrain.DrawGroups[k] = cell.drawGroups[k];
+                            terrain.DispGroups[k] = cell.drawGroups[k];
+                            terrain.BackreadGroups[k] = 0;
                         }
+                        terrain.ShadowSource = true;
+                        terrain.DrawByReflectCam = true;
+                        terrain.Name = terrain.ModelName + "_0000";   // Terrains are unique so no need to worry about counts
+                        terrain.UnkE0E = -1;
+                        terrain.LodParamID = 19; //Param for: Don't switch to LOD models 
 
-                        //cName = "_" + (partMap[cModel]++.ToString("D4"));
-                        //cName = "_0000";
-                        partMap.Add(cModel, 0);
+                        msb.Parts.MapPieces.Add(terrain);
+                        usedTerrain.Add(terrainInfo);
 
-                        //MSB3.Part.Collision flat = AddTestcol("h" + (8000 + c).ToString("D6"), area, block, cell, OFFSET, ROTATION, msb, partMap);
-
-                        /* Generate cell terrain map piece */
-                        if (cell.terrain.Count > 0) {
-                            string terrainModel = (9000 + c).ToString("D6");
-                            string terrainName = "_0000";
-
-                            TerrainConverter.convert(cell, $"{area_block_folder}m{area:D2}_{block:D2}_00_00_{terrainModel}.flver", tpfDir);
-
-                            MSB3.Part.MapPiece terrain = new();
-                            MSB3.Model.MapPiece terrainRes = new();
-                            terrain.ModelName = "m" + terrainModel;
-                            terrain.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{terrainModel}.SIB";
-                            terrain.Position = cell.center;
-                            terrain.Rotation = new Vector3(0, 0, 0);
-                            terrain.MapStudioLayer = uint.MaxValue;
-                            for (int k = 0; k < cell.drawGroups.Length; k++) {
-                                terrain.DrawGroups[k] = cell.drawGroups[k];
-                                terrain.DispGroups[k] = cell.drawGroups[k];
-                                terrain.BackreadGroups[k] = 0;
-                            }
-                            terrain.ShadowSource = true;
-                            terrain.DrawByReflectCam = true;
-                            terrain.Name = terrain.ModelName + terrainName;
-                            terrain.UnkE0E = -1;
-                            terrain.LodParamID = 19; //Param for: Don't switch to LOD models 
-                            terrainRes.Name = terrain.ModelName;
-                            terrainRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\{terrainModel}.sib";
-
-                            AddResource(msb, terrainRes);
-                            msb.Parts.MapPieces.Add(terrain);
-
-                            /* Generate cell terrain collision */
-                            MSB3.Part.Collision terrainCol = new();
-                            MSB3.Model.Collision terrainColRes = new();
-                            terrainCol.HitFilterID = 8;
-                            terrainCol.ModelName = "h" + terrainModel;
-                            terrainCol.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
-                            terrainCol.Position = terrain.Position;
-                            terrainCol.Rotation = terrain.Rotation;
-                            terrainCol.MapStudioLayer = uint.MaxValue;
-                            for (int k = 0; k < cell.drawGroups.Length; k++) {
-                                terrainCol.DrawGroups[k] = cell.drawGroups[k];
-                                terrainCol.DispGroups[k] = cell.drawGroups[k];
-                                terrainCol.BackreadGroups[k] = cell.drawGroups[k];
-                            }
-
-                            terrainCol.Name = terrainCol.ModelName + terrainName;
-                            terrainCol.LodParamID = -1;
-                            terrainCol.UnkE0E = -1;
-
-                            terrainColRes.Name = terrainCol.ModelName;
-                            terrainColRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{terrainCol.ModelName}.hkt";
-
-                            AddResource(msb, terrainColRes);
-                            msb.Parts.Collisions.Add(terrainCol);
+                        /* Add cell terrain collision */
+                        MSB3.Part.Collision terrainCol = new();
+                        terrainCol.HitFilterID = 8;
+                        terrainCol.ModelName = $"h{terrainInfo.collision.id:D6}";
+                        terrainCol.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
+                        terrainCol.Position = terrain.Position;
+                        terrainCol.Rotation = terrain.Rotation;
+                        terrainCol.MapStudioLayer = uint.MaxValue;
+                        for (int k = 0; k < cell.drawGroups.Length; k++) {
+                            terrainCol.DrawGroups[k] = cell.drawGroups[k];
+                            terrainCol.DispGroups[k] = cell.drawGroups[k];
+                            terrainCol.BackreadGroups[k] = cell.drawGroups[k];
                         }
+                        terrainCol.Name = terrainCol.ModelName + "_0000"; // Same as abovev
+                        terrainCol.LodParamID = -1;
+                        terrainCol.UnkE0E = -1;
 
-                        //MakeTestEnemy(c, cell, msb);
+                        msb.Parts.Collisions.Add(terrainCol);
+                        usedCollision.Add(terrainInfo.collision);
+                        
 
+                        /* Static map pieces and collision */
                         foreach (Content content in cell.content) {
-                            if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
+                            if (!CONVERT_TO_MAP.Contains(content.type)) { continue; }   // Only process things we want as static world meshes
                             if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
 
-                            /* Name and model name stuff */
-                            string mpModel;
-                            if (modelMap.ContainsKey(content.mesh)) {
-                                mpModel = modelMap[content.mesh];
-                            } else {
-                                throw new Exception("Missing flver!");
-                            }
+                            /* Add map piece */
+                            ModelInfo modelInfo = cache.GetModelInfo(content.mesh);
+                            int mpCount = GetMapPieceCount(modelInfo);
 
-                            string mpName;
-                            if (partMap.ContainsKey(mpModel)) {
-                                mpName = "_" + (partMap[mpModel]++.ToString("D4"));
-                            } else {
-                                mpName = "_0000";
-                                partMap.Add(mpModel, 1);
-                            }
-
-                            /* Create map piece */
                             MSB3.Part.MapPiece mp = new();
-                            MSB3.Model.MapPiece mpRes = new();
-                            mp.ModelName = "m" + mpModel;
-                            mp.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{Utility.DeleteFromEnd(int.Parse(mpName.Split("_")[1]), 2).ToString("D2")}.SIB"; //put the right number here
+                            mp.ModelName = $"m{modelInfo.id:D6}";
+                            mp.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{modelInfo.id:D6}.SIB"; //put the right number here
                             mp.Position = content.position;
                             mp.Rotation = content.rotation;
+                            mp.Scale = new Vector3(content.scale);
                             mp.MapStudioLayer = uint.MaxValue;
                             for (int k = 0; k < cell.drawGroups.Length; k++) {
                                 mp.DrawGroups[k] = cell.drawGroups[k];
@@ -317,25 +251,25 @@ namespace PortJob {
                             }
                             mp.ShadowSource = true;
                             mp.DrawByReflectCam = true;
-                            mp.Name = "m" + mpModel + mpName;
-                            mpRes.Name = mp.ModelName;
+                            mp.Name = $"{mp.ModelName}_{mpCount:D4}";
                             mp.UnkE0E = -1;
                             mp.LodParamID = 19; //Param for: Don't switch to LOD models 
-                            mpRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\{mpModel}.sib";
-
-                            AddResource(msb, mpRes);
+                            
                             msb.Parts.MapPieces.Add(mp);
+                            usedMapPieces.Add(modelInfo);
 
-                            /* Create collision (if the file exists) */
-                            // CHECK FOR THE COLLISION FILE THAT HAS THE SAME ID AS THE MAP PIECE ABOVE, IF IT EXISTS POPULATE THE MAP WITH IT
-                            if (File.Exists($"{area_block_folder}h{area:D2}_{block:D2}_00_00_{mpModel}.obj")) {
+                            /* Add collision if there is any */
+                            CollisionInfo collisionInfo = modelInfo.GetCollision(1f);
+                            if (collisionInfo != null) {
+                                int colCount = GetCollisionCount(collisionInfo);
+
                                 MSB3.Part.Collision col = new();
-                                MSB3.Model.Collision colRes = new();
                                 col.HitFilterID = 8;
-                                col.ModelName = "h" + mpModel;
+                                col.ModelName = $"h{collisionInfo.id:D6}";
                                 col.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
                                 col.Position = mp.Position;
                                 col.Rotation = mp.Rotation;
+                                col.Scale = mp.Scale;
                                 col.MapStudioLayer = uint.MaxValue;
                                 for (int k = 0; k < cell.drawGroups.Length; k++) {
                                     col.DrawGroups[k] = cell.drawGroups[k];
@@ -343,312 +277,103 @@ namespace PortJob {
                                     col.BackreadGroups[k] = cell.drawGroups[k];
                                 }
 
-                                col.Name = col.ModelName + mpName;
+                                col.Name = $"{col.ModelName}_{colCount:D4}";
                                 col.LodParamID = -1;
                                 col.UnkE0E = -1;
 
-                                colRes.Name = col.ModelName;
-                                colRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{col.ModelName}.hkt";
-
-                                AddResource(msb, colRes);
                                 msb.Parts.Collisions.Add(col);
+                                usedCollision.Add(collisionInfo);
                             }
                         }
+                        
+                        /* Objects */
+                        foreach(Content content in cell.content) {
+                            if (!CONVERT_TO_OBJ.Contains(content.type)) { continue; }   // Doors please
+                            if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
+
+                            ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
+                            int objCount = GetObjectCount(objectInfo);
+
+                            MSB3.Part.Object obj = new();
+                            obj.ModelName = $"o{objectInfo.id:D6}";
+                            obj.SibPath = "";
+                            obj.Position = content.position;
+                            obj.Rotation = content.rotation;
+                            obj.Scale = new Vector3(content.scale);
+                            obj.MapStudioLayer = uint.MaxValue;
+                            for (int k = 0; k < cell.drawGroups.Length; k++) {
+                                obj.DrawGroups[k] = cell.drawGroups[k];
+                                obj.DispGroups[k] = cell.drawGroups[k];
+                                obj.BackreadGroups[k] = 0;
+                            }
+                            obj.ShadowDest = true;
+                            obj.DrawByReflectCam = true;
+                            obj.Name = $"{obj.ModelName}_{objCount:D4}";
+                            obj.UnkE0E = -1;
+                            obj.LodParamID = 19; //Param for: Don't switch to LOD models 
+
+                            msb.Parts.Objects.Add(obj);
+                        }
+                    }
+
+                    /* Auto-generate model resources section of MSB */
+                    AutoResource.Generate(area, block, msb);
+
+                    /* Copy resource files into MSB directory and add textures to final bnd list */
+                    string msbDir = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\";
+
+                    foreach (ModelInfo modelInfo in usedMapPieces) { // Map pieces
+                        FLVER2 flver = FLVER2.Read(modelInfo.path);
+                        string flverName = $"m{area:D2}_{block:D2}_{0:D2}_{0:D2}_{modelInfo.id:D6}";
+
+                        BND4 bnd = new() { Compression = DCX.Type.DCX_DFLT_10000_44_9 };
+                        bnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, $"{flverName}.flver", flver.Write()));
+                        bnd.Write($"{msbDir}{flverName}.mapbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9);
+                        foreach(TextureInfo textureInfo in modelInfo.textures) { extTextures.Add(textureInfo); } // Textures
+                    }
+
+                    foreach (TerrainInfo terrainInfo in usedTerrain) { // Terrain
+                        FLVER2 flver = FLVER2.Read(terrainInfo.path);
+                        string flverName = $"m{area:D2}_{block:D2}_{0:D2}_{0:D2}_{terrainInfo.id:D6}";
+
+                        BND4 bnd = new() { Compression = DCX.Type.DCX_DFLT_10000_44_9 };
+                        bnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, $"{flverName}.flver", flver.Write()));
+                        bnd.Write($"{msbDir}{flverName}.mapbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9);
+                        foreach (TextureInfo textureInfo in terrainInfo.textures) { extTextures.Add(textureInfo); } // Textures
+                    }
+
+                    foreach(CollisionInfo collisionInfo in usedCollision) { // Collision
+                        string colPath = $"{msbDir}h{area:D2}_{block:D2}_{0:D2}_{0:D2}_{collisionInfo.id:D6}.hkx.dcx";
+                        if (File.Exists(colPath)) { File.Delete(colPath); }
+                        File.Copy(collisionInfo.path, colPath);
+                    }
+
+                    /* Generate Object Files */
+                    foreach(ObjectInfo objectInfo in cache.objects) {
+                        /* Generate objBnd */
+                        TPF tpf = TPF.Read(objectInfo.model.textures[0].path); // Merge all used tpfs into a single tpf
+                        tpf.Compression = DCX.Type.None;
+                        tpf.Encoding = 0x1;
+                        for (int i=1;i<objectInfo.model.textures.Count;i++) {
+                            TextureInfo textureInfo = objectInfo.model.textures[i];
+                            TPF mortpf = TPF.Read(textureInfo.path);
+                            foreach (TPF.Texture tex in mortpf.Textures) {
+                                tpf.Textures.Add(tex);
+                            }
+                        }
+                        FLVER2 flver = FLVER2.Read(objectInfo.model.path);
+                        byte[] hkxdcx = File.ReadAllBytes(objectInfo.model.GetCollision(1f).path);
+                        byte[] hkx = DCX.Decompress(hkxdcx);
+
+                        BND4 objBnd = new BND4();
+                        string objPath = $"obj\\o{0:D2}\\o{0:D2}{objectInfo.id:D4}\\o{0:D2}{objectInfo.id:D4}";
+                        objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 100, $"{objPath}.tpf", tpf.Write()));
+                        objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, $"{objPath}.flver", flver.Write()));
+                        objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 300, $"{objPath}.hkx", hkx));                     // Crashing?
+                        objBnd.Write($"{OutputPath}obj\\o{0:D2}{objectInfo.id:D4}.objbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9);
                     }
 
                     //AddTempNavMeshToNVA(block, area, nva);
-                    Log.Info(0, $"Compiling HKX files for MSB[{block}]", "test");
-                    ColConverter.Run(area_block_folder);
-
-                    Log.Info(0, $"Completed: m{area:D2}_{block:D2}_00_00.msb");
-                    Log.Info(2, "MapPieces: " + msb.Parts.MapPieces.Count);
-                    Log.Info(2, "Collisions: " + msb.Parts.Collisions.Count);
-
-                    msbs.Add(new MSBData(area, block, msb, spawnCell.name));
-                    nvas.Add(new NVAData(area, block, nva));
-                    Log.Info(0, "\n");
-                }
-            }
-
-            /*Generate Interior MSBs from layints */
-            {
-                const int area = 30;
-
-                int i = 0;
-                foreach (Layint layint in layints) {
-                    /* Generate a new MSB and fill out required default data */
-                    int block = i++;
-
-                    string area_block_folder = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\";
-                    MSB3 msb = new();
-
-                    if (block is not (0)) { continue; } //for rapid debugging 
-
-                    Log.Info(0, $"=== Generating Interior MSB[{block}] === [{layint.cells.Count} cells]", "test");
-                    layint.generate(esm);
-
-                    /* Write cells in this layout to the MSB */
-                    Dictionary<string, string> modelMap = new();
-                    Dictionary<string, int> partMap = new();
-
-                    /* This offset and rotation will be applies to all collision below this. Left for testing purposes */
-                    Vector3 OFFSET = new(0, 0, 0);
-                    Vector3 ROTATION = new(0, 0, 0);
-
-                    NVA nva = new(); //One nva per msb. I put this up here so you can easily add the navmeshes in the loop.  
-                    List<FBXInfo> fbxList = new();
-
-
-                    /* FBX Model conversion pre-pass */
-                    /* We have to create our flvers and hkx files from the nif/fbx models first so that we can verify they exist when placing them in the MSB */
-                    for (int c = 0; c < layint.cells.Count; c++) {
-                        if (c > DEBUG_MAX_INT_CELLS) { break; }
-                        Cell cell = layint.cells[c];
-                        foreach (Content content in cell.content) {
-                            if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
-                            if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
-
-                            /* Name and model name stuff */
-                            if (!modelMap.ContainsKey(content.mesh)) {
-                                string mpModel = NewMapPieceID();
-                                string fbxPath = MorrowindPath + "Data Files\\meshes\\" + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
-                                string flverPath = $"{area_block_folder}m{area:D2}_{block:D2}_00_00_{mpModel}.flver";
-                                if (!File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) fbxList.Add(new FBXInfo(fbxPath, flverPath, tpfDir));
-
-                                modelMap.Add(content.mesh, mpModel);
-                            }
-                        }
-                    }
-
-                    _workers.Add(new FBXConverterWorker(OutputPath, MorrowindPath, GLOBAL_SCALE, fbxList));
-                    WaitForWorkers();
-
-
-                    Cell spawnCell = layint.cells[0];
-
-                    /* Create player default spawn point */
-                    MSB3.Part.Player player = new();
-                    MSB3.Model.Player playerRes = new();
-                    player.ModelName = "c0000";
-                    player.Position = new Vector3(49f, -4.35f, 113f);
-                    player.Name = "c0000_0000";
-                    playerRes.Name = player.ModelName;
-                    playerRes.SibPath = "N:\\FDP\\data\\Model\\chr\\c0000\\sib\\c0000.SIB";
-                    msb.Models.Players.Add(playerRes);
-                    msb.Parts.Players.Add(player);
-
-                    /* MSB population pass */
-                    int testE = 0;
-                    for (int c = 0; c < layint.mergedCells.Count; c++) {
-                        if (c > DEBUG_MAX_INT_CELLS) { break; }
-                        Bounds bounds = layint.mergedCells[c].Key;
-                        Cell cell = layint.mergedCells[c].Value;
-                        Log.Info(0, "Populating Interior Cell: " + cell.name, "test");
-
-                        /* Generate a box region of the bounds of the merged cell */
-                        MSB3.Region.Event breg = new();
-                        MSB.Shape.Box bregshp = new();
-                        bregshp.Width = bounds.width;
-                        bregshp.Depth = bounds.length;
-                        bregshp.Height = bounds.height;
-                        breg.Shape = bregshp;
-                        breg.Name = "cell " + cell.name;
-                        breg.Position = Vector3.Add(bounds.center, new Vector3(0f, bounds.height*-.5f, 0f));  // Box regions are centered on XZ but Y is at the root.... fucking!?!?? FROM????????
-                        breg.Rotation = Vector3.Zero;
-                        msb.Regions.Events.Add(breg);
-
-                        /* Name and model name stuff */
-                        string cModel = NewCollisionID();
-                        //string cName;
-                        if (partMap.ContainsKey(cModel)) {
-                            throw new Exception("No duplicate non-connect col");
-                        }
-
-                        //cName = "_" + (partMap[cModel]++.ToString("D4"));
-                        //cName = "_0000";
-                        partMap.Add(cModel, 0);
-
-                        //MSB3.Part.Collision flat = AddTestcol("h" + (8000 + c).ToString("D6"), area, block, cell, OFFSET, ROTATION, msb, partMap);
-
-                        /* Generate cell terrain map piece */
-                        if (cell.terrain.Count > 0) {
-                            string terrainModel = (9000 + c).ToString("D6");
-                            string terrainName = "_0000";
-
-                            TerrainConverter.convert(cell, $"{area_block_folder}m{area:D2}_{block:D2}_00_00_{terrainModel}.flver", tpfDir);
-
-                            MSB3.Part.MapPiece terrain = new();
-                            MSB3.Model.MapPiece terrainRes = new();
-                            terrain.ModelName = "m" + terrainModel;
-                            terrain.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{terrainModel}.SIB";
-                            terrain.Position = cell.center;
-                            terrain.Rotation = new Vector3(0, 0, 0);
-                            terrain.MapStudioLayer = uint.MaxValue;
-                            for (int k = 0; k < cell.drawGroups.Length; k++) {
-                                terrain.DrawGroups[k] = cell.drawGroups[k];
-                                terrain.DispGroups[k] = cell.drawGroups[k];
-                                terrain.BackreadGroups[k] = 0;
-                            }
-                            terrain.ShadowSource = true;
-                            terrain.DrawByReflectCam = true;
-                            terrain.Name = terrain.ModelName + terrainName;
-                            terrain.UnkE0E = -1;
-                            terrain.LodParamID = 19; //Param for: Don't switch to LOD models 
-                            terrainRes.Name = terrain.ModelName;
-                            terrainRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\{terrainModel}.sib";
-
-                            AddResource(msb, terrainRes);
-                            msb.Parts.MapPieces.Add(terrain);
-
-                            /* Generate cell terrain collision */
-                            MSB3.Part.Collision terrainCol = new();
-                            MSB3.Model.Collision terrainColRes = new();
-                            terrainCol.HitFilterID = 8;
-                            terrainCol.ModelName = "h" + terrainModel;
-                            terrainCol.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
-                            terrainCol.Position = terrain.Position;
-                            terrainCol.Rotation = terrain.Rotation;
-                            terrainCol.MapStudioLayer = uint.MaxValue;
-                            for (int k = 0; k < cell.drawGroups.Length; k++) {
-                                terrainCol.DrawGroups[k] = cell.drawGroups[k];
-                                terrainCol.DispGroups[k] = cell.drawGroups[k];
-                                terrainCol.BackreadGroups[k] = cell.drawGroups[k];
-                            }
-
-                            terrainCol.Name = terrainCol.ModelName + terrainName;
-                            terrainCol.LodParamID = -1;
-                            terrainCol.UnkE0E = -1;
-
-                            terrainColRes.Name = terrainCol.ModelName;
-                            terrainColRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{terrainCol.ModelName}.hkt";
-
-                            AddResource(msb, terrainColRes);
-                            msb.Parts.Collisions.Add(terrainCol);
-                        }
-
-                        //MakeTestEnemy(c, cell, msb);
-                        MSB3.Part.Collision lastCollision = null;
-                        foreach (Content content in cell.content) {
-                            if (!VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }   // Only process valid world meshes
-                            if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
-
-                            /* Name and model name stuff */
-                            string mpModel;
-                            if (modelMap.ContainsKey(content.mesh)) {
-                                mpModel = modelMap[content.mesh];
-                            } else {
-                                throw new Exception("Missing flver!");
-                            }
-
-                            string mpName;
-                            if (partMap.ContainsKey(mpModel)) {
-                                mpName = "_" + (partMap[mpModel]++.ToString("D4"));
-                            } else {
-                                mpName = "_0000";
-                                partMap.Add(mpModel, 1);
-                            }
-
-                            /* Create map piece */
-                            MSB3.Part.MapPiece mp = new();
-                            MSB3.Model.MapPiece mpRes = new();
-                            mp.ModelName = "m" + mpModel;
-                            mp.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{Utility.DeleteFromEnd(int.Parse(mpName.Split("_")[1]), 2).ToString("D2")}.SIB"; //put the right number here
-                            mp.Position = Vector3.Add(Vector3.Add(content.position, bounds.offset), bounds.center);
-                            mp.Rotation = content.rotation;
-                            mp.MapStudioLayer = uint.MaxValue;
-                            for (int k = 0; k < cell.drawGroups.Length; k++) {
-                                mp.DrawGroups[k] = cell.drawGroups[k];
-                                mp.DispGroups[k] = cell.drawGroups[k];
-                                mp.BackreadGroups[k] = 0;
-                            }
-                            mp.ShadowSource = true;
-                            mp.DrawByReflectCam = true;
-                            mp.Name = "m" + mpModel + mpName;
-                            mpRes.Name = mp.ModelName;
-                            mp.UnkE0E = -1;
-                            mp.LodParamID = 19; //Param for: Don't switch to LOD models 
-                            mpRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\{mpModel}.sib";
-
-                            AddResource(msb, mpRes);
-                            msb.Parts.MapPieces.Add(mp);
-
-                            /* Create collision (if the file exists) */
-                            // CHECK FOR THE COLLISION FILE THAT HAS THE SAME ID AS THE MAP PIECE ABOVE, IF IT EXISTS POPULATE THE MAP WITH IT
-                            if (File.Exists($"{area_block_folder}h{area:D2}_{block:D2}_00_00_{mpModel}.obj")) {
-                                MSB3.Part.Collision col = new();
-                                MSB3.Model.Collision colRes = new();
-                                col.HitFilterID = 8;
-                                col.ModelName = "h" + mpModel;
-                                col.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
-                                col.Position = mp.Position;
-                                col.Rotation = mp.Rotation;
-                                col.MapStudioLayer = uint.MaxValue;
-                                for (int k = 0; k < cell.drawGroups.Length; k++) {
-                                    col.DrawGroups[k] = cell.drawGroups[k];
-                                    col.DispGroups[k] = cell.drawGroups[k];
-                                    col.BackreadGroups[k] = cell.drawGroups[k];
-                                }
-
-                                col.Name = col.ModelName + mpName;
-                                col.LodParamID = -1;
-                                col.UnkE0E = -1;
-
-                                colRes.Name = col.ModelName;
-                                colRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{col.ModelName}.hkt";
-
-                                AddResource(msb, colRes);
-                                msb.Parts.Collisions.Add(col);
-
-                                lastCollision = col;
-                            }
-                        }
-
-                        /* VERY TEST */
-                        foreach (Content content in cell.content) {
-                            if (content.type is (ESM.Type.Creature or ESM.Type.Npc)) {
-                                /* Enemy for testing */
-                                string eModel = "c1100";
-                                string eName = $"_{testE++:D4}";
-
-                                MSB3.Part.Enemy enemy = new();
-                                MSB3.Model.Enemy enemyRes = new();
-
-                                //enemy.CollisionName = flat.Name;
-                                enemy.ThinkParamID = 110050;
-                                enemy.NPCParamID = 110010;
-                                enemy.TalkID = 0;
-                                enemy.CharaInitID = -1;
-                                enemy.UnkT78 = 128;
-                                enemy.UnkT84 = 1;
-                                enemy.Name = eModel + eName;
-                                enemy.SibPath = "";
-                                enemy.ModelName = eModel;
-                                enemy.Position = Vector3.Add(Vector3.Add(content.position, bounds.offset), bounds.center);
-                                enemy.CollisionName = lastCollision.Name;
-                                enemy.MapStudioLayer = 4294967295;
-
-                                for (int k = 0; k < cell.drawGroups.Length; k++) {
-                                    enemy.DrawGroups[k] = 0;
-                                    enemy.DispGroups[k] = 0;
-                                    enemy.BackreadGroups[k] = 0;
-                                }
-
-                                enemy.LodParamID = -1;
-                                enemy.UnkE0E = -1;
-
-                                enemyRes.Name = enemy.ModelName;
-                                enemyRes.SibPath = "";
-
-                                AddResource(msb, enemyRes);
-                                msb.Parts.Enemies.Add(enemy);
-                            }
-                        }
-                    }
-
-                    //AddTempNavMeshToNVA(block, area, nva);
-                    Log.Info(0, $"Compiling HKX files for MSB[{block}]", "test");
-                    ColConverter.Run(area_block_folder);
-
                     Log.Info(0, $"Completed: m{area:D2}_{block:D2}_00_00.msb");
                     Log.Info(2, "MapPieces: " + msb.Parts.MapPieces.Count);
                     Log.Info(2, "Collisions: " + msb.Parts.Collisions.Count);
@@ -677,7 +402,6 @@ namespace PortJob {
             Log.Info(0, "Writing MTDBND to: " + mtdPath);
             File.WriteAllBytes(mtdPath, hBytes);
 
-
             foreach (NVAData nva in nvas) {
                 string nvaPath = $"{OutputPath}map\\m{nva.area:D2}_{nva.block:D2}_00_00\\m{nva.area:D2}_{nva.block:D2}_00_00.nva.dcx";
                 Log.Info(0, "Writing MSB to: " + nvaPath);
@@ -686,8 +410,7 @@ namespace PortJob {
                 Utility.PackAreaCol(nva.area, nva.block);
             }
 
-            //WaitForWorkers();
-            PackTextures(54); PackTextures(30); // This should be run once per area, currently needs to be reworked to support some like area division stuff but not important right now
+            PackTextures(54, extTextures); //PackTextures(30, intTextures); // This should be run once per area, currently needs to be reworked to support some like area division stuff but not important right now
 
             /* Generate and write loadlists */
             string mapViewListPath = $"{OutputPath}map\\mapviewlist.loadlistlist";
@@ -714,8 +437,6 @@ namespace PortJob {
             string eName = $"_{c:D4}";
 
             MSB3.Part.Enemy enemy = new();
-            MSB3.Model.Enemy enemyRes = new();
-
             //enemy.CollisionName = flat.Name;
             enemy.ThinkParamID = 110050;
             enemy.NPCParamID = 110010;
@@ -727,29 +448,21 @@ namespace PortJob {
             enemy.SibPath = "";
             enemy.ModelName = eModel;
             enemy.Position = cell.center + new Vector3(0f, 5f, 0f);
-            ;
             enemy.MapStudioLayer = 4294967295;
-
             for (int k = 0; k < cell.drawGroups.Length; k++) {
                 enemy.DrawGroups[k] = 0;
                 enemy.DispGroups[k] = 0;
                 enemy.BackreadGroups[k] = 0;
             }
-
             enemy.LodParamID = -1;
             enemy.UnkE0E = -1;
 
-            enemyRes.Name = enemy.ModelName;
-            enemyRes.SibPath = "";
-
-            AddResource(msb, enemyRes);
             msb.Parts.Enemies.Add(enemy);
         }
         private static MSB3.Part.Collision AddTestcol(string cModel, int area, int block, Cell cell, Vector3 OFFSET, Vector3 ROTATION, MSB3 msb, Dictionary<string, int> partMap) {
             partMap.Add(cModel, 0);
             /* Flat ground for testing */
             MSB3.Part.Collision flat = new();
-            MSB3.Model.Collision flatRes = new();
             flat.HitFilterID = 8;
             flat.ModelName = cModel;
             flat.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
@@ -766,11 +479,7 @@ namespace PortJob {
             flat.LodParamID = -1;
             flat.UnkE0E = -1;
 
-            flatRes.Name = flat.ModelName;
-            flatRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{cModel}.hkt";
-
             WriteTestCollision(cModel, area, block);
-            AddResource(msb, flatRes);
             msb.Parts.Collisions.Add(flat);
 
             /* Flat connect collision for testing */
@@ -789,8 +498,6 @@ namespace PortJob {
                 //}
 
                 MSB3.Part.ConnectCollision con = new();
-                MSB3.Model.Collision conRes = new();
-
                 con.CollisionName = flat.Name;
                 con.MapID[0] = (byte)area;
                 con.MapID[1] = (byte)(cell.connects[k].id);
@@ -800,7 +507,6 @@ namespace PortJob {
                 //con.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB"; // Looks like connnect collision does not ever use sibs
                 con.ModelName = ccModel;
                 con.Position = cell.center + OFFSET + new Vector3(0f, 5f, 0f);
-                ;
                 con.Rotation = ROTATION;
                 con.MapStudioLayer = 4294967295; // Not a clue what this does... Should probably ask about it
                 for (int l = 0; l < cell.drawGroups.Length; l++) {
@@ -811,10 +517,6 @@ namespace PortJob {
                 con.LodParamID = -1;
                 con.UnkE0E = -1;
 
-                conRes.Name = con.ModelName;
-                conRes.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\hkt\\{ccModel}.hkt";
-
-                AddResource(msb, conRes);
                 msb.Parts.ConnectCollisions.Add(con);
             }
             return flat;
@@ -920,8 +622,12 @@ namespace PortJob {
 
 
 
-        private static void PackTextures(int area) {
-            string[] textures = Directory.GetFiles(OutputPath + "map\\tx\\", "*.tpf.dcx");
+        private static void PackTextures(int area, HashSet<TextureInfo> textureSet) {
+            string[] textures = new string[textureSet.Count];
+            int t = 0;
+            foreach (TextureInfo textureInfo in textureSet) {
+                textures[t++] = textureInfo.path;
+            }
 
             int CHUNK_AMOUNT = textures.Length / 4; //get the amount of textures per BXF3.
 
@@ -956,51 +662,6 @@ namespace PortJob {
             }
             //Directory.Delete(OutputPath + "map\\tx", true); // Don't delete temp tpf folder because if you delete this we can't re-use it. program is a lot faster without recreating every tpf every time
         }
-
-        /* Function add collision model resources, avoids adding duplicates */
-        private static void AddResource(MSB3 msb, MSB3.Model.Collision res) {
-            foreach (MSB3.Model.Collision collision in msb.Models.Collisions) {
-                if (collision.Name == res.Name) {
-                    return;
-                }
-            }
-            msb.Models.Collisions.Add(res);
-        }
-
-        /* Function top add map piece model resources, avoids adding duplicates */
-        private static void AddResource(MSB3 msb, MSB3.Model.MapPiece res) {
-            foreach (MSB3.Model.MapPiece map in msb.Models.MapPieces) {
-                if (map.Name == res.Name) {
-                    return;
-                }
-            }
-            msb.Models.MapPieces.Add(res);
-        }
-
-        /* Function top add enemy model resources, avoids adding duplicates */
-        private static void AddResource(MSB3 msb, MSB3.Model.Enemy res) {
-            foreach (MSB3.Model.Enemy enemy in msb.Models.Enemies) {
-                if (enemy.Name == res.Name) {
-                    return;
-                }
-            }
-            msb.Models.Enemies.Add(res);
-        }
-
-        private static int nextCollisionID = 0;
-        private static string NewCollisionID() {
-            return "h" + nextCollisionID++.ToString("D6");
-        }
-
-        private static int nextMapPieceID = 0;
-        private static string NewMapPieceID() {
-            return nextMapPieceID++.ToString("D6");
-        }
-
-        private static int nextEventID = 1;
-        private static int NewEventID() {
-            return nextEventID++;
-        }
     }
 
     public class MSBData {
@@ -1012,7 +673,7 @@ namespace PortJob {
             this.area = area;
             this.block = block;
             this.msb = msb;
-            this.debugName = debugName.Replace(" ", "").Replace(",", "");
+            this.debugName = debugName.Replace(" ", "").Replace(",", "").Replace(":", "").Replace("'", "");
         }
     }
 

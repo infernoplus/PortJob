@@ -24,8 +24,8 @@ namespace FBXConverter {
     /* Morrowinds native NIF format has to be mass converted to FBX first for this program to work. */
     /* Heavily references code from Meowmartius's FBX2FLVER. He's a secret gamer god. */
     class FBXConverter {
-        // Return an object containing the flver, tpfs, and generated ids and names stuff later
-        public static void convert(string fbxPath, string flverPath, string tpfDir) {
+        // Return an object containing the flver, tpfs, and generated ids and names stuff
+        public static ModelInfo convert(string fbxPath, string flverPath, string tpfDir) {
             /* Skip if file already exists */
 
             /* Create a blank FLVER */
@@ -427,17 +427,22 @@ namespace FBXConverter {
 
             /* Write FLVER to file */
             //Log.Info(1, "Writing FLVER to: " + flverPath);
-            BND4 bnd = new() {
+            /*BND4 bnd = new() {
                 Compression = DCX.Type.DCX_DFLT_10000_44_9
-            };
+            };*/
 
             string flverName = Path.GetFileNameWithoutExtension(flverPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(flverPath));
+            flver.Write(flverPath);
+
             //string mapName = Path.GetFileName(flverPath.Substring(0, flverPath.LastIndexOf('_'))); //file name is just the top level directory, here. There is no GetTopLevelDirectory :(
 
-            string internalFlverPath = flverName + ".flver"; //"N:\\FDP\\data\\INTERROOT_win64\\map\\" + mapName + "\\" + flverName + "\\Model\\" + flverName + ".flver" //full internal path
-            bnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, internalFlverPath, flver.Write()));
-            bnd.Write(flverPath.Replace(".flver", ".mapbnd.dcx"), DCX.Type.DCX_DFLT_10000_44_9);
+            //string internalFlverPath = flverName + ".flver"; //"N:\\FDP\\data\\INTERROOT_win64\\map\\" + mapName + "\\" + flverName + "\\Model\\" + flverName + ".flver" //full internal path
+            //bnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, internalFlverPath, flver.Write()));
+            //bnd.Write(flverPath.Replace(".flver", ".mapbnd.dcx"), DCX.Type.DCX_DFLT_10000_44_9);
             //flver.Write(flverPath, DCX.Type.DCX_DFLT_10000_24_9);
+
+            Directory.CreateDirectory(tpfDir);
             foreach (TPF tpf in tpfs) {
                 string tpfPath = tpfDir + tpf.Textures[0].Name + ".tpf.dcx";
                 if(File.Exists(tpfPath)) { continue; } // Skip if file already exists
@@ -447,8 +452,20 @@ namespace FBXConverter {
 
             /* Do collision */
             string outputPath = Path.GetDirectoryName(flverPath);
-            string objPath = $"{outputPath}\\{flverName.Replace("m", "h")}.obj";
-            ColToOBJ.convert(objPath, fbx);
+            string objPath = $"{outputPath}\\{flverName}.obj";
+            Obj obj = ColToOBJ.convert(objPath, fbx);
+
+            /* Generate ModelInfo and return */
+            string nifName = fbxPath.Split("\\Data Files\\meshes\\")[1].Replace(".fbx", ".nif"); // Note, really we should just pass the nif name along with other params but this works too, though a little gross
+            ModelInfo modelInfo = new(nifName, flverPath);
+            if (obj != null) {
+                CollisionInfo collisionInfo = new(nifName, objPath, 100);
+                modelInfo.collisions.Add(collisionInfo);
+            }
+            foreach(TPF tpf in tpfs) {
+                modelInfo.textures.Add(new TextureInfo(tpf.Textures[0].Name.Substring(3, tpf.Textures[0].Name.Length -3) + ".dds", tpfDir + tpf.Textures[0].Name + ".tpf.dcx"));
+            }
+            return modelInfo;
         }
     }
 

@@ -84,7 +84,7 @@ namespace PortJob {
 
                 Vector3 min = cell.content.Count>0?cell.content[0].position+Vector3.Zero:new(), max = min+Vector3.Zero; // End me
                 foreach (Content content in cell.content) {
-                    if (!PortJob.VALID_MAP_PIECE_TYPES.Contains(content.type)) { continue; }  // Only process valid world meshes
+                    if (!PortJob.CONVERT_ALL.Contains(content.type)) { continue; }  // Only process valid world meshes
                     if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
 
                     /* Calculate min and max bounds */

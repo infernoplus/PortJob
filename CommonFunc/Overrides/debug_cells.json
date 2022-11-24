@@ -1,0 +1,13 @@
+﻿{
+    "prefer": [
+        { "name": "Ebonheart" },
+        { "name": "Balmora" },
+        { "name": "Seyda Neen" },
+        { "name": "Suran" },
+        { "name": "Molag Mar" },
+        { "name": "Hla Oad" },
+        { "name": "Ald-ruhn, Redoran Council Hall" },
+        { "name": "Balmora, Temple" }
+    ],
+    "avoid": []
+}

@@ -17,10 +17,7 @@ namespace PortJob {
     /* Converts landscape data into a flver model */
     class TerrainConverter {
         // Return an object containing the flver, tpfs, and generated ids and names stuff later
-        public static void convert(Cell cell, string flverPath, string tpfDir) {
-            /* Skip if file already exists */
-            if (File.Exists(flverPath.Replace("flver", "mapbnd.dcx"))) { return; }
-
+        public static TerrainInfo convert(Cell cell, string flverPath, string tpfDir) {
             /* Create a blank FLVER */
             FLVER2 flver = new();
             flver.Header.Version = FLVER_VERSION;
@@ -399,12 +396,15 @@ namespace PortJob {
             };
 
             string flverName = Path.GetFileNameWithoutExtension(flverPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(flverPath));
+            flver.Write(flverPath);
+
             //string mapName = Path.GetFileName(flverPath.Substring(0, flverPath.LastIndexOf('_'))); //file name is just the top level directory, here. There is no GetTopLevelDirectory :(
 
-            string internalFlverPath = flverName + ".flver"; //"N:\\FDP\\data\\INTERROOT_win64\\map\\" + mapName + "\\" + flverName + "\\Model\\" + flverName + ".flver" //full internal path
+            /*string internalFlverPath = flverName + ".flver"; //"N:\\FDP\\data\\INTERROOT_win64\\map\\" + mapName + "\\" + flverName + "\\Model\\" + flverName + ".flver" //full internal path
             bnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, internalFlverPath, flver.Write()));
             bnd.Write(flverPath.Replace("flver", "mapbnd.dcx"), DCX.Type.DCX_DFLT_10000_44_9);
-            //flver.Write(flverPath, DCX.Type.DCX_DFLT_10000_24_9);
+            //flver.Write(flverPath, DCX.Type.DCX_DFLT_10000_24_9); */
             foreach (TPF tpf in tpfs) {
                 string tpfPath = tpfDir + tpf.Textures[0].Name + ".tpf.dcx";
                 if (File.Exists(tpfPath)) { continue; } // Skip if file already exists
@@ -414,10 +414,18 @@ namespace PortJob {
 
             /* Create collision obj */
             string outputPath = Path.GetDirectoryName(flverPath);
-            string objPath = $"{outputPath}\\{flverName.Replace("m", "h")}.obj";
+            string objPath = $"{outputPath}\\{flverName}.obj";
             TerrainToOBJ.convert(objPath, cell);
 
             Log.Info(2, $"Generated Terrain with [{cell.terrain.Count}] meshes -> {Utility.PathToFileName(flverPath)}");
+
+            /* Return terraininfo for cache */
+            CollisionInfo collisionInfo = new(flverName, objPath, 100);
+            TerrainInfo terrainInfo = new(cell.position, flverPath, collisionInfo);
+            foreach (TPF tpf in tpfs) {
+                terrainInfo.textures.Add(new TextureInfo(tpf.Textures[0].Name.Substring(3, tpf.Textures[0].Name.Length - 3) + ".dds", tpfDir + tpf.Textures[0].Name + ".tpf.dcx"));
+            }
+            return terrainInfo;
         }
     }
 }

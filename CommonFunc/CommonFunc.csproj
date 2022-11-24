@@ -10,12 +10,16 @@
     <None Remove="DefaultTex\def_grey.dds" />
     <None Remove="DefaultTex\def_missing.dds" />
     <None Remove="DefaultTex\def_test.dds" />
+    <None Remove="Overrides\debug_cells.json" />
     <None Remove="Resources\DS1_MTD_INFO.json" />
     <None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
     <None Remove="Resources\DS3_GX_INFO.json" />
     <None Remove="Resources\DS3_MTD_INFO.json" />
     <None Remove="Resources\mtdbnd.dcx" />
     <None Remove="Resources\settings.json" />
+    <Content Include="Overrides\debug_cells.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Update="ColConverter\AssetCc2_fixed.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

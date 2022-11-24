@@ -31,7 +31,7 @@ namespace PortJob {
 
         public ESM(string path) {
             JsonSerializer serializer = new();
-            Log.Info(0,"Deserializing Json file");
+            Log.Info(0,"Loading ESM...");
             DateTime startParse = DateTime.Now;
             using (FileStream s = File.Open(path, FileMode.Open))
             using (StreamReader sr = new(s))
@@ -152,6 +152,24 @@ namespace PortJob {
             return null;
         }
 
+        public Cell GetCellByName(string name) {
+            foreach (Cell cell in exteriorCells) {
+                if (cell.name == name) { return cell; }
+            }
+            foreach (Cell cell in interiorCells) {
+                if (cell.name == name) { return cell; }
+            }
+            return null;
+        }
+
+        /* Returns cell that is closest to the given worldspace coordinate. */
+        public Cell GetCellByCoordinate(Vector3 position) {
+            foreach (Cell cell in exteriorCells) {
+                // I'll code this later lol. Sleepy
+            }
+            return null;
+        }
+
         public JObject GetLandscapeByGrid(Int2 position) {
             foreach (JObject landscape in recordsMap[Type.Landscape]) {
                 int x = int.Parse(landscape["grid"][0].ToString());
@@ -206,7 +224,7 @@ namespace PortJob {
 
     public class Cell {
         public readonly JObject raw; // Raw JSON data
-        public bool generated = false; // True once generate() has been called and finished, most cell data is not filled out until that point
+        public bool generated, loaded; // True once load/generate are called.
 
         public readonly string name;
         public readonly string region;
@@ -262,16 +280,31 @@ namespace PortJob {
             drawGroups = null;
             pairs = null;
             connects = null;
+
+            /* Flags for what data has been loaded/procesed in this class */
+            loaded = false;
+            generated = false;
         }
 
-        public void Generate(ESM esm) {
-            if (generated) { return; }
+        /* Loads contents of cell */
+        /* We don't load every cell initially because it takes a while. We load them on demand when/if we need them */
+        public void Load(ESM esm) {
+            if (loaded) { return; }
 
             JArray refc = (JArray)(raw["references"]);
             for (int i = 0; i < refc.Count; i++) {
                 JObject reference = (JObject)(refc[i]);
                 content.Add(new Content(esm, reference));
             }
+
+            loaded = true;
+        }
+
+        /* Generates terrain data */
+        /* SLOW! We only call this if we are generating terrain. */
+        public void Generate(ESM esm) {
+            Load(esm);
+            if (generated) { return; }
 
             /* Decode and parse terrain data if it exists for this cell */
             JObject landscape = esm.GetLandscapeByGrid(position);
@@ -596,24 +629,22 @@ namespace PortJob {
             generated = true;
         }
 
-        /* Returns a position on the terrain at the center of the cell. Used for debug player spawn point */
+        /* Returns a position in the cell that it is safe to spawn the player. This is used for debug menu to load you into cells! */
         public Vector3 getCenterOnCell() {
-            if (terrain.Count < 1) { return center; } // TEMP, many int cells will have no terrain and we will pull a player spawn from elsewhere
-
-            /* I don't like this approach as it does not account for duplicate vertices across multiple meshes but it's okay for now. Also it's slow and brute force and bad. */
-            const float radius = 1.25f;
-            float avg = 0f;
-            int c = 0;
-            foreach(TerrainData t in terrain) {
-                foreach(TerrainVertex v in t.vertices) {
-                    if (Vector2.Distance(new Vector2(v.position.X, v.position.Z), Vector2.Zero) <= radius) {
-                        avg += v.position.Y;
-                        c++;
-                    }
-                }
+            /* Search for an NPC (not a creature) and place the player at their position. This should be a guaranteed safe spot to spawn at. */
+            foreach(Content cnt in content) {
+                if(cnt.type is not ESM.Type.Npc) { continue; }
+                return cnt.position;
             }
 
-            return new Vector3(center.X, avg / c, center.Z);
+            /* If we don't find an NPC (not terribly likely but still possible) then we use a creature. */
+            foreach (Content cnt in content) {
+                if (cnt.type is not ESM.Type.Npc) { continue; }
+                return cnt.position;
+            }
+
+            /* Worst case! Just spawn dead center of cell. This is fairly unlikely to happen but possible. */
+            return center;
         }
 
         /* Stupid thing to try and make this run a little faster */
@@ -644,7 +675,9 @@ namespace PortJob {
         public readonly string mesh;
 
         public readonly Vector3 position, rotation;
+        public readonly float scale;
 
+        public DoorContent door;
         public Content(ESM esm, JObject data) {
             id = data["id"].ToString();
 
@@ -658,11 +691,131 @@ namespace PortJob {
             float y = float.Parse(((JArray)(data["translation"]))[2].ToString());
 
             float i = float.Parse(((JArray)(data["rotation"]))[0].ToString());
-            float k = float.Parse(((JArray)(data["rotation"]))[1].ToString());
-            float j = float.Parse(((JArray)(data["rotation"]))[2].ToString()) - (float)Math.PI;
+            float j = float.Parse(((JArray)(data["rotation"]))[1].ToString());
+            float k = float.Parse(((JArray)(data["rotation"]))[2].ToString());
+
+            /* ????????? ??????????????? ????????????? !?!?!?!?! ????????? */
+            /* If I spend any more time on this I'm going to break my monitor. I don't know what, how, or why but something is fubar with rotations */
+            const float q = (float)(Math.PI / 2);
+            // Y -180 to -90
+            if (q > k) {
+                i = -i;
+                j = -j;
+            }
+            // Y -90 to -0
+            else if (q*2 > k) {
+                float ii = i;
+                float jj = j;
+                i = -jj;
+                j = -ii;
+            }
+            // Y 0 to 90
+            else if (q*3 > k) {
+                float ii = i;
+                float jj = j;
+                i = -jj;
+                j = -ii;
+            }
+            // Y 90 to 180
+            else {
+                i = -i;
+                j = -j;
+            }
+            k -= (float)Math.PI;
+
+           /* Quaternion version of this cursed garbage
+            * Quaternion ToQuaternion(Vector3 v) {
+
+                float cy = (float)Math.Cos(v.Z * 0.5);
+                float sy = (float)Math.Sin(v.Z * 0.5);
+                float cp = (float)Math.Cos(v.Y * 0.5);
+                float sp = (float)Math.Sin(v.Y * 0.5);
+                float cr = (float)Math.Cos(v.X * 0.5);
+                float sr = (float)Math.Sin(v.X * 0.5);
+
+                return new Quaternion {
+                    W = (cr * cp * cy + sr * sp * sy),
+                    X = (sr * cp * cy - cr * sp * sy),
+                    Y = (cr * sp * cy + sr * cp * sy),
+                    Z = (cr * cp * sy - sr * sp * cy)
+                };
+
+            }
+
+            Vector3 ToEulerAngles(Quaternion q) {
+                Vector3 angles = new();
+
+                // roll / x
+                double sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
+                double cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
+                angles.X = (float)Math.Atan2(sinr_cosp, cosr_cosp);
+
+                // pitch / y
+                double sinp = 2 * (q.W * q.Y - q.Z * q.X);
+                if (Math.Abs(sinp) >= 1) {
+                    angles.Y = (float)Math.CopySign(Math.PI / 2, sinp);
+                } else {
+                    angles.Y = (float)Math.Asin(sinp);
+                }
+
+                // yaw / z
+                double siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
+                double cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
+                angles.Z = (float)Math.Atan2(siny_cosp, cosy_cosp);
+
+                return angles;
+            }
+
+            Quaternion q = ToQuaternion(new Vector3(i, j, k - (float)Math.PI));
+            q = new Quaternion(q.X, q.Z, q.Y, q.W);
+            Vector3 v = ToEulerAngles(q);*/
 
             position = new Vector3(x, y, z) * GLOBAL_SCALE;
-            rotation = new Vector3(i, j, k) * (float)(180 / Math.PI);
+            rotation = new Vector3(i, k, j) * (float)(180 / Math.PI);
+            scale = data["scale"]!=null?float.Parse(data["scale"].ToString()):1f;   // Another banger
+
+            /* Door stuff */
+            door = type == ESM.Type.Door?new DoorContent(esm, data):null;
+        }
+    }
+
+    public class DoorContent {
+        public enum DoorType {
+            Load, Decoration
+        }
+
+        DoorType type;               // Either it's a load door that warps you somewhere or it's decoration that's animated to open/close
+        Cell cell;                   // Warp to...
+        Vector3 position, rotation;  // Warp to...
+        public DoorContent(ESM esm, JObject data) {
+            if(data["door_destination_coords"] != null) {
+                type = DoorType.Load;
+                JArray coords = (JArray)(data["door_destination_coords"]);
+
+                float x = float.Parse(coords[0].ToString());
+                float z = float.Parse(coords[1].ToString());
+                float y = float.Parse(coords[2].ToString());
+
+                float i = float.Parse(coords[3].ToString());
+                float j = float.Parse(coords[4].ToString());
+                float k = float.Parse(coords[5].ToString());
+
+                position = new Vector3(x, z, y);
+                rotation = new Vector3(i, k, j);
+            }
+            else {
+                type = DoorType.Decoration;
+                cell = null;
+                position = Vector3.Zero;
+                rotation = Vector3.Zero;
+            }
+
+            if (data["door_destination_cell"] != null) {
+                cell = esm.GetCellByName(data["door_destination_cell"].ToString());
+            }
+            else {
+                cell = esm.GetCellByCoordinate(position);
+            }
         }
     }
 

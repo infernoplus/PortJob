@@ -52,6 +52,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\CommonFunc\CommonFunc.csproj" />
 		<ProjectReference Include="..\SoulsFormat\SoulsFormats\SoulsFormats.csproj" />
+		<ProjectReference Include="..\SoulsIds\SoulsIds\SoulsIds.csproj" />
 	</ItemGroup>
 
 </Project>
