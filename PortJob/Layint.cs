@@ -65,7 +65,7 @@ namespace PortJob {
                 Cell cell = cells[c];
 
                 Log.Info(0, "Loading Interior Cell: " + cell.name, "test");
-                cell.Generate(esm);
+                cell.Load(esm);
 
                 /* Generate drawgroups */
                 cell.drawGroups = new uint[NUM_DRAW_GROUPS];

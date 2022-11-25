@@ -6,18 +6,24 @@ using System.Threading.Tasks;
 
 namespace PortJob {
     class Script {
-            /*
-            Events events = new Events(@"C:\Games\steamapps\common\DARK SOULS III\DarkScript\Resources\ds3-common.emedf.json", true, true);
-            EMEVD emevd = EMEVD.Read(@"C:\Games\steamapps\common\DARK SOULS III\Game\mod\event\m54_00_00_00.emevd.dcx");
+        private static int nextEntID = 1000;
+        public static int NewEntID() { return nextEntID++; }
 
-            EMEVD.Event test = new EMEVD.Event(0);
+        private static int nextEvtID = 1000;
+        public static int NewEvtID() { return nextEvtID++; }
 
-            test.Instructions.Add(events.ParseAdd("WaitFixedTimeSeconds(3)"));
-            test.Instructions.Add(events.ParseAdd("DisplayBanner(TextBannerType.TargetDefeated)"));
+        /*
+        Events events = new Events(@"C:\Games\steamapps\common\DARK SOULS III\DarkScript\Resources\ds3-common.emedf.json", true, true);
+        EMEVD emevd = EMEVD.Read(@"C:\Games\steamapps\common\DARK SOULS III\Game\mod\event\m54_00_00_00.emevd.dcx");
 
-            emevd.Events.Add(test);
+        EMEVD.Event test = new EMEVD.Event(0);
 
-            emevd.Write(@"C:\Games\steamapps\common\DARK SOULS III\Game\mod\event\test.emevd.dcx");
-            */
+        test.Instructions.Add(events.ParseAdd("WaitFixedTimeSeconds(3)"));
+        test.Instructions.Add(events.ParseAdd("DisplayBanner(TextBannerType.TargetDefeated)"));
+
+        emevd.Events.Add(test);
+
+        emevd.Write(@"C:\Games\steamapps\common\DARK SOULS III\Game\mod\event\test.emevd.dcx");
+        */
     }
 }

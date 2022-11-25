@@ -106,7 +106,7 @@ namespace FBXConverter {
                                 Unk06 = 1
                             };
 
-                            faceSet.CullBackfaces = false; // TODO: cull backfaces on opaque geometry, do not on alpha test or transparent
+                            faceSet.CullBackfaces = true; // This flag is updated later in the build
 
                             for (int i = 0; i < geometryContent.Indices.Count; i += 3) {
                                 if (faceSet.Indices.Count >= FACESET_MAX_TRIANGLES * 3) {
@@ -181,7 +181,12 @@ namespace FBXConverter {
                                 byte[] texBytes = srgb ? MTD.GetSRGBTexture(tex) : MTD.GetTexture(tex);
                                 //byte[] texBytes = MTD.GetSRGBTexture(texKvp.Value.Filename);
                                 int texFormat = DDS.GetTpfFormatFromDdsBytes(texBytes);
-                                if (texFormat == 3) mtdName += "_al";
+                                if (texFormat == 3) {
+                                    mtdName += "_al";
+                                    foreach (FLVER2.FaceSet fcs in flverMesh.FaceSets) {
+                                        fcs.CullBackfaces = false;
+                                    }
+                                }
 
                                 //if (texFormat == 0) { Log.Error(6, "Texture is an unrecognized format [" + shortTexName + "::" + texFormat + "]"); } else { Log.Info(6, "Texure [" + shortTexName + "::" + texFormat + "]"); }
 

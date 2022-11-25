@@ -20,9 +20,12 @@ namespace FBXConverter {
             Vector3 rootPosition = fbx.Transform.Translation;
 
             bool collisionNodeExists = false;
+            bool nco = false, nc = false;
             void FBXHierarchySearch(NodeContent node, bool isCollisionChild) {
                 foreach (NodeContent fbxComponent in node.Children) {
-                    if (fbxComponent.Name.ToLower() == "collision") {
+                    if (fbxComponent.Name.ToLower() == "nc") { nc = true; }
+                    if (fbxComponent.Name.ToLower() == "nco") { nco = true; }
+                        if (fbxComponent.Name.ToLower() == "collision") {
                         collisionNodeExists = true;
                         FBXHierarchySearch(fbxComponent, true);
                     }
@@ -35,6 +38,9 @@ namespace FBXConverter {
                 }
             }
             FBXHierarchySearch(fbx, false);
+
+            /* If the fbx has an NCO or NC dummy node then we don't generate collision */
+            if(nc || nco) { return null; }
 
             /* If we don't find a collision node then we will instead use the visual mesh for collsion. Thanks todd... */
             if(!collisionNodeExists) { FBXHierarchySearch(fbx, true); }

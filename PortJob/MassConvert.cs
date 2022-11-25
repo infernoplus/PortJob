@@ -65,7 +65,7 @@ namespace PortJob {
                 /* Interior Cells */
                 Log.Info(0, $"Mass Converter searching interior cells...", "test");
                 for (int i = 0; i < layints.Count; i++) {
-                    if (!Const.DEBUG_GEN_INT_LAYOUT(i)) { continue; } //for rapid debugging 
+                    if (!Const.DEBUG_GEN_INT_LAYINT(i)) { continue; } //for rapid debugging 
                     Layint layint = layints[i];
 
                     for (int j = 0; j < layint.cells.Count; j++) {
@@ -139,8 +139,13 @@ namespace PortJob {
                             if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
                             if (!PortJob.CONVERT_TO_OBJ.Contains(content.type)) { continue; } // Skip stuff we aren't converting
 
-                            if (tempCache.GetObjectInfo(content.id) == null) {
-                                ModelInfo modelInfo = tempCache.GetModelInfo(content.mesh);
+                            ModelInfo modelInfo = tempCache.GetModelInfo(content.mesh);
+                            if (content.door != null && content.door.type == DoorContent.DoorType.Decoration) {
+                                if (tempCache.GetObjActInfo(content.id) != null) { continue; }
+                                ObjActInfo objActInfo = new(content.id, modelInfo);
+                                tempCache.objActs.Add(objActInfo);
+                            } else {
+                                if (tempCache.GetObjectInfo(content.id) != null) { continue; }
                                 ObjectInfo objectInfo = new(content.id, modelInfo);
                                 tempCache.objects.Add(objectInfo);
                             }
@@ -148,6 +153,36 @@ namespace PortJob {
                     }
                 }
 
+                /* Interior Cell Objects */
+                Log.Info(0, $"Mass Converter processing objects in interior cells...", "test");
+                for (int i = 0; i < layints.Count; i++) {
+                    if (!Const.DEBUG_GEN_EXT_LAYOUT(i)) { continue; } //for rapid debugging 
+                    Layint layint = layints[i];
+
+                    for (int j = 0; j < layint.cells.Count; j++) {
+                        if (j > Const.DEBUG_MAX_EXT_CELLS) { break; }
+                        Cell cell = layint.cells[j];
+                        cell.Load(esm);
+
+                        for (int k = 0; k < cell.content.Count; k++) {
+                            Content content = cell.content[k];
+
+                            if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
+                            if (!PortJob.CONVERT_TO_OBJ.Contains(content.type)) { continue; } // Skip stuff we aren't converting
+
+                            ModelInfo modelInfo = tempCache.GetModelInfo(content.mesh);
+                            if (content.door != null && content.door.type == DoorContent.DoorType.Decoration) {
+                                if(tempCache.GetObjActInfo(content.id) != null) { continue; }
+                                ObjActInfo objActInfo = new(content.id, modelInfo);
+                                tempCache.objActs.Add(objActInfo);
+                            } else {
+                                if (tempCache.GetObjectInfo(content.id) != null) { continue; }
+                                ObjectInfo objectInfo = new(content.id, modelInfo);
+                                tempCache.objects.Add(objectInfo);
+                            }
+                        }
+                    }
+                }
 
                 /* Assign resource ID numbers */
                 Log.Info(0, $"Mass Converter assigning IDs...", "test");
@@ -162,6 +197,41 @@ namespace PortJob {
                 }
                 foreach(ObjectInfo objectInfo in tempCache.objects) {
                     objectInfo.id = nextOId++;
+                }
+                foreach (ObjActInfo objActInfo in tempCache.objActs) {
+                    objActInfo.id = nextOId++;
+                }
+
+                /* Generate Object Files */
+                Log.Info(0, $"Writing [{tempCache.objects.Count}] obj files...");
+                foreach (ObjectInfo objectInfo in tempCache.objects) {
+                    /* Generate objBnd */
+                    TPF tpf = TPF.Read(objectInfo.model.textures[0].path); // Merge all used tpfs into a single tpf
+                    tpf.Compression = DCX.Type.None;
+                    tpf.Encoding = 0x1;
+                    for (int i = 1; i < objectInfo.model.textures.Count; i++) {
+                        TextureInfo textureInfo = objectInfo.model.textures[i];
+                        TPF mortpf = TPF.Read(textureInfo.path);
+                        foreach (TPF.Texture tex in mortpf.Textures) {
+                            tpf.Textures.Add(tex);
+                        }
+                    }
+                    FLVER2 flver = FLVER2.Read(objectInfo.model.path);
+                    byte[] hkxdcx = File.ReadAllBytes(objectInfo.model.GetCollision(1f).path);
+                    byte[] hkx = DCX.Decompress(hkxdcx);
+
+                    BND4 objBnd = new BND4();
+                    string objPath = $"obj\\o{0:D2}\\o{0:D2}{objectInfo.id:D4}\\o{0:D2}{objectInfo.id:D4}";
+                    objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 100, $"{objPath}.tpf", tpf.Write()));
+                    objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, $"{objPath}.flver", flver.Write()));
+                    objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 300, $"{objPath}.hkx", hkx));
+                    objBnd.Write($"{Const.OutputPath}obj\\o{0:D2}{objectInfo.id:D4}.objbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9);
+                }
+
+                /* Generate ObjAct Files */
+                Log.Info(0, $"Writing [{tempCache.objActs.Count}] objact files...");
+                foreach (ObjActInfo objActInfo in tempCache.objActs) {
+                    DoorMake.Convert(objActInfo);
                 }
 
                 /* Write updated cache to file */

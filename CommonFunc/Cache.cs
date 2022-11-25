@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,11 +9,13 @@ namespace CommonFunc {
     /* Contains data about files converted by MassConvert */
     /* Written as JSON by FBXConverter and read back in by PortJob */
     public class Cache {
-        public List<ObjectInfo> objects;
+        public List<ObjectInfo> objects;  // Static objects
+        public List<ObjActInfo> objActs;  // Animated/activatable objects (doors n' such)
         public List<ModelInfo> models;
         public List<TerrainInfo> terrains;
         public Cache() {
             objects = new();
+            objActs = new();
             models = new();
             terrains = new();
         }
@@ -20,6 +23,13 @@ namespace CommonFunc {
         public ObjectInfo GetObjectInfo(string name) {
             foreach (ObjectInfo objectInfo in objects) {
                 if (objectInfo.name == name.ToLower()) { return objectInfo; }
+            }
+            return null;
+        }
+
+        public ObjActInfo GetObjActInfo(string name) {
+            foreach (ObjActInfo objActInfo in objActs) {
+                if (objActInfo.name == name.ToLower()) { return objActInfo; }
             }
             return null;
         }
@@ -36,6 +46,19 @@ namespace CommonFunc {
                 if(terrainInfo.position == position) { return terrainInfo; }
             }
             return null;
+        }
+    }
+
+    public class ObjActInfo {
+        public string name; // Original esm ref id
+        public ModelInfo model;
+
+        public int id;
+        public Vector3 offset;
+        public ObjActInfo(string name, ModelInfo model) {
+            this.name = name.ToLower();
+            this.model = model;
+            offset = Vector3.Zero;
         }
     }
 

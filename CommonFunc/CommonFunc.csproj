@@ -11,6 +11,9 @@
     <None Remove="DefaultTex\def_missing.dds" />
     <None Remove="DefaultTex\def_test.dds" />
     <None Remove="Overrides\debug_cells.json" />
+    <None Remove="Resources\door_md.anibnd" />
+    <None Remove="Resources\door_md.flver" />
+    <None Remove="Resources\door_md.hkx" />
     <None Remove="Resources\DS1_MTD_INFO.json" />
     <None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
     <None Remove="Resources\DS3_GX_INFO.json" />
@@ -45,6 +48,9 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="DefaultTex\def_test.dds" />
+    <EmbeddedResource Include="Resources\door_md.anibnd" />
+    <EmbeddedResource Include="Resources\door_md.flver" />
+    <EmbeddedResource Include="Resources\door_md.hkx" />
     <EmbeddedResource Include="Resources\DS1_MTD_INFO.json" />
     <EmbeddedResource Include="Resources\DS3_GX_EXAMPLE_INFO.json" />
     <EmbeddedResource Include="Resources\DS3_GX_INFO.json" />
