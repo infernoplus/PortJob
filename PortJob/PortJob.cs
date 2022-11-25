@@ -218,15 +218,19 @@ namespace PortJob {
                     }
 
                     /* Auto-generate model resources section of MSB */
+                    Log.Info(0, $"Generating resources...");
                     AutoResource.Generate(area, block, msb);
 
                     /* Copy resource files into MSB directory and add textures to final bnd list */
+                    Log.Info(0, $"Copying files...");
                     CopyMapResources(area, block, usedTerrain, usedMapPieces, usedCollision, areaTextures);   // @TODO: Move this functino into autoresource and improve it
 
                     //AddTempNavMeshToNVA(block, area, nva);
-                    Log.Info(0, $"Completed: m{area:D2}_{block:D2}_00_00.msb");
+                    Log.Info(0, $"## Completed: m{area:D2}_{block:D2}_00_00.msb ##");
                     Log.Info(2, "MapPieces: " + msb.Parts.MapPieces.Count);
                     Log.Info(2, "Collisions: " + msb.Parts.Collisions.Count);
+                    Log.Info(2, "Objects: " + msb.Parts.Objects.Count);
+                    Log.Info(2, "Enemies: " + msb.Parts.Enemies.Count);
 
                     msbs.Add(new MSBData(area, block, msb, spawnCell.name));
                     nvas.Add(new NVAData(area, block, nva));
@@ -320,15 +324,19 @@ namespace PortJob {
                     }
 
                     /* Auto-generate model resources section of MSB */
+                    Log.Info(0, $"Generating resources...");
                     AutoResource.Generate(area, block, msb);
 
                     /* Copy resource files into MSB directory and add textures to final bnd list */
+                    Log.Info(0, $"Copying files...");
                     CopyMapResources(area, block, new List<TerrainInfo>(), usedMapPieces, usedCollision, areaTextures);   // @TODO: Move this functino into autoresource and improve it
 
                     //AddTempNavMeshToNVA(block, area, nva);
-                    Log.Info(0, $"Completed: m{area:D2}_{block:D2}_00_00.msb");
+                    Log.Info(0, $"## Completed: m{area:D2}_{block:D2}_00_00.msb ##");
                     Log.Info(2, "MapPieces: " + msb.Parts.MapPieces.Count);
                     Log.Info(2, "Collisions: " + msb.Parts.Collisions.Count);
+                    Log.Info(2, "Objects: " + msb.Parts.Objects.Count);
+                    Log.Info(2, "Enemies: " + msb.Parts.Enemies.Count);
 
                     msbs.Add(new MSBData(area, block, msb, spawnCell.Value.name));
                     nvas.Add(new NVAData(area, block, nva));
