@@ -154,6 +154,7 @@ namespace PortJob {
                         if (spawnCell == null && cell.name != "" && !Override.DebugCells.IsAvoid(cell.name)) { spawnCell = cell; }
                         if(Override.DebugCells.IsPrefer(cell.name)) { spawnCell = cell; }
                     }
+                    if(spawnCell == null) { spawnCell = layout.cells[0]; }
                     spawnCell.Load(esm);
 
                     /* Create player default spawn point */
@@ -246,7 +247,7 @@ namespace PortJob {
                     MSB3 msb = new();
                     NVA nva = new();   //One nva per msb. I put this up here so you can easily add the navmeshes in the loop. 
 
-                    Log.Info(0, $"=== Generating Interior MSB[{block}] === [{layint.mergedCells.Count} cells]", "test");
+                    Log.Info(0, $"=== Generating Interior MSB[{block}] === [{layint.cells.Count} cells]", "test");
                     layint.generate(esm);
 
                     /* File resource lists */
@@ -305,7 +306,6 @@ namespace PortJob {
                             /* Door ObjAct */
                             if (content.door != null && content.door.type == DoorContent.DoorType.Decoration) {
                                 ObjActInfo objActInfo = cache.GetObjActInfo(content.id);
-                                DoorMake.Convert(objActInfo);
                                 ObjActPair objAct = MakeActDoor(area, block, cell, content, objActInfo, counters, bounds);
                                 msb.Parts.Objects.Add(objAct.obj);
                                 msb.Events.ObjActs.Add(objAct.objAct);
@@ -335,38 +335,6 @@ namespace PortJob {
                     Log.Info(0, "\n");
                 }
                 PackTextures(area, areaTextures);
-            }
-
-            /* Generate Object Files */
-            Log.Info(0, $"Writing [{cache.objects.Count}] obj files...");
-            foreach (ObjectInfo objectInfo in cache.objects) {
-                /* Generate objBnd */
-                TPF tpf = TPF.Read(objectInfo.model.textures[0].path); // Merge all used tpfs into a single tpf
-                tpf.Compression = DCX.Type.None;
-                tpf.Encoding = 0x1;
-                for (int i = 1; i < objectInfo.model.textures.Count; i++) {
-                    TextureInfo textureInfo = objectInfo.model.textures[i];
-                    TPF mortpf = TPF.Read(textureInfo.path);
-                    foreach (TPF.Texture tex in mortpf.Textures) {
-                        tpf.Textures.Add(tex);
-                    }
-                }
-                FLVER2 flver = FLVER2.Read(objectInfo.model.path);
-                byte[] hkxdcx = File.ReadAllBytes(objectInfo.model.GetCollision(1f).path);
-                byte[] hkx = DCX.Decompress(hkxdcx);
-
-                BND4 objBnd = new BND4();
-                string objPath = $"obj\\o{0:D2}\\o{0:D2}{objectInfo.id:D4}\\o{0:D2}{objectInfo.id:D4}";
-                objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 100, $"{objPath}.tpf", tpf.Write()));
-                objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, $"{objPath}.flver", flver.Write()));
-                objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 300, $"{objPath}.hkx", hkx));
-                objBnd.Write($"{OutputPath}obj\\o{0:D2}{objectInfo.id:D4}.objbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9);
-            }
-
-            /* Generate ObjAct Files */
-            Log.Info(0, $"Writing [{cache.objActs.Count}] objact files...");
-            foreach (ObjActInfo objActInfo in cache.objActs) {
-                DoorMake.Convert(objActInfo);
             }
 
             /* Write msbs to file and build packages */

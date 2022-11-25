@@ -203,7 +203,7 @@ namespace PortJob {
                 }
 
                 /* Generate Object Files */
-                Log.Info(0, $"Writing [{tempCache.objects.Count}] obj files...");
+                Log.Info(0, $"Mass Converter writing [{tempCache.objects.Count}] obj files...");
                 foreach (ObjectInfo objectInfo in tempCache.objects) {
                     /* Generate objBnd */
                     TPF tpf = TPF.Read(objectInfo.model.textures[0].path); // Merge all used tpfs into a single tpf
@@ -229,7 +229,7 @@ namespace PortJob {
                 }
 
                 /* Generate ObjAct Files */
-                Log.Info(0, $"Writing [{tempCache.objActs.Count}] objact files...");
+                Log.Info(0, $"Mass Converter writing [{tempCache.objActs.Count}] objact files...");
                 foreach (ObjActInfo objActInfo in tempCache.objActs) {
                     DoorMake.Convert(objActInfo);
                 }
