@@ -10,6 +10,7 @@
     <None Remove="DefaultTex\def_grey.dds" />
     <None Remove="DefaultTex\def_missing.dds" />
     <None Remove="DefaultTex\def_test.dds" />
+    <None Remove="ds3-common.emedf.json" />
     <None Remove="Overrides\debug_cells.json" />
     <None Remove="Resources\common.emevd.dcx" />
     <None Remove="Resources\common_func.emevd.dcx" />
@@ -23,6 +24,9 @@
     <None Remove="Resources\mtdbnd.dcx" />
     <None Remove="Resources\settings.json" />
     <None Remove="Resources\template.emevd" />
+    <Content Include="ds3-common.emedf.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Overrides\debug_cells.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -19,7 +19,7 @@ namespace PortJob {
         private static int nextFlag = 13000000;   // Testing
         public static int NewFlag() { return nextFlag++; }
 
-        public static Events AUTO = new Events(@"C:\Games\steamapps\common\DARK SOULS III\DarkScript\Resources\ds3-common.emedf.json", true, true);
+        public static Events AUTO = new Events(@"ds3-common.emedf.json", true, true); // File is copied to build directory
 
         public static readonly int EVT_LOAD_DOOR = 100;
         public static Dictionary<int, int> COMMON_EVENT_SLOTS = new() {
