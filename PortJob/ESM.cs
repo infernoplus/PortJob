@@ -162,10 +162,10 @@ namespace PortJob {
             return null;
         }
 
-        /* Returns cell that is closest to the given worldspace coordinate. */
+        /* Returns the exterior cell that the given coordinates are inside of. Can be null */
         public Cell GetCellByCoordinate(Vector3 position) {
             foreach (Cell cell in exteriorCells) {
-                // I'll code this later lol. Sleepy
+                if(cell.area.IsInside(position)) { return cell; }
             }
             return null;
         }
@@ -230,7 +230,7 @@ namespace PortJob {
         public readonly string region;
         public readonly Int2 position;  // Position on the cell grid
 
-        public readonly Vector3 center; // Float center point of cell in world space
+        public readonly CellArea area; // Center point in world space, and bounding box
 
         public readonly int flag;
         public readonly int[] flags;
@@ -239,9 +239,11 @@ namespace PortJob {
         public readonly TerrainVertex[,] borders;
 
         public readonly List<Content> content;
+        public readonly List<DoorMarker> markers; // Exit locations for load doors leading into this cell.
 
         /* These fields are used by Layout for stuff */
-        public Layout layout;         // Parent layout
+        public Layout layout;         // Parent layout (null if interior cell)
+        public Layint layint;         // Parent layint (null if exterior cell)
         public int refs;              // Number of references in this cell, for culling purposes
         public int drawId;            // Drawgroup ID, value also correponds to the bitwise (1 << id)
         public uint[] drawGroups;
@@ -258,7 +260,10 @@ namespace PortJob {
             int y = int.Parse(data["data"]["grid"][1].ToString());
             position = new Int2(x, y);
 
-            center = new Vector3((CELL_SIZE * position.x) + (CELL_SIZE * 0.5f), 0.0f, (CELL_SIZE * position.y) + (CELL_SIZE * 0.5f));
+            Vector3 center = new Vector3((CELL_SIZE * position.x) + (CELL_SIZE * 0.5f), 0.0f, (CELL_SIZE * position.y) + (CELL_SIZE * 0.5f));
+            Vector3 min = new Vector3((CELL_SIZE * position.x), -256.0f, (CELL_SIZE * position.y));
+            Vector3 max = new Vector3((CELL_SIZE * (position.x + 1)), 256.0f, (CELL_SIZE * (position.y + 1)));
+            area = new(center, min, max);
 
             flag = int.Parse(data["data"]["flags"].ToString());
 
@@ -270,12 +275,14 @@ namespace PortJob {
 
             /* Create these arrays but we don't fill them out until we call 'generate()' on this cell */
             content = new();
+            markers = new();
             terrain = new();
             borders = new TerrainVertex[4, 65];
 
             /* These fields are used by Layout for stuff */
             refs = ((JArray)data["references"]).Count; // We don't actaully process cell content until we call generate() on it but we do make a quick count of it's content for culling purposes
             layout = null;
+            layint = null;
             drawId = -1;
             drawGroups = null;
             pairs = null;
@@ -294,7 +301,7 @@ namespace PortJob {
             JArray refc = (JArray)(raw["references"]);
             for (int i = 0; i < refc.Count; i++) {
                 JObject reference = (JObject)(refc[i]);
-                content.Add(new Content(esm, reference));
+                content.Add(new Content(esm, this, reference));
             }
 
             loaded = true;
@@ -631,8 +638,13 @@ namespace PortJob {
 
         /* Returns a position in the cell that it is safe to spawn the player. This is used for debug menu to load you into cells! */
         public Vector3 getCenterOnCell() {
+            /* Search for a doormarker as the exit point for a door is the prefered spawn location in almost every case */
+            foreach (DoorMarker marker in markers) {
+                return marker.position;
+            }
+
             /* Search for an NPC (not a creature) and place the player at their position. This should be a guaranteed safe spot to spawn at. */
-            foreach(Content cnt in content) {
+            foreach (Content cnt in content) {
                 if(cnt.type is not ESM.Type.Npc) { continue; }
                 return cnt.position;
             }
@@ -644,7 +656,7 @@ namespace PortJob {
             }
 
             /* Worst case! Just spawn dead center of cell. This is fairly unlikely to happen but possible. */
-            return center;
+            return area.center;
         }
 
         /* Stupid thing to try and make this run a little faster */
@@ -668,6 +680,20 @@ namespace PortJob {
         }
     }
 
+    public class CellArea {
+        public readonly Vector3 center, min, max;
+        public CellArea(Vector3 center, Vector3 min, Vector3 max) {
+            this.center = center;
+            this.min = min;
+            this.max = max;
+        }
+
+        /* Returns true if the specified point is inside the bounding area of this cell */
+        public bool IsInside(Vector3 point) {
+            return point.X >= min.X && point.Y >= min.Y && point.Z >= min.Z && point.X < max.X && point.Y < max.Y && point.Z < max.Z;
+        }
+    }
+
     public class Content {
         public readonly string id;
         public readonly ESM.Type type;
@@ -678,7 +704,7 @@ namespace PortJob {
         public readonly float scale;
 
         public DoorContent door;
-        public Content(ESM esm, JObject data) {
+        public Content(ESM esm, Cell cell, JObject data) {
             id = data["id"].ToString();
 
             TypedRecord tr = esm.FindRecordById(id);
@@ -775,7 +801,7 @@ namespace PortJob {
             scale = data["scale"]!=null?float.Parse(data["scale"].ToString()):1f;   // Another banger
 
             /* Door stuff */
-            door = type == ESM.Type.Door?new DoorContent(esm, data):null;
+            door = type == ESM.Type.Door?new DoorContent(esm, cell, data):null;
         }
     }
 
@@ -785,37 +811,52 @@ namespace PortJob {
         }
 
         public DoorType type;               // Either it's a load door that warps you somewhere or it's decoration that's animated to open/close
-        public Cell cell;                   // Warp to...
-        public Vector3 position, rotation;  // Warp to...
-        public DoorContent(ESM esm, JObject data) {
+        public DoorMarker marker;           // Warp to...
+        public readonly int entityID;
+        public DoorContent(ESM esm, Cell cell, JObject data) {
             if(data["door_destination_coords"] != null) {
                 type = DoorType.Load;
                 JArray coords = (JArray)(data["door_destination_coords"]);
 
                 float x = float.Parse(coords[0].ToString());
-                float z = float.Parse(coords[1].ToString());
-                float y = float.Parse(coords[2].ToString());
+                float y = float.Parse(coords[1].ToString());
+                float z = float.Parse(coords[2].ToString());
 
                 float i = float.Parse(coords[3].ToString());
                 float j = float.Parse(coords[4].ToString());
-                float k = float.Parse(coords[5].ToString());
+                float k = float.Parse(coords[5].ToString()) - (float)Math.PI;
 
-                position = new Vector3(x, z, y);
-                rotation = new Vector3(i, k, j);
+                Vector3 position = new Vector3(x, z, y) * GLOBAL_SCALE;
+                Vector3 rotation = new Vector3(i, k, j) * (float)(180 / Math.PI);
+
+                Cell exit;
+                if (data["door_destination_cell"] != null) {
+                    exit = esm.GetCellByName(data["door_destination_cell"].ToString());
+                } else {
+                    exit = esm.GetCellByCoordinate(position);
+                }
+
+                entityID = Script.NewEntID();
+                marker = new(cell, exit, position, rotation);
+                exit.markers.Add(marker);
             }
             else {
                 type = DoorType.Decoration;
-                cell = null;
-                position = Vector3.Zero;
-                rotation = Vector3.Zero;
+                marker = null;
             }
+        }
+    }
 
-            if (data["door_destination_cell"] != null) {
-                cell = esm.GetCellByName(data["door_destination_cell"].ToString());
-            }
-            else {
-                cell = esm.GetCellByCoordinate(position);
-            }
+    public class DoorMarker {
+        public Cell entrance, exit;
+        public Vector3 position, rotation;
+        public readonly int entityID;
+        public DoorMarker(Cell entrance, Cell exit, Vector3 position, Vector3 rotation) {
+            this.entrance = entrance;
+            this.exit = exit;
+            this.position = position;
+            this.rotation = rotation;
+            entityID = Script.NewEntID();
         }
     }
 

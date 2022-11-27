@@ -248,6 +248,12 @@ namespace PortJob {
                 }
             }
 
+            /* Re-assign IDs */
+            nextId = 0;
+            foreach(Layout layout in layouts) {
+                layout.id = nextId++;               // After merging layouts the ids get oof'd so we just redo them lol.
+            }
+
             /* Test solution */
             int[] visRes = new int[32];
             for (int i = 0; i < cells.Count; i++) {
@@ -325,6 +331,16 @@ namespace PortJob {
             this.bounds = bounds;
             cells = new List<Cell>();
             connects = new List<Layout>();
+        }
+
+        public void Load(ESM esm) {
+            if(!Const.DEBUG_GEN_EXT_LAYOUT(id)) { return; }
+            Log.Info(0, $"Loading [{cells.Count}] Exterior Cells for Layout[{id}]", "test");
+            for (int c = 0; c < cells.Count; c++) {
+                if (c > DEBUG_MAX_EXT_CELLS) { break; }
+                Cell cell = cells[c];
+                cell.Load(esm);
+            }
         }
     }
     

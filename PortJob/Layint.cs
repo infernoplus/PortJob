@@ -11,7 +11,7 @@ namespace PortJob {
     /* This class takes the list of interior cells that the ESM generates and merges them down to fit in a number of MSBs */
     /* Calculates information for which msbs contain which cells, and what drawgroups each cell will have */
     /* class name is in fact a pun: layOUT for exterior cells and layINT for interior cells */
-    class Layint {
+    public class Layint {
         public static List<Layint> Calculate(ESM esm, int msbBudget) {
             Log.Info(0, "Calculating interior cell merge...");
 
@@ -25,7 +25,9 @@ namespace PortJob {
                 Layint layint = new Layint(id++);
 
                 for (int j = 0; j < cellsPer && (i * cellsPer) + j < cells.Count; j++) {
-                    layint.cells.Add(cells[(i * cellsPer) + j]);
+                    Cell cell = cells[(i * cellsPer) + j];
+                    cell.layint = layint;
+                    layint.cells.Add(cell);
                 }
 
                 layints.Add(layint);
@@ -53,18 +55,19 @@ namespace PortJob {
         }
 
         /* Loads cell data and calculates bounding boxes so that we can determine the spacing between each cell. */
-        public void generate(ESM esm) {
+        public void Load(ESM esm) {
             if (generated) { return; }
-            int rowMax = (int)Math.Sqrt(Math.Min(DEBUG_MAX_INT_CELLS, cells.Count));
 
+            if (!Const.DEBUG_GEN_INT_LAYINT(id)) { return; }
+            Log.Info(0, $"Loading [{cells.Count}] Interior Cells for Layint[{id}]", "test");
+
+            int rowMax = (int)Math.Sqrt(Math.Min(DEBUG_MAX_INT_CELLS, cells.Count));
             Bounds last = null;
             float rowSpace = 0f;
             int nextId = 0;
             for (int c = 0; c < cells.Count; c++) {
                 if (c > DEBUG_MAX_INT_CELLS) { break; }
                 Cell cell = cells[c];
-
-                Log.Info(0, "Loading Interior Cell: " + cell.name, "test");
                 cell.Load(esm);
 
                 /* Generate drawgroups */

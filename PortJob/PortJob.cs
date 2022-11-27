@@ -121,20 +121,28 @@ namespace PortJob {
             /* Call Mass Convert to convert all models, textures, and collisions and return info about all those files. */
             Cache cache = MassConvert.Convert(esm, layouts, layints);
 
+            /* Load all cells so that load doors can be generated */
+            foreach(Layout layout in layouts) { layout.Load(esm); }
+            foreach(Layint layint in layints) { layint.Load(esm); }
+
+            /* Lists to fill up with generated content */
             List<MSBData> msbs = new();
             List<NVAData> nvas = new();
+            List<Script> scripts = new();
 
             /* Generate Exterior MSBs from layouts */
             {
                 const int area = 54;
                 HashSet<TextureInfo> areaTextures = new();  // All textures to pack for this area
 
-                for (int block=0;block<layouts.Count;block++) {
-                    if (!DEBUG_GEN_EXT_LAYOUT(block)) { continue; } //for rapid debugging
+                foreach(Layout layout in layouts) {
+                    if (!DEBUG_GEN_EXT_LAYOUT(layout.id)) { continue; } //for rapid debugging
 
-                    Layout layout = layouts[block];
+                    int block = layout.id;
+
                     MSB3 msb = new();
                     NVA nva = new();   //One nva per msb. I put this up here so you can easily add the navmeshes in the loop. 
+                    Script script = new(area, block);
 
                     Log.Info(0, $"=== Generating Exterior MSB[{block}] === [{layout.cells.Count} cells]", "test");
 
@@ -208,12 +216,26 @@ namespace PortJob {
                                 msb.Parts.Objects.Add(objAct.obj);
                                 msb.Events.ObjActs.Add(objAct.objAct);
                             }
+                            /* Load Door */
+                            else if (content.door != null && content.door.type == DoorContent.DoorType.Load) {
+                                ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
+                                MSB3.Part.Object obj = MakeStaticObject(area, block, cell, content, objectInfo, counters);
+                                msb.Parts.Objects.Add(obj);
+                                obj.EntityID = content.door.entityID;
+                                script.RegisterLoadDoor(content.door);
+                            }
                             /* Static Object */
                             else {
                                 ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
                                 MSB3.Part.Object obj = MakeStaticObject(area, block, cell, content, objectInfo, counters);
                                 msb.Parts.Objects.Add(obj);
                             }
+                        }
+
+                        /* Add Door Markers */
+                        foreach (DoorMarker marker in cell.markers) {
+                            MSB3.Part.Player mrk = MakeMarker(area, block, cell, marker, counters);
+                            msb.Parts.Players.Add(mrk);
                         }
                     }
 
@@ -234,6 +256,7 @@ namespace PortJob {
 
                     msbs.Add(new MSBData(area, block, msb, spawnCell.name));
                     nvas.Add(new NVAData(area, block, nva));
+                    scripts.Add(script);
                     Log.Info(0, "\n");
                 }
                 PackTextures(area, areaTextures);
@@ -244,15 +267,15 @@ namespace PortJob {
                 const int area = 30;
                 HashSet<TextureInfo> areaTextures = new();  // All textures to pack for this area
 
-                for (int block = 0; block < layints.Count; block++) {
-                    if (!DEBUG_GEN_INT_LAYINT(block)) { continue; } //for rapid debugging
+                foreach (Layint layint in layints) {
+                    if (!DEBUG_GEN_INT_LAYINT(layint.id)) { continue; } //for rapid debugging
 
-                    Layint layint = layints[block];
+                    int block = layint.id;
                     MSB3 msb = new();
-                    NVA nva = new();   //One nva per msb. I put this up here so you can easily add the navmeshes in the loop. 
+                    NVA nva = new();   //One nva per msb. I put this up here so you can easily add the navmeshes in the loop.
+                    Script script = new(area, block);
 
                     Log.Info(0, $"=== Generating Interior MSB[{block}] === [{layint.cells.Count} cells]", "test");
-                    layint.generate(esm);
 
                     /* File resource lists */
                     HashSet<ModelInfo> usedMapPieces = new();
@@ -287,6 +310,18 @@ namespace PortJob {
                         cell.Load(esm);
                         Log.Info(0, "Populating Interior Cell: " + cell.name, "test");
 
+                        /* Generate a box region of the bounds of the merged cell */
+                        MSB3.Region.Event breg = new();
+                        MSB.Shape.Box bregshp = new();
+                        bregshp.Width = bounds.width;
+                        bregshp.Depth = bounds.length;
+                        bregshp.Height = bounds.height;
+                        breg.Shape = bregshp;
+                        breg.Name = "cell " + cell.name;
+                        breg.Position = Vector3.Add(bounds.center, new Vector3(0f, bounds.height * -.5f, 0f));  // Box regions are centered on XZ but Y is at the root.... fucking!?!?? FROM????????
+                        breg.Rotation = Vector3.Zero;
+                        msb.Regions.Events.Add(breg);
+
                         /* Static map pieces and collision */
                         foreach (Content content in cell.content) {
                             if (!CONVERT_TO_MAP.Contains(content.type)) { continue; }   // Only process things we want as static world meshes
@@ -314,12 +349,26 @@ namespace PortJob {
                                 msb.Parts.Objects.Add(objAct.obj);
                                 msb.Events.ObjActs.Add(objAct.objAct);
                             }
+                            /* Load Door */
+                            else if(content.door != null && content.door.type == DoorContent.DoorType.Load) {
+                                ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
+                                MSB3.Part.Object obj = MakeStaticObject(area, block, cell, content, objectInfo, counters, bounds);
+                                obj.EntityID = content.door.entityID;
+                                msb.Parts.Objects.Add(obj);
+                                script.RegisterLoadDoor(content.door);
+                            }
                             /* Static Object */
                             else {
                                 ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
                                 MSB3.Part.Object obj = MakeStaticObject(area, block, cell, content, objectInfo, counters, bounds);
                                 msb.Parts.Objects.Add(obj);
                             }
+                        }
+
+                        /* Add Door Markers */
+                        foreach(DoorMarker marker in cell.markers) {
+                            MSB3.Part.Player mrk = MakeMarker(area, block, cell, marker, counters, bounds);
+                            msb.Parts.Players.Add(mrk);
                         }
                     }
 
@@ -340,8 +389,11 @@ namespace PortJob {
 
                     msbs.Add(new MSBData(area, block, msb, spawnCell.Value.name));
                     nvas.Add(new NVAData(area, block, nva));
+                    scripts.Add(script);
                     Log.Info(0, "\n");
                 }
+
+                /* Pack textures for area */
                 PackTextures(area, areaTextures);
             }
 
@@ -353,6 +405,14 @@ namespace PortJob {
                 Utility.PackAreaCol(msb.area, msb.block);
                 //Utility.PackTestColAndNavMeshes(msb.area, msb.block);
             }
+
+            /* Write scripts */
+            Log.Info(0, "Writing scripts...");
+            string eventDir = Const.OutputPath + "event\\";
+            if (!Directory.Exists(eventDir)) { Directory.CreateDirectory(eventDir); }
+            foreach (Script script in scripts) { script.Write(eventDir); }
+            File.WriteAllBytes($"{eventDir}common.emevd.dcx", Utility.GetEmbededResourceBytes("CommonFunc.Resources.common.emevd.dcx"));
+            File.WriteAllBytes($"{eventDir}common_func.emevd.dcx", Utility.GetEmbededResourceBytes("CommonFunc.Resources.common_func.emevd.dcx"));
 
             /* Write custom mtdbnd */
             string mtdDir = OutputPath + "mtd\\";
@@ -438,7 +498,7 @@ namespace PortJob {
             enemy.Name = eModel + eName;
             enemy.SibPath = "";
             enemy.ModelName = eModel;
-            enemy.Position = cell.center + new Vector3(0f, 5f, 0f);
+            enemy.Position = cell.area.center + new Vector3(0f, 5f, 0f);
             enemy.MapStudioLayer = 4294967295;
             for (int k = 0; k < cell.drawGroups.Length; k++) {
                 enemy.DrawGroups[k] = 0;
@@ -457,7 +517,7 @@ namespace PortJob {
             flat.HitFilterID = 8;
             flat.ModelName = cModel;
             flat.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
-            flat.Position = cell.center + OFFSET + new Vector3(0f, -15f, 0f);
+            flat.Position = cell.area.center + OFFSET + new Vector3(0f, -15f, 0f);
             flat.Rotation = ROTATION;
             flat.MapStudioLayer = uint.MaxValue;
             for (int k = 0; k < cell.drawGroups.Length; k++) {
@@ -497,7 +557,7 @@ namespace PortJob {
                 con.Name = ccModel + ccName;
                 //con.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB"; // Looks like connnect collision does not ever use sibs
                 con.ModelName = ccModel;
-                con.Position = cell.center + OFFSET + new Vector3(0f, 5f, 0f);
+                con.Position = cell.area.center + OFFSET + new Vector3(0f, 5f, 0f);
                 con.Rotation = ROTATION;
                 con.MapStudioLayer = 4294967295; // Not a clue what this does... Should probably ask about it
                 for (int l = 0; l < cell.drawGroups.Length; l++) {

@@ -16,7 +16,7 @@ namespace PortJob {
             MSB3.Part.MapPiece terrain = new();
             terrain.ModelName = $"m{terrainInfo.id:D6}";
             terrain.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{terrainInfo.id:D6}.SIB";
-            terrain.Position = cell.center;
+            terrain.Position = cell.area.center;
             terrain.Rotation = Vector3.Zero;
             terrain.MapStudioLayer = uint.MaxValue;
             for (int k = 0; k < cell.drawGroups.Length; k++) {
@@ -165,16 +165,33 @@ namespace PortJob {
             return new ObjActPair(obj, objAct);
         }
 
+        /* Create player spawn point with entityID for load doors to warp to */
+        public static MSB3.Part.Player MakeMarker(int area, int block, Cell cell, DoorMarker marker, Counters counters, Bounds? bounds = null) {
+            MSB3.Part.Player player = new();
+            player.ModelName = "c0000";
+            player.Position = bounds != null ? Vector3.Add(Vector3.Add(marker.position, bounds.offset), bounds.center) : marker.position;
+            player.Rotation = marker.rotation;
+            player.EntityID = marker.entityID;
+            player.Name = $"c0000_{counters.GetPlayer():D4}";
+            return player;
+        }
+
         public class Counters {
             Dictionary<ModelInfo, int> mapPieces;
             Dictionary<CollisionInfo, int> collisions;
             Dictionary<ObjectInfo, int> objects;
             Dictionary<ObjActInfo, int> objActs;
+            int players;
             public Counters() {
                 mapPieces = new();
                 collisions = new();
                 objects = new();
                 objActs = new();
+                players = 1;      // Start at 1 since 0 is always the default debug spawn point
+            }
+
+            public int GetPlayer() {
+                return players++;
             }
 
             public int GetMapPiece(ModelInfo modelInfo) {

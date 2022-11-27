@@ -11,6 +11,8 @@
     <None Remove="DefaultTex\def_missing.dds" />
     <None Remove="DefaultTex\def_test.dds" />
     <None Remove="Overrides\debug_cells.json" />
+    <None Remove="Resources\common.emevd.dcx" />
+    <None Remove="Resources\common_func.emevd.dcx" />
     <None Remove="Resources\door_md.anibnd" />
     <None Remove="Resources\door_md.flver" />
     <None Remove="Resources\door_md.hkx" />
@@ -20,9 +22,11 @@
     <None Remove="Resources\DS3_MTD_INFO.json" />
     <None Remove="Resources\mtdbnd.dcx" />
     <None Remove="Resources\settings.json" />
+    <None Remove="Resources\template.emevd" />
     <Content Include="Overrides\debug_cells.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Resources\template.emevd" />
     <None Update="ColConverter\AssetCc2_fixed.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -48,6 +52,8 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="DefaultTex\def_test.dds" />
+    <EmbeddedResource Include="Resources\common.emevd.dcx" />
+    <EmbeddedResource Include="Resources\common_func.emevd.dcx" />
     <EmbeddedResource Include="Resources\door_md.anibnd" />
     <EmbeddedResource Include="Resources\door_md.flver" />
     <EmbeddedResource Include="Resources\door_md.hkx" />
