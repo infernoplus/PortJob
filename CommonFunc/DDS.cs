@@ -106,7 +106,7 @@ namespace CommonFunc {
 
         public static bool IsAlpha(byte[] texBytes) {
             int texFormat = GetTpfFormatFromDdsBytes(texBytes);
-            return texFormat == 3;
+            return IsAlpha(texFormat);
         }
         
         public static bool IsAlpha(int texFormat) {
