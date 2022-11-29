@@ -182,7 +182,7 @@ namespace FBXConverter {
                                 byte[] texBytes = srgb ? MTD.GetSRGBTexture(tex) : MTD.GetTexture(tex);
                                 //byte[] texBytes = MTD.GetSRGBTexture(texKvp.Value.Filename);
                                 int texFormat = DDS.GetTpfFormatFromDdsBytes(texBytes);
-                                if (texFormat == 3) {
+                                if (DDS.IsAlpha(texFormat)) {
                                     mtdName += "_al";
                                     foreach (FLVER2.FaceSet fcs in flverMesh.FaceSets) {
                                         fcs.CullBackfaces = false;
