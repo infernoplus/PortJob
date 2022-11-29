@@ -39,9 +39,8 @@ namespace PortJob {
 
                 /* Exterior Cells */
                 Log.Info(0, $"Mass Converter searching exterior cells...", "test");
-                for (int i = 0; i < layouts.Count; i++) {
-                    if (!Const.DEBUG_GEN_EXT_LAYOUT(i)) { continue; } //for rapid debugging 
-                    Layout layout = layouts[i];
+                foreach(Layout layout in layouts) {
+                    if (!Const.DEBUG_GEN_EXT_LAYOUT(layout.id)) { continue; } //for rapid debugging 
 
                     for (int j = 0; j < layout.cells.Count; j++) {
                         if (j > Const.DEBUG_MAX_EXT_CELLS) { break; }
@@ -64,9 +63,8 @@ namespace PortJob {
 
                 /* Interior Cells */
                 Log.Info(0, $"Mass Converter searching interior cells...", "test");
-                for (int i = 0; i < layints.Count; i++) {
-                    if (!Const.DEBUG_GEN_INT_LAYINT(i)) { continue; } //for rapid debugging 
-                    Layint layint = layints[i];
+                foreach(Layint layint in layints) {
+                    if (!Const.DEBUG_GEN_INT_LAYINT(layint.id)) { continue; } //for rapid debugging 
 
                     for (int j = 0; j < layint.cells.Count; j++) {
                         if (j > Const.DEBUG_MAX_INT_CELLS) { break; }
@@ -124,9 +122,8 @@ namespace PortJob {
 
                 /* Exterior Cell Objects */
                 Log.Info(0, $"Mass Converter processing objects in exterior cells...", "test");
-                for (int i = 0; i < layouts.Count; i++) {
-                    if (!Const.DEBUG_GEN_EXT_LAYOUT(i)) { continue; } //for rapid debugging 
-                    Layout layout = layouts[i];
+                foreach(Layout layout in layouts) {
+                    if (!Const.DEBUG_GEN_EXT_LAYOUT(layout.id)) { continue; } //for rapid debugging 
 
                     for (int j = 0; j < layout.cells.Count; j++) {
                         if (j > Const.DEBUG_MAX_EXT_CELLS) { break; }
@@ -155,12 +152,11 @@ namespace PortJob {
 
                 /* Interior Cell Objects */
                 Log.Info(0, $"Mass Converter processing objects in interior cells...", "test");
-                for (int i = 0; i < layints.Count; i++) {
-                    if (!Const.DEBUG_GEN_EXT_LAYOUT(i)) { continue; } //for rapid debugging 
-                    Layint layint = layints[i];
+                foreach (Layint layint in layints) {
+                    if (!Const.DEBUG_GEN_INT_LAYINT(layint.id)) { continue; } //for rapid debugging 
 
                     for (int j = 0; j < layint.cells.Count; j++) {
-                        if (j > Const.DEBUG_MAX_EXT_CELLS) { break; }
+                        if (j > Const.DEBUG_MAX_INT_CELLS) { break; }
                         Cell cell = layint.cells[j];
                         cell.Load(esm);
 

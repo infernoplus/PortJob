@@ -51,7 +51,7 @@ namespace FBXConverter {
             JObject jsonObj = JObject.Parse(jsonString);
 
             foreach (JObject fbxList in jsonObj["FBXList"]) {
-                Console.WriteLine($"Converting: {fbxList["FBXPath"]}");
+                //Console.WriteLine($"Converting: {fbxList["FBXPath"]}");
                 ModelInfo model = FBXConverter.convert(fbxList["FBXPath"].ToString(), fbxList["FlverPath"].ToString(), fbxList["TpfDir"].ToString());
                 cache.models.Add(model);
             }

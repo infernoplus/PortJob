@@ -13,8 +13,8 @@ namespace CommonFunc {
 
         public static bool DEBUG_GEN_EXT_LAYOUT(int id) { return id is (1); }
         public static bool DEBUG_GEN_INT_LAYINT(int id) { return id is (8); }
-        public static readonly int DEBUG_MAX_EXT_CELLS = 128;
-        public static readonly int DEBUG_MAX_INT_CELLS = 128;
+        public static readonly int DEBUG_MAX_EXT_CELLS = 12;
+        public static readonly int DEBUG_MAX_INT_CELLS = 2;
         #endregion
 
         #region TerrainConverter

@@ -162,7 +162,8 @@ namespace FBXConverter {
                                 if (texKvp.Value == null) {
                                     tex = "CommonFunc\\DefaultTex\\def_missing.dds";
                                     shortTexName = "def_missing";
-                                    Console.WriteLine("  ## NO TEXTURES! YIKES!");
+                                    string shortPath = fbxPath.Split("\\Data Files\\")[1];
+                                    Console.WriteLine($" ## Missing Textures: {shortPath}" );
                                 }
                                 else {
                                     tex = texKvp.Value.Filename;
@@ -227,6 +228,17 @@ namespace FBXConverter {
                                 );
 
                             posVec3.X = -posVec3.X; // Flip X after applying root transform, bugfix from FBX2FLVER
+
+                            /* Rotate Y 180 degrees because... */
+                           float cosDegrees = (float)Math.Cos(Math.PI);
+                            float sinDegrees = (float)Math.Sin(Math.PI);
+
+                            float x = (posVec3.X * cosDegrees) + (posVec3.Z * sinDegrees);
+                            float z = (posVec3.X * -sinDegrees) + (posVec3.Z * cosDegrees);
+
+                            posVec3.X = x;
+                            posVec3.Z = z;  // @TODO: rotate normals once we figure this out*/
+
 
                             FLVER.Vertex newVert = new() {
                                 Position = new System.Numerics.Vector3(posVec3.X, posVec3.Y, posVec3.Z),

@@ -720,37 +720,39 @@ namespace PortJob {
             float j = float.Parse(((JArray)(data["rotation"]))[1].ToString());
             float k = float.Parse(((JArray)(data["rotation"]))[2].ToString());
 
-            /* ????????? ??????????????? ????????????? !?!?!?!?! ????????? */
-            /* If I spend any more time on this I'm going to break my monitor. I don't know what, how, or why but something is fubar with rotations */
-            const float q = (float)(Math.PI / 2);
-            // Y -180 to -90
-            if (q > k) {
-                i = -i;
-                j = -j;
-            }
-            // Y -90 to -0
-            else if (q*2 > k) {
-                float ii = i;
-                float jj = j;
-                i = -jj;
-                j = -ii;
-            }
-            // Y 0 to 90
-            else if (q*3 > k) {
-                float ii = i;
-                float jj = j;
-                i = -jj;
-                j = -ii;
-            }
-            // Y 90 to 180
-            else {
-                i = -i;
-                j = -j;
-            }
-            k -= (float)Math.PI;
+            /* Katalashes codef rom MapStudio */
+            Vector3 MatrixToEulerXZY(Matrix4x4 m) {
+                const float Pi = (float)Math.PI;
+                const float Deg2Rad = Pi / 180.0f;
+                Vector3 ret;
+                ret.Z = MathF.Asin(-Math.Clamp(-m.M12, -1, 1));
 
-           /* Quaternion version of this cursed garbage
-            * Quaternion ToQuaternion(Vector3 v) {
+                if (Math.Abs(m.M12) < 0.9999999) {
+                    ret.X = MathF.Atan2(-m.M32, m.M22);
+                    ret.Y = MathF.Atan2(-m.M13, m.M11);
+                } else {
+                    ret.X = MathF.Atan2(m.M23, m.M33);
+                    ret.Y = 0;
+                }
+                ret.X = (ret.X <= -180.0f * Deg2Rad) ? ret.X + 360.0f * Deg2Rad : ret.X;
+                ret.Y = (ret.Y <= -180.0f * Deg2Rad) ? ret.Y + 360.0f * Deg2Rad : ret.Y;
+                ret.Z = (ret.Z <= -180.0f * Deg2Rad) ? ret.Z + 360.0f * Deg2Rad : ret.Z;
+                return ret;
+            }
+
+            Matrix4x4 mr = Matrix4x4.CreateFromYawPitchRoll(k,j,i);
+            Vector3 eu = MatrixToEulerXZY(mr);
+
+            position = new Vector3(x, y, z) * GLOBAL_SCALE;
+            rotation = eu * (float)(180 / Math.PI);
+            scale = data["scale"]!=null?float.Parse(data["scale"].ToString()):1f;   
+
+            /* Door stuff */
+            door = type == ESM.Type.Door?new DoorContent(esm, cell, data):null;
+
+            /* Garbage code below this point. Basically just commented out all the other random shit I've tried to fix the rotation issue */
+            /*
+            Quaternion ToQuaternion(Vector3 v) {
 
                 float cy = (float)Math.Cos(v.Z * 0.5);
                 float sy = (float)Math.Sin(v.Z * 0.5);
@@ -792,16 +794,226 @@ namespace PortJob {
                 return angles;
             }
 
-            Quaternion q = ToQuaternion(new Vector3(i, j, k - (float)Math.PI));
-            q = new Quaternion(q.X, q.Z, q.Y, q.W);
-            Vector3 v = ToEulerAngles(q);*/
+            Vector3 Fuck(float i, float j, float k) {
+                Quaternion q = ToQuaternionV2(new Vector3(i, j, k));
+                q = new Quaternion(q.X, q.Z, q.Y, q.W);
+                return ToEulerV2(q);
+            }
 
-            position = new Vector3(x, y, z) * GLOBAL_SCALE;
-            rotation = new Vector3(i, k, j) * (float)(180 / Math.PI);
-            scale = data["scale"]!=null?float.Parse(data["scale"].ToString()):1f;   // Another banger
+            Quaternion ToQuaternionV2(Vector3 eu) {
+                float yaw = eu.Z, pitch = eu.Y, roll = eu.X;
+                float rollOver2 = roll * 0.5f;
+                float sinRollOver2 = (float)Math.Sin((double)rollOver2);
+                float cosRollOver2 = (float)Math.Cos((double)rollOver2);
+                float pitchOver2 = pitch * 0.5f;
+                float sinPitchOver2 = (float)Math.Sin((double)pitchOver2);
+                float cosPitchOver2 = (float)Math.Cos((double)pitchOver2);
+                float yawOver2 = yaw * 0.5f;
+                float sinYawOver2 = (float)Math.Sin((double)yawOver2);
+                float cosYawOver2 = (float)Math.Cos((double)yawOver2);
 
-            /* Door stuff */
-            door = type == ESM.Type.Door?new DoorContent(esm, cell, data):null;
+                float X = cosYawOver2 * cosPitchOver2 * cosRollOver2 + sinYawOver2 * sinPitchOver2 * sinRollOver2;
+                float Y = cosYawOver2 * cosPitchOver2 * sinRollOver2 - sinYawOver2 * sinPitchOver2 * cosRollOver2;
+                float Z = cosYawOver2 * sinPitchOver2 * cosRollOver2 + sinYawOver2 * cosPitchOver2 * sinRollOver2;
+                float W = sinYawOver2 * cosPitchOver2 * cosRollOver2 - cosYawOver2 * sinPitchOver2 * sinRollOver2;
+                return new Quaternion(X, Y, Z, W);
+            }
+
+            Vector3 ToEulerV2(Quaternion q) {
+                float PI = (float)Math.PI;
+                // Store the Euler angles in radians
+                Vector3 pitchYawRoll = new Vector3();
+
+                double sqw = q.W * q.W;
+                double sqx = q.X * q.X;
+                double sqy = q.Y * q.Y;
+                double sqz = q.Z * q.Z;
+
+                // If quaternion is normalised the unit is one, otherwise it is the correction factor
+                double unit = sqx + sqy + sqz + sqw;
+                double test = q.X * q.Y + q.Z * q.W;
+
+                if (test > 0.4999f * unit)                              // 0.4999f OR 0.5f - EPSILON
+                {
+                    // Singularity at north pole
+                    pitchYawRoll.Y = 2f * (float)Math.Atan2(q.X, q.W);  // Yaw
+                    pitchYawRoll.X = PI * 0.5f;                         // Pitch
+                    pitchYawRoll.Z = 0f;                                // Roll
+                    return pitchYawRoll;
+                } else if (test < -0.4999f * unit)                        // -0.4999f OR -0.5f + EPSILON
+                  {
+                    // Singularity at south pole
+                    pitchYawRoll.Y = -2f * (float)Math.Atan2(q.X, q.W); // Yaw
+                    pitchYawRoll.X = -PI * 0.5f;                        // Pitch
+                    pitchYawRoll.Z = 0f;                                // Roll
+                    return pitchYawRoll;
+                } else {
+                    pitchYawRoll.Y = (float)Math.Atan2(2f * q.X * q.W + 2f * q.Y * q.Z, 1 - 2f * (sqz + sqw));     // Yaw 
+                    pitchYawRoll.X = (float)Math.Asin(2f * (q.X * q.Z - q.W * q.Y));                             // Pitch 
+                    pitchYawRoll.Z = (float)Math.Atan2(2f * q.X * q.Y + 2f * q.Z * q.W, 1 - 2f * (sqy + sqz));      // Roll 
+                }
+
+                return pitchYawRoll;
+            }
+
+
+            Matrix4x4 QuatToMatrix(Quaternion q) {
+                Matrix4x4 position = Matrix4x4.CreateTranslation(Vector3.Zero);
+                Matrix4x4 scale = Matrix4x4.CreateScale(Vector3.One);
+
+                Matrix4x4 m = Matrix4x4.CreateTranslation(Vector3.Zero);
+                return m;
+            }
+
+            Vector3 MatrixToEulerXYZ(Matrix4x4 m) {
+                float clamp(float value, float min, float max ) { return Math.Max(min, Math.Min(max, value)); }
+
+                float x, y, z;
+                y = (float)Math.Asin(clamp(m.M13, -1f, 1f));
+
+                if (Math.Abs(m.M13) < 0.9999999) {
+
+                    x = (float)Math.Atan2(-m.M23, m.M33);
+                    z = (float)Math.Atan2(-m.M12, m.M11);
+
+                } else {
+
+                    x = (float)Math.Atan2(m.M32, m.M22);
+                    z = 0f;
+
+                }
+                return new Vector3(x, y, z);
+            }
+
+            Quaternion EulerToQuaternion(Vector3 eu) {
+                float x = eu.X, y = eu.Y, z = eu.Z;
+
+                float c1 = (float)Math.Cos(x / 2f);
+                float c2 = (float)Math.Cos(y / 2f);
+                float c3 = (float)Math.Cos(z / 2f);
+
+                float s1 = (float)Math.Sin(x / 2f);
+                float s2 = (float)Math.Sin(y / 2f);
+                float s3 = (float)Math.Sin(z / 2f);
+
+                float X = s1 * c2 * c3 + c1 * s2 * s3;
+                float Y = c1 * s2 * c3 - s1 * c2 * s3;
+                float Z = c1 * c2 * s3 + s1 * s2 * c3;
+                float W = c1 * c2 * c3 - s1 * s2 * s3;
+                return new Quaternion(X, Y, Z, W);
+            }
+
+            float radian = (float)(Math.PI / 180f);
+
+            //Quaternion q1 = Quaternion.CreateFromYawPitchRoll(131.8f * radian, 17.2f * radian, 17.2f * radian);
+            Quaternion q1 = EulerToQuaternion(new Vector3(342.8f, 22.9f, 200.5f) * radian);
+            Quaternion q2 = new Quaternion(q1.X, q1.Z, q1.Y, q1.W);
+            Matrix4x4 m = Matrix4x4.CreateFromQuaternion(q2);
+            Vector3 eu = MatrixToEulerXYZ(m) * (float)(180 / Math.PI);
+
+
+
+            Vector3 testA = new Vector3(17.2f * radian, 17.2f * radian, 131.8f * radian);
+            Vector3 testB = ToEulerV2(ToQuaternionV2(testA));
+
+
+            Vector3 test1 = Fuck(342.8f * radian, 22.9f * radian, 200.5f * radian) * (float)(180 / Math.PI);
+            Vector3 test2 = Fuck(17.2f * radian, 17.2f * radian, 131.8f * radian) * (float)(180 / Math.PI);
+
+            Vector3 MatrixToEulerXYZ(Matrix4x4 m) {
+                float clamp(float value, float min, float max) { return Math.Max(min, Math.Min(max, value)); }
+
+                float x, y, z;
+                y = (float)Math.Asin(clamp(m.M13, -1f, 1f));
+
+                if (Math.Abs(m.M13) < 0.9999999) {
+
+                    x = (float)Math.Atan2(-m.M23, m.M33);
+                    z = (float)Math.Atan2(-m.M12, m.M11);
+
+                } else {
+
+                    x = (float)Math.Atan2(m.M32, m.M22);
+                    z = 0f;
+
+                }
+                return new Vector3(x, y, z);
+            }
+
+            Quaternion q = new();
+            Quaternion.
+
+
+            Matrix4x4 matrix = Matrix4x4.CreateFromYawPitchRoll(k, j, i);  // IJK = XYZ euler rotation values
+            Matrix4x4 correction = new Matrix4x4 {
+                M11 = 1, M12 = 0, M13 = 0, M14 = 0,
+                M21 = 0, M22 = 0, M23 = 1, M24 = 0,
+                M31 = 0, M32 = 1, M33 = 0, M34 = 0,
+                M41 = 0, M42 = 0, M43 = 0, M44 = 1
+            };
+            Matrix4x4 conversion = new Matrix4x4 {
+                M11 = -1, M12 = 0, M13 = 0, M14 = 0,
+                M21 = 0, M22 = 0, M23 = 1, M24 = 0,
+                M31 = 0, M32 = 1, M33 = 0, M34 = 0,
+                M41 = 0, M42 = 0, M43 = 0, M44 = 1
+            };
+            Matrix4x4 result = matrix * correction;
+            Vector3 euler = MatrixToEulerXYZ(result);*/
+
+            /*Quaternion ToQuaternion(Vector3 v) {
+
+                float cy = (float)Math.Cos(v.Z * 0.5);
+                float sy = (float)Math.Sin(v.Z * 0.5);
+                float cp = (float)Math.Cos(v.Y * 0.5);
+                float sp = (float)Math.Sin(v.Y * 0.5);
+                float cr = (float)Math.Cos(v.X * 0.5);
+                float sr = (float)Math.Sin(v.X * 0.5);
+
+                return new Quaternion {
+                    W = (cr * cp * cy + sr * sp * sy),
+                    X = (sr * cp * cy - cr * sp * sy),
+                    Y = (cr * sp * cy + sr * cp * sy),
+                    Z = (cr * cp * sy - sr * sp * cy)
+                };
+
+            }
+
+            Vector3 ToEulerAngles(Quaternion q) {
+                Vector3 angles = new();
+
+                // roll / x
+                double sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
+                double cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
+                angles.X = (float)Math.Atan2(sinr_cosp, cosr_cosp);
+
+                // pitch / y
+                double sinp = 2 * (q.W * q.Y - q.Z * q.X);
+                if (Math.Abs(sinp) >= 1) {
+                    angles.Y = (float)Math.CopySign(Math.PI / 2, sinp);
+                } else {
+                    angles.Y = (float)Math.Asin(sinp);
+                }
+
+                // yaw / z
+                double siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
+                double cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
+                angles.Z = (float)Math.Atan2(siny_cosp, cosy_cosp);
+
+                return angles;
+            } */
+
+            /*Quaternion q = ToQuaternion(new Vector3(i, k + (float)Math.PI, j));
+            Quaternion m1 = new Quaternion(-q.X, q.Y, -q.Z, q.W);
+            Vector3 e = ToEulerAngles(m1);*/
+
+            /*Vector3 flippedRotation = new Vector3(i, -j, -k + (float)(Math.PI)); // flip Y and Z axis for right->left handed conversion
+            // convert XYZ to ZYX
+            Quaternion qx = Quaternion.CreateFromAxisAngle(new Vector3(1, 0, 0), flippedRotation.X);
+            Quaternion qy = Quaternion.CreateFromAxisAngle(new Vector3(0, 0, 1), flippedRotation.Y);
+            Quaternion qz = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), flippedRotation.Z);
+            Quaternion q = qx * qy * qz; // this is the order
+            Vector3 e = ToEulerAngles(q);
+            e.Y = -e.Y;*/
         }
     }
 
