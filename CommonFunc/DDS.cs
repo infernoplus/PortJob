@@ -103,12 +103,14 @@ namespace CommonFunc {
             return bytes;
 
         }
-
+        public static bool IsAlpha(string texPath) {
+            byte[] texBytes = File.ReadAllBytes(texPath);
+            return IsAlpha(texBytes);
+        }
         public static bool IsAlpha(byte[] texBytes) {
             int texFormat = GetTpfFormatFromDdsBytes(texBytes);
             return IsAlpha(texFormat);
         }
-        
         public static bool IsAlpha(int texFormat) {
             return texFormat == 3;
         }
