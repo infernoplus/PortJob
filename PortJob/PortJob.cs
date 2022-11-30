@@ -200,7 +200,7 @@ namespace PortJob {
                             usedMapPieces.Add(modelInfo);
                             if (staticMesh.collision != null) {
                                 msb.Parts.Collisions.Add(staticMesh.collision);
-                                usedCollision.Add(modelInfo.GetCollision(1f));
+                                usedCollision.Add(modelInfo.GetCollision(content.scale));
                             }
                         }
                         
@@ -333,7 +333,7 @@ namespace PortJob {
                             usedMapPieces.Add(modelInfo);
                             if (staticMesh.collision != null) {
                                 msb.Parts.Collisions.Add(staticMesh.collision);
-                                usedCollision.Add(modelInfo.GetCollision(1f));
+                                usedCollision.Add(modelInfo.GetCollision(content.scale));
                             }
                         }
 

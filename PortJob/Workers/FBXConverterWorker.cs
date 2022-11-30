@@ -13,13 +13,14 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
+using CommonFunc;
 
 namespace PortJob {
     public class FBXConverterWorker : Worker{
         private Process _pipeClient { get; set; }
         private string _jsonString { get; }
-        public FBXConverterWorker(string outputPath, string morrowindPath, float globalScale, List<FBXInfo> fbxList) {
-            _jsonString = JsonConvert.SerializeObject(new { OutputPath = outputPath, MorrowindPath = morrowindPath, GLOBAL_SCALE = globalScale, FBXList = fbxList  });
+        public FBXConverterWorker(string outputPath, string morrowindPath, string tpfDir, List<FBXInfo> fbxList) {
+            _jsonString = JsonConvert.SerializeObject(new FBXConverterJob(outputPath, morrowindPath, tpfDir, fbxList));
             _thread = new Thread(CallFBXConverter) {
                 IsBackground = true,
             };
@@ -79,17 +80,6 @@ namespace PortJob {
         }
         private void _pipeClient_ErrorDataReceived(object sender, DataReceivedEventArgs e) {
             ErrorMessage += e.Data;
-        }
-    }
-
-    public class FBXInfo {
-        public string FBXPath { get; }
-        public string FlverPath { get; }
-        public string TpfDir { get; }
-        public FBXInfo(string fbxPath, string flverPath, string tpfDir) {
-            FBXPath = fbxPath;
-            FlverPath = flverPath;
-            TpfDir = tpfDir;
         }
     }
 }

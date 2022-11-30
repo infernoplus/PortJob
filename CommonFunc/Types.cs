@@ -108,4 +108,31 @@ namespace CommonFunc {
         }
     }
 
+    public class FBXConverterJob {
+        public string OutputPath, MorrowindPath, TPFDir;
+        public List<FBXInfo> FBXList;
+        public FBXConverterJob(string OutputPath, string MorrowindPath, string TPFDir, List<FBXInfo> FBXList) {
+            this.OutputPath = OutputPath;
+            this.MorrowindPath = MorrowindPath;
+            this.TPFDir = TPFDir;
+            this.FBXList = FBXList;
+        }
+    }
+
+    public class FBXInfo {
+        public string FBXPath { get; }
+        public string FlverPath { get; }
+        public List<int> Scales;
+        public FBXInfo(string fbxPath, string flverPath) {
+            FBXPath = fbxPath;
+            FlverPath = flverPath;
+            Scales = new();
+        }
+
+        public void AddScale(float scale) {
+            int stepScale = (int)(Math.Round((scale * 100f) / 10) * 10);
+            if (Scales.Contains(stepScale)) { return; }
+            Scales.Add(stepScale);
+        }
+    }
 }

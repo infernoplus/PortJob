@@ -14,7 +14,7 @@ namespace FBXConverter {
     class ColToOBJ {
         /* Converts all the MeshContent children of an FBX NodeContent THAT IS SPECIFICALLY NAMED 'collision' into an OBJ */
         /* Used to convert the collision data of a nif into OBJ so it can then be converted into an hkx by an external program */
-        public static Obj convert(string objPath, NodeContent fbx) {
+        public static Obj convert(NodeContent fbx) {
             /* Grab all collision mesh content from FBX */
             Dictionary<ObjG, MeshContent> FBX_Meshes = new();
             Vector3 rootPosition = fbx.Transform.Translation;
@@ -111,9 +111,6 @@ namespace FBXConverter {
                 }
                 obj.gs.Add(g);
             }
-
-            /* Write to file */
-            obj.write(objPath);
             return obj;
         }
     }

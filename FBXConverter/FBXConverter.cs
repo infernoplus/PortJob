@@ -25,7 +25,7 @@ namespace FBXConverter {
     /* Heavily references code from Meowmartius's FBX2FLVER. He's a secret gamer god. */
     class FBXConverter {
         // Return an object containing the flver, tpfs, and generated ids and names stuff
-        public static ModelInfo convert(string fbxPath, string flverPath, string tpfDir) {
+        public static ModelInfo convert(string fbxPath, string flverPath, string tpfDir, List<int> scales) {
             /* Skip if file already exists */
 
             /* Create a blank FLVER */
@@ -467,18 +467,27 @@ namespace FBXConverter {
                 tpf.Write(tpfPath, DCX.Type.DCX_DFLT_10000_24_9);
             }
 
-            /* Do collision */
-            string outputPath = Path.GetDirectoryName(flverPath);
-            string objPath = $"{outputPath}\\{flverName}.obj";
-            Obj obj = ColToOBJ.convert(objPath, fbx);
-
-            /* Generate ModelInfo and return */
+            /* Generate ModelInfo a bit early (so we can dump our collisions in there right away) */
             string nifName = fbxPath.Split("\\Data Files\\meshes\\")[1].Replace(".fbx", ".nif"); // Note, really we should just pass the nif name along with other params but this works too, though a little gross
             ModelInfo modelInfo = new(nifName, flverPath);
+
+            /* Do collision and generate all needed scales */
+            string outputPath = Path.GetDirectoryName(flverPath);
+            string objPath = $"{outputPath}\\{flverName}";
+
+            Obj obj = ColToOBJ.convert(fbx);
             if (obj != null) {
-                CollisionInfo collisionInfo = new(nifName, objPath, 100);
-                modelInfo.collisions.Add(collisionInfo);
+                foreach (int scale in scales) {
+                    float realScale = scale * 0.01f;
+                    string scaledObjPath = $"{objPath}-{scale}.obj";
+                    Obj scaled = scale==100?obj:obj.scale(realScale);
+                    scaled.write(scaledObjPath);
+                    CollisionInfo collisionInfo = new(nifName, scaledObjPath, scale);
+                    modelInfo.collisions.Add(collisionInfo);
+                }
             }
+
+            /* Finish up modelinfo generation and return */
             foreach(TPF tpf in tpfs) {
                 modelInfo.textures.Add(new TextureInfo(tpf.Textures[0].Name.Substring(3, tpf.Textures[0].Name.Length -3) + ".dds", tpfDir + tpf.Textures[0].Name + ".tpf.dcx"));
             }

@@ -71,7 +71,7 @@ namespace PortJob {
             mp.LodParamID = 19; //Param for: Don't switch to LOD models 
 
             /* Static Mesh Collision - (If it exists) */
-            CollisionInfo collisionInfo = modelInfo.GetCollision(1f);
+            CollisionInfo collisionInfo = modelInfo.GetCollision(content.scale);
             if (collisionInfo != null) {
                 MSB3.Part.Collision col = new();
                 col.HitFilterID = 8;
@@ -79,7 +79,6 @@ namespace PortJob {
                 col.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\h_layout.SIB";
                 col.Position = mp.Position;
                 col.Rotation = mp.Rotation;
-                col.Scale = mp.Scale;
                 col.MapStudioLayer = uint.MaxValue;
                 for (int k = 0; k < cell.drawGroups.Length; k++) {
                     col.DrawGroups[k] = cell.drawGroups[k];

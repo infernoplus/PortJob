@@ -19,7 +19,29 @@ namespace CommonFunc {
         }
 
         /* @TODO: it might be a good idea (not sure though) to write a method that optimizes the obj by 'welding' vertices. basically just look for duplicate vertex data and remove it + adjust indices */
-        public void optimize() { }
+        public Obj optimize() { return null; }
+
+        /* Return a new obj (deep copy) that is identical to the current obj but scaled to the given scale value (vertex scale) */
+        public Obj scale(float scale) {
+            Obj nu = new();
+            foreach (Vector3 v in vs) { nu.vs.Add(new Vector3(v.X, v.Y, v.Z) * scale); }
+            foreach (Vector3 vt in vts) { nu.vts.Add(new Vector3(vt.X, vt.Y, vt.Z)); }
+            foreach (Vector3 vn in vns) { nu.vns.Add(new Vector3(vn.X, vn.Y, vn.Z)); }
+            foreach (ObjG g in gs) {
+                ObjG nug = new();
+                nug.mtl = g.mtl;
+                nug.name = g.name;
+                foreach (ObjF f in g.fs) {
+                    ObjV nua = new(f.a.v, f.a.vt, f.a.vn);
+                    ObjV nub = new(f.b.v, f.b.vt, f.b.vn);
+                    ObjV nuc = new(f.c.v, f.c.vt, f.c.vn);
+                    ObjF nuf = new(nua, nub, nuc);
+                    nug.fs.Add(nuf);
+                }
+                nu.gs.Add(nug);
+            }
+            return nu;
+        }
 
         /* Takes data in this class and writes an obj file of it to the path specified */
         public void write(string outPath) {

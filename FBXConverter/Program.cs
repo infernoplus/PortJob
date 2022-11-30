@@ -48,16 +48,14 @@ namespace FBXConverter {
             Settings.InitSettings();
 
             Cache cache = new();
-            JObject jsonObj = JObject.Parse(jsonString);
-
-            foreach (JObject fbxList in jsonObj["FBXList"]) {
+            FBXConverterJob job = Newtonsoft.Json.JsonConvert.DeserializeObject<FBXConverterJob>(jsonString);
+            foreach (FBXInfo fbxInfo in job.FBXList) {
                 //Console.WriteLine($"Converting: {fbxList["FBXPath"]}");
-                ModelInfo model = FBXConverter.convert(fbxList["FBXPath"].ToString(), fbxList["FlverPath"].ToString(), fbxList["TpfDir"].ToString());
+                ModelInfo model = FBXConverter.convert(fbxInfo.FBXPath, fbxInfo.FlverPath, job.TPFDir, fbxInfo.Scales);
                 cache.models.Add(model);
             }
-
             string cacheJson = JsonConvert.SerializeObject(cache);
-            System.IO.File.WriteAllText(jsonObj["OutputPath"].ToString(), cacheJson);
+            System.IO.File.WriteAllText(job.OutputPath, cacheJson);
 
             //string argString = string.Join("", args);
             //args = argString.Split('|');

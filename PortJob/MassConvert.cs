@@ -30,11 +30,13 @@ namespace PortJob {
             /* Generate new cache */
             else {
                 List<FBXInfo> fbxList = new();
-                void add(string inFile, string outFile) {
+                void Add(string inFile, string outFile, float scale) {
                     foreach(FBXInfo fbxi in fbxList) {
-                        if(fbxi.FBXPath == inFile) { return; }
+                        if(fbxi.FBXPath == inFile) { fbxi.AddScale(scale); return; }  // Just add collision scale data
                     }
-                    fbxList.Add(new FBXInfo(inFile, outFile, outputTex));
+                    FBXInfo nufbxi = new FBXInfo(inFile, outFile);
+                    nufbxi.AddScale(scale);
+                    fbxList.Add(nufbxi);
                 }
 
                 /* Exterior Cells */
@@ -56,7 +58,7 @@ namespace PortJob {
                             string inPath = inputRoot + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
                             string outPath = outputMesh + content.mesh.Substring(0, content.mesh.Length - 3) + "flver";
 
-                            add(inPath, outPath);
+                            Add(inPath, outPath, content.scale);
                         }
                     }
                 }
@@ -80,14 +82,14 @@ namespace PortJob {
                             string inPath = inputRoot + content.mesh.Substring(0, content.mesh.Length - 3) + "fbx";
                             string outPath = outputMesh + content.mesh.Substring(0, content.mesh.Length - 3) + "flver";
 
-                            add(inPath, outPath);
+                            Add(inPath, outPath, content.scale);
                         }
                     }
                 }
 
                 /* Call workers to convert FBX files */
                 Log.Info(0, $"Mass Converter processing [{fbxList.Count}] files...", "test");
-                _workers.Add(new FBXConverterWorker(outputCache, Const.MorrowindPath, Const.GLOBAL_SCALE, fbxList));
+                _workers.Add(new FBXConverterWorker(outputCache, Const.MorrowindPath, outputTex, fbxList));
                 WaitForWorkers();
 
                 /* Load cache output from FBXConverter so we can add to it */
