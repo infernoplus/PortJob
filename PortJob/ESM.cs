@@ -235,7 +235,7 @@ namespace PortJob {
         public readonly int flag;
         public readonly int[] flags;
 
-        public readonly List<TerrainData> terrain;
+        public readonly List<TerrainData> terrain, lowTerrain;
         public readonly TerrainVertex[,] borders;
 
         public readonly List<Content> content;
@@ -246,7 +246,6 @@ namespace PortJob {
         public Layint layint;         // Parent layint (null if exterior cell)
         public int refs;              // Number of references in this cell, for culling purposes
         public int drawId;            // Drawgroup ID, value also correponds to the bitwise (1 << id)
-        public uint[] drawGroups;
         public List<Cell> pairs;      // Cells that it borders in other msbs, these will have 'paired draw ids'
         public List<Layout> connects; // Connect collisions we need to generate
 
@@ -277,6 +276,7 @@ namespace PortJob {
             content = new();
             markers = new();
             terrain = new();
+            lowTerrain = new();
             borders = new TerrainVertex[4, 65];
 
             /* These fields are used by Layout for stuff */
@@ -284,7 +284,6 @@ namespace PortJob {
             layout = null;
             layint = null;
             drawId = -1;
-            drawGroups = null;
             pairs = null;
             connects = null;
 
@@ -387,6 +386,122 @@ namespace PortJob {
                     last = lastEdge;
                 }
 
+                /* Generate low detail terrain */
+                /* Goal of this section is to generate a super simple low poly version of the terrain for use as distance lod for unloaded cells */
+                if(GENERATE_LOW_TERRAIN) {
+                    /* Count texture usages and find the 2 most used terrain textures */
+                    Dictionary<ushort, int> texCounts = new();
+                    foreach(TerrainVertex tv in vertices) {
+                        if(!texCounts.ContainsKey(tv.texture)) { texCounts.Add(tv.texture, 1); }
+                        else {
+                            texCounts[tv.texture]++;
+                        }
+                    }
+                    ushort mostest = vertices[0].texture, most = vertices[0].texture;
+                    foreach(KeyValuePair<ushort, int> kvp in texCounts) {
+                        if(kvp.Key != mostest && texCounts[mostest] < kvp.Value) { most = mostest; mostest = kvp.Key; }
+                        if(kvp.Key != mostest && texCounts[most] < kvp.Value) { most = kvp.Key; }
+                    }
+
+                    /* Low index data */
+                    List<int> lowIndices = new();   // Low terrain gen is optimized down to 2 textures so we only need one set of indices
+                    for (int yy = 0; yy < CELL_GRID_SIZE; yy+=4) {
+                        for (int xx = 0; xx < CELL_GRID_SIZE; xx+=4) {
+                            int[] quad = {
+                                (yy * (CELL_GRID_SIZE + 1)) + xx,
+                                (yy * (CELL_GRID_SIZE + 1)) + (xx + 4),
+                                ((yy + 4) * (CELL_GRID_SIZE + 1)) + (xx + 4),
+                                ((yy + 4) * (CELL_GRID_SIZE + 1)) + xx
+                            };
+
+
+                            int[,] tris = {
+                                {
+                                    quad[(xx + (yy % 2) + 2) % 4],
+                                    quad[(xx + (yy % 2) + 1) % 4],
+                                    quad[(xx + (yy % 2) + 0) % 4]
+                                },
+                                {
+                                    quad[(xx + (yy % 2) + 0) % 4],
+                                    quad[(xx + (yy % 2) + 3) % 4],
+                                    quad[(xx + (yy % 2) + 2) % 4]
+                                }
+                            };
+
+                            for (int t = 0; t < 2; t++) {
+                                for (int i = 0; i < 3; i++) {
+                                    lowIndices.Add(tris[t, i]);
+                                }
+                            }
+                        }
+                    }
+
+                    /* Cull unused vertices and indices in low terrain */
+                    List<TerrainVertex> cv = new();
+                    List<int> ci = new();
+
+                    for (int ii = 0; ii < lowIndices.Count; ii++) {
+                        int index = lowIndices[ii];
+                        TerrainVertex vert = vertices[index];
+
+                        int re = cv.IndexOf(vert);
+                        if (re != -1) { ci.Add(re); } else {
+                            /* Copy terrain vert and edit material info */
+                            ushort nutex = (vert.texture == mostest || vert.texture == most) ? vert.texture : mostest; // @TODO: instead of just setting all materials to "MOSTEST" id, open the textures and get the approximate color and decide that way
+                            TerrainVertex nutv = new TerrainVertex(vert.position, vert.grid, vert.normal, vert.coordinate, vert.color, nutex);
+
+                            cv.Add(nutv);
+                            ci.Add(cv.Count - 1);
+                        }
+                    }
+
+                    /* Create low terrain mesh and find textures */
+                    TerrainData lowMesh = new TerrainData(region + ":" + name + ":LOW", int.Parse(landscape["landscape_flags"].ToString()), cv, ci);
+
+                    string texDir = $"{MorrowindPath}\\Data Files\\textures\\";
+                    string[] texPaths = new string[2];
+                    ushort[] texIDs = new[]{ mostest, most };
+                    for (int i = 0; i < 2; i++) {
+                        ushort tex = texIDs[i];
+                        string texPath = "CommonFunc\\DefaultTex\\def_missing.dds";     // Default is something stupid so it's obvious there was an error
+                        JObject ltexRecord = esm.FindRecordByKey(ESM.Type.LandscapeTexture, "index", tex + "");
+                        if (ltexRecord != null) {
+                            texPath = texDir + ltexRecord["texture"].ToString().Replace(".tga", ".dds");
+                        }
+                        texPaths[i] = texPath;
+                        lowMesh.texturesIndices[i] = tex;
+                    }
+
+                    /* Material Information */
+                    lowMesh.mtd = "M[ARSN]_m";
+                    lowMesh.material = Utility.PathToFileName(texPaths[0]) + "->" + Utility.PathToFileName(texPaths[1]);
+
+                    /* Setup material textures */
+                    const string blackTex = "CommonFunc\\DefaultTex\\def_black.dds";
+                    const string greyTex = "CommonFunc\\DefaultTex\\def_grey.dds";
+                    const string flatTex = "CommonFunc\\DefaultTex\\def_flat.dds";
+
+                    lowMesh.textures.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>(texPaths[0], new Vector2(32f, 32f)));
+                    lowMesh.textures.Add("g_DiffuseTexture2", new KeyValuePair<string, Vector2>(texPaths[1], new Vector2(32f, 32f)));
+                    lowMesh.textures.Add("g_SpecularTexture", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                    lowMesh.textures.Add("g_SpecularTexture2", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                    lowMesh.textures.Add("g_ShininessTexture", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                    lowMesh.textures.Add("g_ShininessTexture2", new KeyValuePair<string, Vector2>(blackTex, new Vector2(32f, 32f)));
+                    lowMesh.textures.Add("g_BumpmapTexture", new KeyValuePair<string, Vector2>(flatTex, new Vector2(32f, 32f)));
+                    lowMesh.textures.Add("g_BumpmapTexture2", new KeyValuePair<string, Vector2>(flatTex, new Vector2(32f, 32f)));
+                    lowMesh.textures.Add("g_BlendMaskTexture", new KeyValuePair<string, Vector2>(greyTex, new Vector2(1f, 1f)));
+
+                    /* Add vertex color mesh as well */
+                    TerrainData lowMultMesh = new TerrainData(region + ":" + name + ":LOW", int.Parse(landscape["landscape_flags"].ToString()), cv, ci);
+                    lowMultMesh.mtd = "M[A]_multiply";
+                    lowMultMesh.material = "Color Multiply Decal Mesh";
+                    lowMultMesh.textures.Add("g_DiffuseTexture", new KeyValuePair<string, Vector2>($"terrain_color_blend_map_{position.x.ToString().Replace("-", "n")}_{position.y.ToString().Replace("-", "n")}.dds", new Vector2(1f, 1f)));
+
+                    lowTerrain.Add(lowMesh);
+                    lowTerrain.Add(lowMultMesh);
+                }
+
+                /* Fairly slow blending pass that trys to make terrain texture blending look smoother and nicer */
                 if (GENERATE_NICE_TERRAIN) {
                     // Gets and returns a TerrainVertex by it's grid position
                     TerrainVertex GetTerrainVertexByGrid(Int2 g) {
@@ -695,6 +810,7 @@ namespace PortJob {
     }
 
     public class Content {
+
         public readonly string id;
         public readonly ESM.Type type;
 

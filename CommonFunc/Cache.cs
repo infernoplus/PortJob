@@ -75,18 +75,20 @@ namespace CommonFunc {
 
     public class TerrainInfo {
         public Int2 position;   // Location in world cell grid
-        public string path; // Relative path from the 'cache' folder to the converted flver file
+        public string high, low; // Relative path from the 'cache' folder to the converted flver file. High is high detail (real shit), low is low detail (for distant lod)
         public CollisionInfo collision;
         public List<TextureInfo> textures; // All generated tpf files
 
-        public int id;  // Model ID number, the last 6 digits in a model filename. EXAMPLE: m30_00_00_00_005521.mapbnd.dcx or h30_00_00_00_000228.hkx.dcx
-        public TerrainInfo(Int2 position, string path, CollisionInfo collision) {
+        public int idLow, idHigh;  // Model ID number, the last 6 digits in a model filename. EXAMPLE: m30_00_00_00_005521.mapbnd.dcx or h30_00_00_00_000228.hkx.dcx
+        public TerrainInfo(Int2 position, string high, string low, CollisionInfo collision) {
             this.position = position;
-            this.path = path;
+            this.high = high;
+            this.low = low;
             this.collision = collision;
             textures = new();
 
-            id = -1;
+            idLow = -1;
+            idHigh = -1;
         }
     }
 
@@ -97,6 +99,8 @@ namespace CommonFunc {
         public List<TextureInfo> textures; // All generated tpf files
 
         public int id;  // Model ID number, the last 6 digits in a model filename. EXAMPLE: m30_00_00_00_005521.mapbnd.dcx
+
+        public float radius; // Bounding radius, for use in distant LOD generation
         public ModelInfo(string name, string path) {
             this.name = name.ToLower();
             this.path = path;
@@ -104,6 +108,7 @@ namespace CommonFunc {
             textures = new();
 
             id = -1;
+            radius = -1f;
         }
 
         public CollisionInfo GetCollision(float scale) {

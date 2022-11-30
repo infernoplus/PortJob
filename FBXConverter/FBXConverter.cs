@@ -17,9 +17,6 @@ using MTD = CommonFunc.MTD;
 
 namespace FBXConverter {
 
-
-
-
     /* Converts static meshes from Morrowind into the Dark Souls FLVER format. */
     /* Morrowinds native NIF format has to be mass converted to FBX first for this program to work. */
     /* Heavily references code from Meowmartius's FBX2FLVER. He's a secret gamer god. */
@@ -442,22 +439,9 @@ namespace FBXConverter {
                 flverMeshNameMap.Add(kvp.Key, kvp.Value.Name);
             }
 
-            /* Write FLVER to file */
-            //Log.Info(1, "Writing FLVER to: " + flverPath);
-            /*BND4 bnd = new() {
-                Compression = DCX.Type.DCX_DFLT_10000_44_9
-            };*/
-
             string flverName = Path.GetFileNameWithoutExtension(flverPath);
             Directory.CreateDirectory(Path.GetDirectoryName(flverPath));
             flver.Write(flverPath);
-
-            //string mapName = Path.GetFileName(flverPath.Substring(0, flverPath.LastIndexOf('_'))); //file name is just the top level directory, here. There is no GetTopLevelDirectory :(
-
-            //string internalFlverPath = flverName + ".flver"; //"N:\\FDP\\data\\INTERROOT_win64\\map\\" + mapName + "\\" + flverName + "\\Model\\" + flverName + ".flver" //full internal path
-            //bnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, internalFlverPath, flver.Write()));
-            //bnd.Write(flverPath.Replace(".flver", ".mapbnd.dcx"), DCX.Type.DCX_DFLT_10000_44_9);
-            //flver.Write(flverPath, DCX.Type.DCX_DFLT_10000_24_9);
 
             Directory.CreateDirectory(tpfDir);
             foreach (TPF tpf in tpfs) {
@@ -487,10 +471,27 @@ namespace FBXConverter {
                 }
             }
 
+            /* Calculate bounding box/radius for modelinfo */
+            Vector3 min = new(float.MaxValue), max = new(float.MinValue);
+            foreach(FLVER2.Mesh mesh in flver.Meshes) {
+                foreach(FLVER.Vertex vert in mesh.Vertices) {
+                    min.X = Math.Min(min.X, vert.Position.X);
+                    max.X = Math.Max(max.X, vert.Position.X);
+                    min.Y = Math.Min(min.Y, vert.Position.Y);
+                    max.Y = Math.Max(max.Y, vert.Position.Y);
+                    min.Z = Math.Min(min.Z, vert.Position.Z);
+                    max.Z = Math.Max(max.Z, vert.Position.Z);
+                }
+            }
+            float radius = Vector3.Distance(min, max);
+            modelInfo.radius = radius;
+            //Console.WriteLine($"{radius:F2} :: {nifName}");
+
             /* Finish up modelinfo generation and return */
-            foreach(TPF tpf in tpfs) {
+            foreach (TPF tpf in tpfs) {
                 modelInfo.textures.Add(new TextureInfo(tpf.Textures[0].Name.Substring(3, tpf.Textures[0].Name.Length -3) + ".dds", tpfDir + tpf.Textures[0].Name + ".tpf.dcx"));
             }
+
             return modelInfo;
         }
     }

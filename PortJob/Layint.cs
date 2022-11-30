@@ -47,11 +47,14 @@ namespace PortJob {
         public int id;
         public List<Cell> cells;
         public List<KeyValuePair<Bounds, Cell>> mergedCells;
+        public Dictionary<Cell, uint[]> drawGroups, displayGroups;
         public Layint(int id) {
             generated = false;
             this.id = id;
             cells = new List<Cell>();
             mergedCells = new();
+            drawGroups = new();
+            displayGroups = new();
         }
 
         /* Loads cell data and calculates bounding boxes so that we can determine the spacing between each cell. */
@@ -71,9 +74,13 @@ namespace PortJob {
                 cell.Load(esm);
 
                 /* Generate drawgroups */
-                cell.drawGroups = new uint[NUM_DRAW_GROUPS];
+                uint[] MakeGroup() { return new uint[NUM_DRAW_GROUPS]; }
+                uint[] drawGroup = MakeGroup(), displayGroup = MakeGroup();
                 cell.drawId = nextId++;
-                cell.drawGroups[cell.drawId / 32] |= (uint)1 << (cell.drawId % 32);
+                drawGroup[cell.drawId / 32] |= (uint)1 << (cell.drawId % 32);
+                displayGroup[cell.drawId / 32] |= (uint)1 << (cell.drawId % 32);
+                drawGroups.Add(cell, drawGroup);
+                displayGroups.Add(cell, displayGroup);
 
                 /* Generate bounds and offsets */     // This is far from efficent. We could pack things more tightly by testing bounding boxes or something
                 int ind = c % rowMax;

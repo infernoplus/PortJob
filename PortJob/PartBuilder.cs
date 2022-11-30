@@ -10,18 +10,20 @@ using System.Threading.Tasks;
 namespace PortJob {
     class PartBuilder {
         /* Moved many repetivie boilerplate MSB part generation code blocks into this class */
+        public static MapColPair MakeTerrain(Layout layout, Cell cell, TerrainInfo terrainInfo) {
+            int area = Const.EXT_AREA; int block = layout.id;
+            uint[] drawGroup = layout.drawGroups[cell];
+            uint[] displayGroup = layout.displayGroups[cell];
 
-        public static MapColPair MakeTerrain(int area, int block, Cell cell, TerrainInfo terrainInfo) {
             /* Terrain Map Piece */
             MSB3.Part.MapPiece terrain = new();
-            terrain.ModelName = $"m{terrainInfo.id:D6}";
-            terrain.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{terrainInfo.id:D6}.SIB";
+            terrain.ModelName = $"m{terrainInfo.idHigh:D6}";
+            terrain.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{terrainInfo.idHigh:D6}.SIB";
             terrain.Position = cell.area.center;
             terrain.Rotation = Vector3.Zero;
             terrain.MapStudioLayer = uint.MaxValue;
-            for (int k = 0; k < cell.drawGroups.Length; k++) {
-                terrain.DrawGroups[k] = cell.drawGroups[k];
-                terrain.DispGroups[k] = cell.drawGroups[k];
+            for (int k = 0; k < drawGroup.Length; k++) {
+                terrain.DrawGroups[k] = drawGroup[k];
                 terrain.BackreadGroups[k] = 0;
             }
             terrain.ShadowSource = true;
@@ -38,10 +40,9 @@ namespace PortJob {
             terrainCol.Position = terrain.Position;
             terrainCol.Rotation = terrain.Rotation;
             terrainCol.MapStudioLayer = uint.MaxValue;
-            for (int k = 0; k < cell.drawGroups.Length; k++) {
-                terrainCol.DrawGroups[k] = cell.drawGroups[k];
-                terrainCol.DispGroups[k] = cell.drawGroups[k];
-                terrainCol.BackreadGroups[k] = cell.drawGroups[k];
+            for (int k = 0; k < displayGroup.Length; k++) {
+                terrainCol.DispGroups[k] = displayGroup[k];
+                terrainCol.BackreadGroups[k] = displayGroup[k];
             }
             terrainCol.Name = terrainCol.ModelName + "_0000"; // Same as abovev
             terrainCol.LodParamID = -1;
@@ -50,7 +51,43 @@ namespace PortJob {
             return new MapColPair(terrain, terrainCol);
         }
 
-        public static MapColPair MakeStatic(int area, int block, Cell cell, Content content, ModelInfo modelInfo, Counters counters, Bounds? bounds = null) {
+        public static MSB3.Part.MapPiece MakeLowTerrain(Layout layout, Cell cell, TerrainInfo terrainInfo) {
+            int area = Const.EXT_AREA; int block = layout.id;
+            uint[] inverseGroup = layout.inverseGroups[cell];
+
+            /* Terrain Map Piece */
+            MSB3.Part.MapPiece terrain = new();
+            terrain.ModelName = $"m{terrainInfo.idLow:D6}";
+            terrain.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{terrainInfo.idLow:D6}.SIB";
+            terrain.Position = cell.area.center;
+            terrain.Rotation = Vector3.Zero;
+            terrain.MapStudioLayer = uint.MaxValue;
+            for (int k = 0; k < inverseGroup.Length; k++) {
+                terrain.DrawGroups[k] = inverseGroup[k];
+                terrain.BackreadGroups[k] = 0;
+            }
+            terrain.ShadowSource = true;
+            terrain.DrawByReflectCam = true;
+            terrain.Name = terrain.ModelName + "_0000";   // Terrains are unique so no need to worry about counts
+            terrain.UnkE0E = -1;
+            terrain.LodParamID = 19; //Param for: Don't switch to LOD models
+
+            return terrain;
+        }
+
+        public static MapColPair MakeStatic(Layout layout, Cell cell, Content content, ModelInfo modelInfo, Counters counters) {
+            uint[] drawGroup = layout.GetDrawGroup(cell, modelInfo, content.scale);
+            uint[] displayGroup = layout.displayGroups[cell];
+            return MakeStatic(Const.EXT_AREA, layout.id, cell, content, modelInfo, counters, drawGroup, displayGroup);
+        }
+
+        public static MapColPair MakeStatic(Layint layint, Cell cell, Content content, ModelInfo modelInfo, Counters counters, Bounds bounds) {
+            uint[] drawGroup = layint.drawGroups[cell];
+            uint[] displayGroup = layint.displayGroups[cell];
+            return MakeStatic(Const.INT_AREA, layint.id, cell, content, modelInfo, counters, drawGroup, displayGroup, bounds);
+        }
+
+        private static MapColPair MakeStatic(int area, int block, Cell cell, Content content, ModelInfo modelInfo, Counters counters, uint[] drawGroup, uint[] displayGroup, Bounds? bounds = null) {
             /* Static Mesh Map Piece */
             MSB3.Part.MapPiece mp = new();
             mp.ModelName = $"m{modelInfo.id:D6}";
@@ -59,9 +96,8 @@ namespace PortJob {
             mp.Rotation = content.rotation;
             mp.Scale = new Vector3(content.scale);
             mp.MapStudioLayer = uint.MaxValue;
-            for (int k = 0; k < cell.drawGroups.Length; k++) {
-                mp.DrawGroups[k] = cell.drawGroups[k];
-                mp.DispGroups[k] = cell.drawGroups[k];
+            for (int k = 0; k < drawGroup.Length; k++) {
+                mp.DrawGroups[k] = drawGroup[k];
                 mp.BackreadGroups[k] = 0;
             }
             mp.ShadowSource = true;
@@ -80,10 +116,9 @@ namespace PortJob {
                 col.Position = mp.Position;
                 col.Rotation = mp.Rotation;
                 col.MapStudioLayer = uint.MaxValue;
-                for (int k = 0; k < cell.drawGroups.Length; k++) {
-                    col.DrawGroups[k] = cell.drawGroups[k];
-                    col.DispGroups[k] = cell.drawGroups[k];
-                    col.BackreadGroups[k] = cell.drawGroups[k];
+                for (int k = 0; k < displayGroup.Length; k++) {
+                    col.DispGroups[k] = displayGroup[k];
+                    col.BackreadGroups[k] = displayGroup[k];
                 }
 
                 col.Name = $"{col.ModelName}_{counters.GetCollision(collisionInfo):D4}";
@@ -94,7 +129,17 @@ namespace PortJob {
             return new MapColPair(mp, null);
         }
 
-        public static MSB3.Part.Object MakeStaticObject(int area, int block, Cell cell, Content content, ObjectInfo objectInfo, Counters counters, Bounds? bounds = null) {
+        public static MSB3.Part.Object MakeStaticObject(Layout layout, Cell cell, Content content, ObjectInfo objectInfo, Counters counters) {
+            uint[] drawGroup = layout.GetDrawGroup(cell, objectInfo.model, content.scale);
+            return MakeStaticObject(Const.EXT_AREA, layout.id, cell, content, objectInfo, counters, drawGroup);
+        }
+
+        public static MSB3.Part.Object MakeStaticObject(Layint layint, Cell cell, Content content, ObjectInfo objectInfo, Counters counters, Bounds bounds) {
+            uint[] drawGroup = layint.drawGroups[cell];
+            return MakeStaticObject(Const.INT_AREA, layint.id, cell, content, objectInfo, counters, drawGroup, bounds);
+        }
+
+        private static MSB3.Part.Object MakeStaticObject(int area, int block, Cell cell, Content content, ObjectInfo objectInfo, Counters counters, uint[] drawGroup, Bounds? bounds = null) {
             /* Object */
             MSB3.Part.Object obj = new();
             obj.ModelName = $"o{objectInfo.id:D6}";
@@ -103,9 +148,8 @@ namespace PortJob {
             obj.Rotation = content.rotation;
             obj.Scale = new Vector3(content.scale);
             obj.MapStudioLayer = uint.MaxValue;
-            for (int k = 0; k < cell.drawGroups.Length; k++) {
-                obj.DrawGroups[k] = cell.drawGroups[k];
-                obj.DispGroups[k] = cell.drawGroups[k];
+            for (int k = 0; k < drawGroup.Length; k++) {
+                obj.DrawGroups[k] = drawGroup[k];
                 obj.BackreadGroups[k] = 0;
             }
             //obj.CollisionName = terrainCol.Name;
@@ -118,8 +162,17 @@ namespace PortJob {
             return obj;
         }
 
-            /* animated ObjAct door */
-            public static ObjActPair MakeActDoor(int area, int block, Cell cell, Content content, ObjActInfo objActInfo, Counters counters, Bounds? bounds = null) {
+        public static ObjActPair MakeActDoor(Layout layout, Cell cell, Content content, ObjActInfo objActInfo, Counters counters) {
+            uint[] drawGroup = layout.GetDrawGroup(cell, objActInfo.model, content.scale);
+            return MakeActDoor(Const.EXT_AREA, layout.id, cell, content, objActInfo, counters, drawGroup);
+        }
+
+        public static ObjActPair MakeActDoor(Layint layint, Cell cell, Content content, ObjActInfo objActInfo, Counters counters, Bounds bounds) {
+            uint[] drawGroup = layint.drawGroups[cell];
+            return MakeActDoor(Const.INT_AREA, layint.id, cell, content, objActInfo, counters, drawGroup, bounds);
+        }
+
+        private static ObjActPair MakeActDoor(int area, int block, Cell cell, Content content, ObjActInfo objActInfo, Counters counters, uint[] drawGroup, Bounds? bounds = null) {
             /* Object */
             MSB3.Part.Object obj = new();
             obj.ModelName = $"o{objActInfo.id:D6}";
@@ -138,9 +191,8 @@ namespace PortJob {
             obj.Rotation = new Vector3(content.rotation.X, content.rotation.Y - 180f, content.rotation.Z);
             obj.Scale = new Vector3(content.scale);
             obj.MapStudioLayer = uint.MaxValue;
-            for (int k = 0; k < cell.drawGroups.Length; k++) {
-                obj.DrawGroups[k] = cell.drawGroups[k];
-                obj.DispGroups[k] = cell.drawGroups[k];
+            for (int k = 0; k < drawGroup.Length; k++) {
+                obj.DrawGroups[k] = drawGroup[k];
                 obj.BackreadGroups[k] = 0;
             }
             obj.EntityID = Script.NewEntID();

@@ -10,6 +10,7 @@ namespace PortJob {
     /* This class takes the list of exterior cells that ESM generates and calculates the layout for MSBs to use */
     /* Calculates information for which msbs contain which cells, what connect collisions to put in which cells, and what drawgroups each cell will have */
     public class Layout {
+
         public static List<Layout> Calculate(ESM esm) {
             Log.Info(0, "Calculating cell grid layouts...");
 
@@ -53,7 +54,6 @@ namespace PortJob {
             /* Initialize cell fields */
             for (int i = 0; i < cells.Count; i++) {
                 Cell cell = cells[i];
-                cell.drawGroups = new uint[NUM_DRAW_GROUPS];
                 cell.pairs = new List<Cell>();
                 cell.connects = new List<Layout>();
             }
@@ -226,7 +226,22 @@ namespace PortJob {
                 }
             }
 
-            /* Solve drawgroups */
+            /* Generate offset grids for solving drawgroup sets */
+            Int2[] MakeOffsetGrid(int size) {
+                Int2[] og = new Int2[((size*2)+1)*((size*2)+1)];
+                int i = 0;
+                for(int y=-size;y<=size;y++) {
+                    for(int x=-size;x<=size;x++) {
+                        og[i++] = new Int2(x, y);
+                    }
+                }
+                return og;
+            }
+            Int2[] CBO1 = MakeOffsetGrid(1), CBO2 = MakeOffsetGrid(2), CBO3 = MakeOffsetGrid(3);
+
+
+            /* Solve drawgroup & displaygroup sets */
+            uint[] MakeGroup() { return new uint[NUM_DRAW_GROUPS]; }
             for (int i = 0; i < layouts.Count; i++) {
                 Layout layout = layouts[i];
 
@@ -234,17 +249,48 @@ namespace PortJob {
                     Cell cell = layout.cells[j];
 
                     if(cell.drawId < 0) { Log.Error(0, "Invalid drawId found during drawgroup solving!"); }
-                    cell.drawGroups[cell.drawId / 32] |= (uint)1 << (cell.drawId % 32);
 
-                    for (int k = 0; k < CELL_BORDER_OFFSETS.Length; k++) {
-                        Int2 offset = CELL_BORDER_OFFSETS[k];
-                        Int2 position = new(cell.position.x + offset.x, cell.position.y + offset.y);
+                    uint[] displayGroup = MakeGroup();
+                    displayGroup[cell.drawId / 32] |= (uint)1 << (cell.drawId % 32);
+                    layout.displayGroups.Add(cell, displayGroup);
 
-                        Cell border = getCellByPosition(position);
-                        if (border != null) {
-                            cell.drawGroups[border.drawId / 32] |= (uint)1 << (border.drawId % 32);
+                    uint[] SolveDrawGroup(Cell cell, Int2[] offsetGrid) {
+                        uint[] drawGroup = MakeGroup();
+                        drawGroup[cell.drawId / 32] |= (uint)1 << (cell.drawId % 32);
+                        for (int k = 0; k < offsetGrid.Length; k++) {
+                            Int2 offset = offsetGrid[k];
+                            Int2 position = new(cell.position.x + offset.x, cell.position.y + offset.y);
+
+                            Cell border = getCellByPosition(position);
+                            if (border != null) {
+                                drawGroup[border.drawId / 32] |= (uint)1 << (border.drawId % 32);
+                            }
                         }
+                        return drawGroup;
                     }
+
+                    uint[] MIN = displayGroup;
+                    uint[] DG1 = SolveDrawGroup(cell, CBO1), DG2 = SolveDrawGroup(cell, CBO2), DG3 = SolveDrawGroup(cell, CBO3);
+                    uint[] MAX = MakeGroup();
+                    for(int k=0;k<MAX.Length;k++) { MAX[k] = uint.MaxValue; }
+
+                    layout.drawGroups.Add(cell, DG1);
+
+                    Dictionary<Size, uint[]> sets = new();
+                    sets.Add(Size.Iota, MIN);
+                    sets.Add(Size.Tiny, DG1);
+                    sets.Add(Size.Small, DG1);
+                    sets.Add(Size.Medium, DG1);
+                    sets.Add(Size.Large, DG2);
+                    sets.Add(Size.Huge, DG3);
+                    sets.Add(Size.Gigantic, MAX);
+                    layout.drawGroupSets.Add(cell, sets);
+
+                    uint[] inverseGroup = MakeGroup();
+                    for (int k = 0; k < DG1.Length; k++) {
+                        inverseGroup[k] = ~DG1[k];               // @TODO: this is '''correct''' but doing it recursively may work better
+                    }
+                    layout.inverseGroups.Add(cell, inverseGroup);
                 }
             }
 
@@ -273,7 +319,8 @@ namespace PortJob {
                     }
                 }
 
-                int vis = 0; // Count up how many other cells are visible via drawgroups against loaded cells list
+                // Commented out this test due to big changes in draw groups system
+                /*int vis = 0; // Count up how many other cells are visible via drawgroups against loaded cells list
                 for (int j = 0; j < loaded.Count; j++) {
                     Cell other = loaded[j];
 
@@ -281,7 +328,7 @@ namespace PortJob {
                         vis++;
                     }
                 }
-                visRes[vis]++;
+                visRes[vis]++;*/
             }
 
             /* Write out results */
@@ -321,16 +368,40 @@ namespace PortJob {
 
             return layouts;
         }
-           
+
+        public enum Size {
+            Iota,    // 0.35 - small items
+            Tiny,    // 1.0  - small chests, large items, small bushes
+            Small,   // 3.0  - medium doors, larger plants, small rocks, chairs, small tables
+            Medium,  // 10.0 - small trees, medium sized rocks
+            Large,   // 25.0 - trees, giant rocks, small buildings
+            Huge,    // 50.0 - buildings, massive boulders
+            Gigantic // +    - vivec cantons, massive structures, bridges
+        }
+        private static Dictionary<Size, float> SIZE_MAP = new() {
+            { Size.Tiny, 1f },
+            { Size.Small, 3f },
+            { Size.Medium, 10f },
+            { Size.Large, 25f },
+            { Size.Huge, 50f }
+        };
+
         public int id;
         public Box bounds;
         public List<Cell> cells;
         public List<Layout> connects;
+
+        public Dictionary<Cell, Dictionary<Size, uint[]>> drawGroupSets;
+        public Dictionary<Cell, uint[]> drawGroups, displayGroups, inverseGroups;
         public Layout(int id, Box bounds) {
             this.id = id;
             this.bounds = bounds;
             cells = new List<Cell>();
             connects = new List<Layout>();
+            drawGroupSets = new();
+            drawGroups = new();
+            displayGroups = new();
+            inverseGroups = new();
         }
 
         public void Load(ESM esm) {
@@ -341,6 +412,22 @@ namespace PortJob {
                 Cell cell = cells[c];
                 cell.Load(esm);
             }
+        }
+
+        public uint[] GetDrawGroup(Cell cell, ModelInfo modelInfo, float scale) {
+            if (!GENERATE_DISTANT_OBJECTS) { return drawGroups[cell]; }
+            Size FindSize(ModelInfo modelInfo, float radius) {
+                foreach (KeyValuePair<Size, float> kvp in SIZE_MAP) {
+                    if (radius <= kvp.Value) {
+                        return kvp.Key;
+                    }
+                }
+                return Size.Gigantic;
+            }
+
+            float radius = modelInfo.radius * scale;
+            Size size = FindSize(modelInfo, radius);
+            return drawGroupSets[cell][size];
         }
     }
     

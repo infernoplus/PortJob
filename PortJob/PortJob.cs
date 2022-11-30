@@ -132,7 +132,7 @@ namespace PortJob {
 
             /* Generate Exterior MSBs from layouts */
             {
-                const int area = 54;
+                int area = EXT_AREA;
                 HashSet<TextureInfo> areaTextures = new();  // All textures to pack for this area
 
                 foreach(Layout layout in layouts) {
@@ -182,11 +182,17 @@ namespace PortJob {
 
                         /* Add cell terrain map piece and collision */
                         TerrainInfo terrainInfo = cache.GetTerrainInfo(cell.position);
-                        MapColPair terrain = PartBuilder.MakeTerrain(area, block, cell, terrainInfo);
+                        MapColPair terrain = PartBuilder.MakeTerrain(layout, cell, terrainInfo);
                         msb.Parts.MapPieces.Add(terrain.mapPiece);
                         msb.Parts.Collisions.Add(terrain.collision);
                         usedTerrain.Add(terrainInfo);
                         usedCollision.Add(terrainInfo.collision);
+
+                        /* Add cell low terrain map piece */
+                        if(terrainInfo.low != null) {
+                            MSB3.Part.MapPiece lowTerrain = PartBuilder.MakeLowTerrain(layout, cell, terrainInfo);
+                            msb.Parts.MapPieces.Add(lowTerrain);
+                        }
                         
 
                         /* Static map pieces and collision */
@@ -195,7 +201,7 @@ namespace PortJob {
                             if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
 
                             ModelInfo modelInfo = cache.GetModelInfo(content.mesh);
-                            MapColPair staticMesh = PartBuilder.MakeStatic(area, block, cell, content, modelInfo, counters);
+                            MapColPair staticMesh = PartBuilder.MakeStatic(layout, cell, content, modelInfo, counters);
                             msb.Parts.MapPieces.Add(staticMesh.mapPiece);
                             usedMapPieces.Add(modelInfo);
                             if (staticMesh.collision != null) {
@@ -212,14 +218,14 @@ namespace PortJob {
                             /* Door ObjAct */
                             if (content.door != null && content.door.type == DoorContent.DoorType.Decoration) {
                                 ObjActInfo objActInfo = cache.GetObjActInfo(content.id);
-                                ObjActPair objAct = MakeActDoor(area, block, cell, content, objActInfo, counters);
+                                ObjActPair objAct = MakeActDoor(layout, cell, content, objActInfo, counters);
                                 msb.Parts.Objects.Add(objAct.obj);
                                 msb.Events.ObjActs.Add(objAct.objAct);
                             }
                             /* Load Door */
                             else if (content.door != null && content.door.type == DoorContent.DoorType.Load) {
                                 ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
-                                MSB3.Part.Object obj = MakeStaticObject(area, block, cell, content, objectInfo, counters);
+                                MSB3.Part.Object obj = MakeStaticObject(layout, cell, content, objectInfo, counters);
                                 msb.Parts.Objects.Add(obj);
                                 obj.EntityID = content.door.entityID;
                                 script.RegisterLoadDoor(content.door);
@@ -227,7 +233,7 @@ namespace PortJob {
                             /* Static Object */
                             else {
                                 ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
-                                MSB3.Part.Object obj = MakeStaticObject(area, block, cell, content, objectInfo, counters);
+                                MSB3.Part.Object obj = MakeStaticObject(layout, cell, content, objectInfo, counters);
                                 msb.Parts.Objects.Add(obj);
                             }
                         }
@@ -264,7 +270,7 @@ namespace PortJob {
 
             /* Generate Interior MSBs from layints */
             {
-                const int area = 30;
+                int area = INT_AREA;
                 HashSet<TextureInfo> areaTextures = new();  // All textures to pack for this area
 
                 foreach (Layint layint in layints) {
@@ -328,7 +334,7 @@ namespace PortJob {
                             if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
 
                             ModelInfo modelInfo = cache.GetModelInfo(content.mesh);
-                            MapColPair staticMesh = PartBuilder.MakeStatic(area, block, cell, content, modelInfo, counters, bounds);
+                            MapColPair staticMesh = PartBuilder.MakeStatic(layint, cell, content, modelInfo, counters, bounds);
                             msb.Parts.MapPieces.Add(staticMesh.mapPiece);
                             usedMapPieces.Add(modelInfo);
                             if (staticMesh.collision != null) {
@@ -345,14 +351,14 @@ namespace PortJob {
                             /* Door ObjAct */
                             if (content.door != null && content.door.type == DoorContent.DoorType.Decoration) {
                                 ObjActInfo objActInfo = cache.GetObjActInfo(content.id);
-                                ObjActPair objAct = MakeActDoor(area, block, cell, content, objActInfo, counters, bounds);
+                                ObjActPair objAct = MakeActDoor(layint, cell, content, objActInfo, counters, bounds);
                                 msb.Parts.Objects.Add(objAct.obj);
                                 msb.Events.ObjActs.Add(objAct.objAct);
                             }
                             /* Load Door */
                             else if(content.door != null && content.door.type == DoorContent.DoorType.Load) {
                                 ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
-                                MSB3.Part.Object obj = MakeStaticObject(area, block, cell, content, objectInfo, counters, bounds);
+                                MSB3.Part.Object obj = MakeStaticObject(layint, cell, content, objectInfo, counters, bounds);
                                 obj.EntityID = content.door.entityID;
                                 msb.Parts.Objects.Add(obj);
                                 script.RegisterLoadDoor(content.door);
@@ -360,7 +366,7 @@ namespace PortJob {
                             /* Static Object */
                             else {
                                 ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
-                                MSB3.Part.Object obj = MakeStaticObject(area, block, cell, content, objectInfo, counters, bounds);
+                                MSB3.Part.Object obj = MakeStaticObject(layint, cell, content, objectInfo, counters, bounds);
                                 msb.Parts.Objects.Add(obj);
                             }
                         }
@@ -465,13 +471,24 @@ namespace PortJob {
             }
 
             foreach (TerrainInfo terrainInfo in usedTerrain) { // Terrain
-                FLVER2 flver = FLVER2.Read(terrainInfo.path);
-                string flverName = $"m{area:D2}_{block:D2}_{0:D2}_{0:D2}_{terrainInfo.id:D6}";
+                /* High terrain */
+                FLVER2 flver = FLVER2.Read(terrainInfo.high);
+                string flverName = $"m{area:D2}_{block:D2}_{0:D2}_{0:D2}_{terrainInfo.idHigh:D6}";
 
                 BND4 bnd = new() { Compression = DCX.Type.DCX_DFLT_10000_44_9 };
                 bnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, $"{flverName}.flver", flver.Write()));
                 bnd.Write($"{msbDir}{flverName}.mapbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9);
                 foreach (TextureInfo textureInfo in terrainInfo.textures) { textures.Add(textureInfo); } // Textures
+
+                /* Low terrain */
+                if (terrainInfo.low != null) {
+                    FLVER2 lowFlver = FLVER2.Read(terrainInfo.low);
+                    string lowFlverName = $"m{area:D2}_{block:D2}_{0:D2}_{0:D2}_{terrainInfo.idLow:D6}";
+
+                    BND4 lowBnd = new() { Compression = DCX.Type.DCX_DFLT_10000_44_9 };
+                    lowBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, $"{lowFlverName}.flver", lowFlver.Write()));
+                    lowBnd.Write($"{msbDir}{lowFlverName}.mapbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9);
+                }
             }
 
             foreach (CollisionInfo collisionInfo in usedCollision) { // Collision
@@ -500,11 +517,11 @@ namespace PortJob {
             enemy.ModelName = eModel;
             enemy.Position = cell.area.center + new Vector3(0f, 5f, 0f);
             enemy.MapStudioLayer = 4294967295;
-            for (int k = 0; k < cell.drawGroups.Length; k++) {
+            /*for (int k = 0; k < cell.drawGroups.Length; k++) {
                 enemy.DrawGroups[k] = 0;
                 enemy.DispGroups[k] = 0;
                 enemy.BackreadGroups[k] = 0;
-            }
+            }*/
             enemy.LodParamID = -1;
             enemy.UnkE0E = -1;
 
@@ -520,11 +537,11 @@ namespace PortJob {
             flat.Position = cell.area.center + OFFSET + new Vector3(0f, -15f, 0f);
             flat.Rotation = ROTATION;
             flat.MapStudioLayer = uint.MaxValue;
-            for (int k = 0; k < cell.drawGroups.Length; k++) {
+            /*for (int k = 0; k < cell.drawGroups.Length; k++) {
                 flat.DrawGroups[k] = cell.drawGroups[k];
                 flat.DispGroups[k] = cell.drawGroups[k];
                 flat.BackreadGroups[k] = cell.drawGroups[k];
-            }
+            }*/
 
             flat.Name = cModel; // + cName;
             flat.LodParamID = -1;
@@ -560,11 +577,11 @@ namespace PortJob {
                 con.Position = cell.area.center + OFFSET + new Vector3(0f, 5f, 0f);
                 con.Rotation = ROTATION;
                 con.MapStudioLayer = 4294967295; // Not a clue what this does... Should probably ask about it
-                for (int l = 0; l < cell.drawGroups.Length; l++) {
+                /*for (int l = 0; l < cell.drawGroups.Length; l++) {
                     con.DrawGroups[l] = cell.drawGroups[l];
                     con.DispGroups[l] = cell.drawGroups[l];
                     con.BackreadGroups[l] = 0; // Seems like DS3 doesn't use this for collision at all
-                }
+                }*/
                 con.LodParamID = -1;
                 con.UnkE0E = -1;
 

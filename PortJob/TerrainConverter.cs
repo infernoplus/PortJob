@@ -16,8 +16,28 @@ using static CommonFunc.Const;
 namespace PortJob {
     /* Converts landscape data into a flver model */
     class TerrainConverter {
-        // Return an object containing the flver, tpfs, and generated ids and names stuff later
-        public static TerrainInfo convert(Cell cell, string flverPath, string tpfDir) {
+        public static TerrainInfo convert(Cell cell, string flverDir, string tpfDir) {
+            string highName = $"HIGH { cell.position.x},{ cell.position.y}";
+            string highPath = $"{flverDir}{highName}.flver";
+            string lowPath = $"{flverDir}LOW {cell.position.x},{cell.position.y}.flver";
+            string objPath = $"{flverDir}{highName}.obj";
+            List<TPF> tpfs = convertTerrain(cell, highPath, tpfDir, true);
+            if (GENERATE_LOW_TERRAIN) { convertTerrain(cell, lowPath, tpfDir, false); }
+
+            CollisionInfo collisionInfo = new(highName, objPath, 100);
+            TerrainInfo terrainInfo = new(cell.position, highPath, GENERATE_LOW_TERRAIN?lowPath:null, collisionInfo);
+
+            // Since low terrain uses the same textures as high we don't need to worry about the tpfs for them
+            foreach (TPF tpf in tpfs) {
+                terrainInfo.textures.Add(new TextureInfo(tpf.Textures[0].Name.Substring(3, tpf.Textures[0].Name.Length - 3) + ".dds", tpfDir + tpf.Textures[0].Name + ".tpf.dcx"));
+            }
+
+            return terrainInfo;
+        }
+
+        private static List<TPF> convertTerrain(Cell cell, string flverPath, string tpfDir, bool isHigh) {
+            List<TerrainData> terrainDatas = isHigh ? cell.terrain : cell.lowTerrain;
+
             /* Create a blank FLVER */
             FLVER2 flver = new();
             flver.Header.Version = FLVER_VERSION;
@@ -31,7 +51,7 @@ namespace PortJob {
             Dictionary<FLVER2.Mesh, TerrainData> TerrainMeshes = new();
             Vector3 rootPosition = new Vector3(0f, 0f, 0f);
 
-            foreach (TerrainData terrainData in cell.terrain) {
+            foreach (TerrainData terrainData in terrainDatas) {
                 TerrainMeshes.Add(new FLVER2.Mesh(), terrainData);
             }
 
@@ -122,19 +142,21 @@ namespace PortJob {
 
                         // Writes every texture to a seperate file.
                         // This is how From handles their enviroment textures so I'm just following their pattern.
-                        TPF nuTpf = new();
-                        nuTpf.Encoding = TPF_ENCODING;
-                        nuTpf.Flag2 = TPF_FLAG_2;
-                        bool srgb = !(TEX.Value.ToLower().Contains("blend") || TEX.Value.ToLower().Contains("normal") || TEX.Value.ToLower().Contains("bumpmap"));
-                        byte[] texBytes = terrainMesh.mtd == "M[A]_multiply" ? terrainMesh.color : (srgb ? MTD.GetSRGBTexture(tex) : MTD.GetTexture(tex)); // Satan
+                        if (isHigh) {
+                            TPF nuTpf = new();
+                            nuTpf.Encoding = TPF_ENCODING;
+                            nuTpf.Flag2 = TPF_FLAG_2;
+                            bool srgb = !(TEX.Value.ToLower().Contains("blend") || TEX.Value.ToLower().Contains("normal") || TEX.Value.ToLower().Contains("bumpmap"));
+                            byte[] texBytes = terrainMesh.mtd == "M[A]_multiply" ? terrainMesh.color : (srgb ? MTD.GetSRGBTexture(tex) : MTD.GetTexture(tex)); // Satan
 
-                        int texFormat = DDS.GetTpfFormatFromDdsBytes(texBytes);
+                            int texFormat = DDS.GetTpfFormatFromDdsBytes(texBytes);
 
-                        // @TODO this checek is pointless because it doesn't actually know wtf even
-                        //if (texFormat == 0) { Log.Error(6, "Texture is an unrecognized format [" + shortTexName + "::" + texFormat + "]"); } else { Log.Info(6, "Texure [" + shortTexName + "::" + texFormat + "]"); }
+                            // @TODO this checek is pointless because it doesn't actually know wtf even
+                            //if (texFormat == 0) { Log.Error(6, "Texture is an unrecognized format [" + shortTexName + "::" + texFormat + "]"); } else { Log.Info(6, "Texure [" + shortTexName + "::" + texFormat + "]"); }
 
-                        nuTpf.Textures.Add(new TPF.Texture(shortTexName, (byte)texFormat, 0, texBytes));
-                        tpfs.Add(nuTpf);
+                            nuTpf.Textures.Add(new TPF.Texture(shortTexName, (byte)texFormat, 0, texBytes));
+                            tpfs.Add(nuTpf);
+                        }
                     }
                 }
 
@@ -413,19 +435,15 @@ namespace PortJob {
             }
 
             /* Create collision obj */
-            string outputPath = Path.GetDirectoryName(flverPath);
-            string objPath = $"{outputPath}\\{flverName}.obj";
-            TerrainToOBJ.convert(objPath, cell);
-
-            Log.Info(2, $"Generated Terrain with [{cell.terrain.Count}] meshes -> {Utility.PathToFileName(flverPath)}");
-
-            /* Return terraininfo for cache */
-            CollisionInfo collisionInfo = new(flverName, objPath, 100);
-            TerrainInfo terrainInfo = new(cell.position, flverPath, collisionInfo);
-            foreach (TPF tpf in tpfs) {
-                terrainInfo.textures.Add(new TextureInfo(tpf.Textures[0].Name.Substring(3, tpf.Textures[0].Name.Length - 3) + ".dds", tpfDir + tpf.Textures[0].Name + ".tpf.dcx"));
+            if (isHigh) {
+                string outputPath = Path.GetDirectoryName(flverPath);
+                string objPath = $"{outputPath}\\{flverName}.obj";
+                TerrainToOBJ.convert(objPath, cell);
             }
-            return terrainInfo;
+
+            Log.Info(2, $"Generated Terrain with [{terrainDatas.Count}] meshes -> {Utility.PathToFileName(flverPath)}");
+
+            return tpfs;
         }
     }
 }

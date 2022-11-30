@@ -108,7 +108,7 @@ namespace PortJob {
                         Cell cell = layout.cells[j];
                         cell.Generate(esm);
 
-                        TerrainInfo terrainInfo = TerrainConverter.convert(cell, outputTerrain + $"{cell.position.x},{cell.position.y}.flver", outputTex);
+                        TerrainInfo terrainInfo = TerrainConverter.convert(cell, outputTerrain, outputTex);
                         tempCache.terrains.Add(terrainInfo);
                     }
                 }
@@ -190,7 +190,8 @@ namespace PortJob {
                     foreach(CollisionInfo collisionInfo in modelInfo.collisions) { collisionInfo.id = nextCId++; }
                 }
                 foreach (TerrainInfo terrainInfo in tempCache.terrains) {
-                    terrainInfo.id = nextMId++;
+                    terrainInfo.idLow = nextMId++;
+                    terrainInfo.idHigh = nextMId++;
                     terrainInfo.collision.id = nextCId++;
                 }
                 foreach(ObjectInfo objectInfo in tempCache.objects) {

@@ -18,9 +18,10 @@ namespace FBXConverter {
         //Modified Example 2: https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-use-anonymous-pipes-for-local-interprocess-communication
         public static void Main(string[] args) {
             /* test func */
-            //FBXConverter.convert(@"D:\Steam\steamapps\common\Morrowind\Data Files\meshes\f\furn_mist256.fbx", @"C:\Games\steamapps\common\DARK SOULS III\Game\mod\cache\meshes\x\test.flver", @"C:\Games\steamapps\common\DARK SOULS III\Game\mod\cache\textures\");
-            /* */
-            //return;
+            /*List<int> scales = new();
+            scales.Add(100);
+            FBXConverter.convert(@"D:\Steam\steamapps\common\Morrowind\Data Files\meshes\f\furn_mist256.fbx", @"C:\Games\steamapps\common\DARK SOULS III\Game\mod\cache\meshes\x\test.flver", @"C:\Games\steamapps\common\DARK SOULS III\Game\mod\cache\textures\", scales);
+            return;*/
             string jsonString = null;
             if (args.Length <= 0) throw new Exception("Did not receive pipe handle");
             using (PipeStream pipeClient =
