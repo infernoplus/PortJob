@@ -189,7 +189,7 @@ namespace PortJob {
                         usedCollision.Add(terrainInfo.collision);
 
                         /* Add cell low terrain map piece */
-                        if(terrainInfo.low != null) {
+                        if(terrainInfo.low != null && GENERATE_LOW_TERRAIN) {
                             MSB3.Part.MapPiece lowTerrain = PartBuilder.MakeLowTerrain(layout, cell, terrainInfo);
                             msb.Parts.MapPieces.Add(lowTerrain);
                         }
