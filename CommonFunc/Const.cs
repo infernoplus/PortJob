@@ -12,9 +12,9 @@ namespace CommonFunc {
         public static string MorrowindPath => Settings.MorrowindPath;
 
         public static bool DEBUG_GEN_EXT_LAYOUT(int id) { return id is (1); }
-        public static bool DEBUG_GEN_INT_LAYINT(int id) { return id is (8); }
-        public static readonly int DEBUG_MAX_EXT_CELLS = 6;
-        public static readonly int DEBUG_MAX_INT_CELLS = 6;
+        public static bool DEBUG_GEN_INT_LAYINT(int id) { return id is (1 or 2 or 8); }
+        public static readonly int DEBUG_MAX_EXT_CELLS = 1;
+        public static readonly int DEBUG_MAX_INT_CELLS = 1;
         #endregion
 
         #region TerrainConverter

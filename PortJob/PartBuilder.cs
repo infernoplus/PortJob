@@ -174,21 +174,24 @@ namespace PortJob {
 
         private static ObjActPair MakeActDoor(int area, int block, Cell cell, Content content, ObjActInfo objActInfo, Counters counters, uint[] drawGroup, Bounds? bounds = null) {
             /* Object */
+            const float radian = (float)Math.PI / 180f;
+            const float degree = 180f / (float)Math.PI;
+
             MSB3.Part.Object obj = new();
             obj.ModelName = $"o{objActInfo.id:D6}";
             obj.SibPath = "";
 
-            float cosDegrees = (float)Math.Cos((content.rotation.Y - 180f) * 0.0174533f);
-            float sinDegrees = (float)Math.Sin((content.rotation.Y - 180f) * 0.0174533f);
+            float cosDegrees = (float)Math.Cos((content.rotation.Y * radian) + objActInfo.orientation);
+            float sinDegrees = (float)Math.Sin((content.rotation.Y * radian) + objActInfo.orientation);
 
             float x = (objActInfo.offset.X * cosDegrees) + (objActInfo.offset.Z * sinDegrees);
             float z = (objActInfo.offset.X * -sinDegrees) + (objActInfo.offset.Z * cosDegrees);
 
-            Vector3 rotatedOffset = new Vector3(x, objActInfo.offset.Y, z); // @TODO: on all axis not just Z  (Y lol)
+            Vector3 rotatedOffset = new Vector3(x, objActInfo.offset.Y, z); // @TODO: we are only accounting for rotation on Y (up). this may break for XZ rotations
 
             obj.Position = (bounds != null ? Vector3.Add(Vector3.Add(content.position, bounds.offset), bounds.center) : content.position) + rotatedOffset;
 
-            obj.Rotation = new Vector3(content.rotation.X, content.rotation.Y - 180f, content.rotation.Z);
+            obj.Rotation = new Vector3(content.rotation.X, content.rotation.Y - (objActInfo.orientation * degree) * (objActInfo.invert?-1f:1f), content.rotation.Z); // technically invert might need to be +180d
             obj.Scale = new Vector3(content.scale);
             obj.MapStudioLayer = uint.MaxValue;
             for (int k = 0; k < drawGroup.Length; k++) {

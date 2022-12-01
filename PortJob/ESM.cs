@@ -766,7 +766,7 @@ namespace PortJob {
 
             /* If we don't find an NPC (not terribly likely but still possible) then we use a creature. */
             foreach (Content cnt in content) {
-                if (cnt.type is not ESM.Type.Npc) { continue; }
+                if (cnt.type is not (ESM.Type.Creature or ESM.Type.LevelledCreature)) { continue; }
                 return cnt.position;
             }
 

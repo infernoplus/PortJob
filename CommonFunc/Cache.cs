@@ -55,10 +55,14 @@ namespace CommonFunc {
 
         public int id;
         public Vector3 offset;
+        public float orientation;  // Radians
+        public bool invert;
         public ObjActInfo(string name, ModelInfo model) {
             this.name = name.ToLower();
             this.model = model;
             offset = Vector3.Zero;
+            orientation = 0f;
+            invert = false;
         }
     }
 

@@ -12,12 +12,22 @@ namespace PortJob {
         /* Class that converts a morrowind animated door into a dark souls 3 animated door. */
         /* Uses an existing ds3 door and simply skins the morrowind door to its skeleton. Doing this means I don't need to create custom collision or animations for them. */
         /* We will defo need overrides to adjust things in the future but this is good for now */
+        public enum Orientation {
+            pX, nX, pZ, nZ
+        }
+        public static Dictionary<Orientation, float> ORIENTATION_KEY = new() {
+            { Orientation.nX, (float)Math.PI },
+            { Orientation.pX, 0f },
+            { Orientation.nZ, (float)-Math.PI/2 },
+            { Orientation.pZ, (float)Math.PI/2 }
+        };
+
         public static void Convert(ObjActInfo objActInfo) {
             FLVER2 inFlver = FLVER2.Read(objActInfo.model.path);
             FLVER2 outFlver = FLVER2.Read(Utility.GetEmbededResourceBytes("CommonFunc.Resources.door_md.flver"));
 
             /* Get bounding box of our new door so we can align it to the skeleton of the template door */
-            Vector3 min = new Vector3(float.MaxValue), max = new Vector3(float.MinValue);
+            Vector3 min = new(float.MaxValue), max = new(float.MinValue);
             foreach (FLVER2.Mesh mesh in inFlver.Meshes) {
                 foreach (FLVER.Vertex vertex in mesh.Vertices) {
                     /* Calculate min and max bounds */
@@ -29,9 +39,18 @@ namespace PortJob {
                     max.Z = Math.Max(max.Z, vertex.Position.Z);
                 }
             }
+            /* Figure out which way this door is oriented. Morrowind doors **seem** to always be aligned with the hinge on the world root. So we just check which axis it's on */
+            Orientation X = Math.Abs(min.X) > Math.Abs(max.X) ? Orientation.nX : Orientation.pX;
+            Orientation Z = Math.Abs(min.Z) > Math.Abs(max.Z) ? Orientation.nZ : Orientation.pZ;
+            Orientation orientation = Math.Max(Math.Abs(min.X), Math.Abs(max.X)) > Math.Max(Math.Abs(min.Z), Math.Abs(max.Z)) ? X : Z;
 
-            Vector3 alignOffset = new Vector3(0f, (max.Y - min.Y) * .5f, 0f);  // Height offset since morrowind doors are aligned in the center of the hinge, where dark souls door is aligned at floor height of hinge
-            Vector3 alignRotation = new Vector3(0f, (float)Math.PI, 0f); // Morrowind doors are rotated the opposite way from dark souls 3 door. Dunno why.
+            Vector3 alignOffset = new(0f, -min.Y, 0f);  // Height offset since morrowind doors are not consistently aligned (fucks sake todd...) we must find the bounds and align it ourselves
+            Vector3 alignRotation = new(0f, ORIENTATION_KEY[orientation], 0f); // Morrowind doors are all rotated differently (FUCKS SAKE TODD) so we have to determine that rotation and correct it
+            bool invert = false; // Flips door 180 degrees around, this fixes issues with the hinge being oriented wrong for doors in nX or nZ orientation (mirrored?)
+
+            /* Reverse hinge on doors with nZ or nX orientation */
+            if (orientation is Orientation.nZ) { invert = true; } // This might be wrong? Might need to be a mirror?
+            if (orientation is Orientation.nX) { invert = true; }
 
             foreach (FLVER2.Mesh mesh in inFlver.Meshes) {
 
@@ -44,10 +63,20 @@ namespace PortJob {
                     float z = (vertex.Position.X * -sinDegrees) + (vertex.Position.Z * cosDegrees);
 
                     vertex.Position.X = x;
-                    vertex.Position.Z = z;  // @TODO: note that we didn't rotate the normals so this probably very bad and wrong rn and should be fixed at some point
+                    vertex.Position.Z = z;
 
                     /* Translation */
                     vertex.Position += alignOffset;
+
+                    /* Normals */
+                    Matrix4x4 normalRotMatrixY = Matrix4x4.CreateRotationY(alignRotation.Y);       // Accounting for alignment rotation in normals
+                    Vector3 normalInputVector = new(vertex.Normal.X, vertex.Normal.Y, vertex.Normal.Z);
+
+                    Vector3 rotatedNormal = Vector3.Normalize(
+                        Vector3.TransformNormal(normalInputVector, normalRotMatrixY)
+                    );
+
+                    vertex.Normal = rotatedNormal;
                 }
             }
 
@@ -71,11 +100,14 @@ namespace PortJob {
             }
 
             /* Calculate reverse offset for MSB coordinates */
+            /* This is used to reverse the orientation/offset when placing the object in the game world */
             FLVER.Bone rootBone = outFlver.Bones[0];
             FLVER.Bone hingeBone = outFlver.Bones[1];
             Vector3 reverseOffset = Vector3.Zero - alignOffset - (hingeBone.Translation - rootBone.Translation);
             objActInfo.offset = reverseOffset;
-            
+            objActInfo.orientation = -alignRotation.Y;
+            objActInfo.invert = invert;
+
             /* Does not work. Moving bones has no effect at all.
             FLVER.Bone rootBone = outFlver.Bones[0];
             FLVER.Bone hingeBone = outFlver.Bones[1];
