@@ -46,11 +46,14 @@ namespace PortJob {
                     Vector3 position = new(-vertex.position.X, vertex.position.Y, vertex.position.Z); // X is flipped. Don't know why but it is correct and we do it in all other model conversions as well.
 
                     // Get normal and rotate it (x is flipped so normals have to be rotated to match)
-                    Matrix4x4 normalRotMatrix = Matrix4x4.CreateRotationX((float)-(Math.PI / 2));
+                    Matrix4x4 normalRotMatrixX = Matrix4x4.CreateRotationX((float)-Math.PI / 2f);       // Accounting for -X and ZY swap (i assume, ask meow lol)
+                    Matrix4x4 normalRotMatrixY = Matrix4x4.CreateRotationY((float)Math.PI);             // Accounting for 180 rotation around up axis
                     Vector3 normalInputVector = new(-vertex.normal.X, vertex.normal.Y, vertex.normal.Z);
 
                     Vector3 rotatedNormal = Vector3.Normalize(
-                        Vector3.TransformNormal(normalInputVector, normalRotMatrix)
+                        Vector3.TransformNormal(
+                            Vector3.TransformNormal(normalInputVector, normalRotMatrixX),
+                        normalRotMatrixY)
                     );
 
                     obj.vs.Add(position);

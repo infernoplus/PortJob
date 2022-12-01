@@ -13,8 +13,8 @@ namespace CommonFunc {
 
         public static bool DEBUG_GEN_EXT_LAYOUT(int id) { return id is (1); }
         public static bool DEBUG_GEN_INT_LAYINT(int id) { return id is (8); }
-        public static readonly int DEBUG_MAX_EXT_CELLS = 128;
-        public static readonly int DEBUG_MAX_INT_CELLS = 128;
+        public static readonly int DEBUG_MAX_EXT_CELLS = 6;
+        public static readonly int DEBUG_MAX_INT_CELLS = 6;
         #endregion
 
         #region TerrainConverter
@@ -57,7 +57,7 @@ namespace CommonFunc {
 
         public static bool GENERATE_NICE_TERRAIN => Settings.GENERATE_NICE_TERRAIN;  // A little slow but blends terrain much nicer
         public static bool GENERATE_LOW_TERRAIN = true;                              // Generate distant low detail terrain
-        public static bool GENERATE_DISTANT_OBJECTS = GENERATE_LOW_TERRAIN && true;  // This should only be on if low terrain is on.
+        public static bool GENERATE_DISTANT_OBJECTS = GENERATE_LOW_TERRAIN && true;  // This should only be on if low terrain is also on.
         
         public static readonly float INTERIOR_CELL_OVERSIZE = 8f; // Extra space beyond content position bounding box, because i dont' want to actually open every model and calculate real bounds~
         public static readonly float INTERIOR_CELL_BUFFER = 8f; // Spacing between cells

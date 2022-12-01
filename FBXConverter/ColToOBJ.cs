@@ -92,17 +92,20 @@ namespace FBXConverter {
                         float z = (vertexTransformed.X * -sinDegrees) + (vertexTransformed.Z * cosDegrees);
 
                         vertexTransformed.X = x;
-                        vertexTransformed.Z = z;  // @TODO: note that we didn't rotate the normals so this probably very bad and wrong rn and should be fixed at some point
+                        vertexTransformed.Z = z;
 
 
                         // Get normal and rotate it (x is flipped so normals have to be rotated to match)
                         VertexChannel channel = geometryNode.Vertices.Channels[0];  // Assuming channel 0 will always be normals because... it's collision data... should be correct lol
                         Vector3 vertexNormal = (Vector3)channel[i];
-                        Matrix normalRotMatrix = Matrix.CreateRotationX(-MathHelper.PiOver2);
+                        Matrix normalRotMatrixX = Matrix.CreateRotationX(-MathHelper.PiOver2);
+                        Matrix normalRotMatrixY = Matrix.CreateRotationY((float)Math.PI);
                         Vector3 normalInputVector = new(-vertexNormal.X, vertexNormal.Y, vertexNormal.Z);
 
                         Vector3 rotatedNormal = Vector3.Normalize(
-                            Vector3.TransformNormal(normalInputVector, normalRotMatrix)
+                            Vector3.TransformNormal(
+                                Vector3.TransformNormal(normalInputVector, normalRotMatrixX),
+                            normalRotMatrixY)
                         );
 
                         obj.vs.Add(vertexTransformed.ToNumerics());

@@ -234,8 +234,7 @@ namespace FBXConverter {
                             float z = (posVec3.X * -sinDegrees) + (posVec3.Z * cosDegrees);
 
                             posVec3.X = x;
-                            posVec3.Z = z;  // @TODO: rotate normals once we figure this out*/
-
+                            posVec3.Z = z;
 
                             FLVER.Vertex newVert = new() {
                                 Position = new System.Numerics.Vector3(posVec3.X, posVec3.Y, posVec3.Z),
@@ -275,12 +274,15 @@ namespace FBXConverter {
                             if (channel.Name == "Normal0") {
                                 for (int i = 0; i < flverMesh.Vertices.Count; i++) {
                                     Vector3 channelValue = (Vector3)(channel[i]);
-                                    Matrix normalRotMatrix = Matrix.CreateRotationX(-MathHelper.PiOver2);
+                                    Matrix normalRotMatrixX = Matrix.CreateRotationX(-MathHelper.PiOver2);  // Accounting for -X and ZY swap (i assume, ask meow lol)
+                                    Matrix normalRotMatrixY = Matrix.CreateRotationY((float)Math.PI);       // Accounting for 180 rotation around up axis
                                     Vector3 normalInputVector = new(-channelValue.X, channelValue.Y, channelValue.Z);
 
                                     Vector3 rotatedNormal = Vector3.Normalize(
-                                        Vector3.TransformNormal(normalInputVector, normalRotMatrix)
-                                        );
+                                        Vector3.TransformNormal(
+                                            Vector3.TransformNormal(normalInputVector, normalRotMatrixX),
+                                        normalRotMatrixY)
+                                    );
 
                                     flverMesh.Vertices[i].Normal = new System.Numerics.Vector3() {
                                         X = rotatedNormal.X,
