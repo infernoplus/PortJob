@@ -239,6 +239,7 @@ namespace PortJob {
         public readonly TerrainVertex[,] borders;
 
         public readonly List<Content> content;
+        public readonly List<Light> lights;
         public readonly List<DoorMarker> markers; // Exit locations for load doors leading into this cell.
 
         /* These fields are used by Layout for stuff */
@@ -274,6 +275,7 @@ namespace PortJob {
 
             /* Create these arrays but we don't fill them out until we call 'generate()' on this cell */
             content = new();
+            lights = new();
             markers = new();
             terrain = new();
             lowTerrain = new();
@@ -300,7 +302,22 @@ namespace PortJob {
             JArray refc = (JArray)(raw["references"]);
             for (int i = 0; i < refc.Count; i++) {
                 JObject reference = (JObject)(refc[i]);
-                content.Add(new Content(esm, this, reference));
+                string id = reference["id"].ToString();
+                TypedRecord tr = esm.FindRecordById(id);
+                ESM.Type type = tr.type;
+
+                string mesh = tr.record["mesh"]!= null?tr.record["mesh"].ToString():null;
+                if(mesh != null && mesh.Trim() == "") { mesh = null; }                     // For some reason a null mesh can just be "" sometimes?
+
+                if(type is (ESM.Type.Light) && mesh == null) {
+                    lights.Add(new Light(esm, this, reference, tr));
+                }
+                else if(mesh != null) {
+                    content.Add(new Content(esm, this, reference, tr));
+                }
+                else {
+                    content.Add(new Content(esm, this, reference, tr));
+                }
             }
 
             loaded = true;
@@ -775,7 +792,6 @@ namespace PortJob {
         }
 
         /* Stupid thing to try and make this run a little faster */
-        // 
         private static ushort[] preOpt = new ushort[512]; // Optimization, store any results we have in this array so we don't have to search the list for them
         private static ushort DeDupeTextureIndex(ESM esm, ushort a) {
             if (a < preOpt.Length && preOpt[a] != 0) { return preOpt[a]; }
@@ -809,6 +825,7 @@ namespace PortJob {
         }
     }
 
+    /* Content is effectively any physical object in the game world. Anything that has a mesh essentially */
     public class Content {
 
         public readonly string id;
@@ -820,13 +837,12 @@ namespace PortJob {
         public readonly float scale;
 
         public DoorContent door;
-        public Content(ESM esm, Cell cell, JObject data) {
+        public LightContent light;
+        public Content(ESM esm, Cell cell, JObject data, TypedRecord record) {
             id = data["id"].ToString();
-
-            TypedRecord tr = esm.FindRecordById(id);
-            type = tr.type;
-
-            if (tr.record["mesh"] != null) { mesh = tr.record["mesh"].ToString(); }
+            type = record.type;
+            mesh = record.record["mesh"] != null ? record.record["mesh"].ToString() : null;
+            if (mesh != null && mesh.Trim() == "") { mesh = null; }
 
             float x = float.Parse(((JArray)(data["translation"]))[0].ToString());
             float z = float.Parse(((JArray)(data["translation"]))[1].ToString());
@@ -838,7 +854,7 @@ namespace PortJob {
             /* The following unholy code converts morrowind (Z up) euler rotations into dark souls (Y up) euler rotations */
             /* Big thanks to katalash, dropoff, and the TESUnity dudes for helping me sort this out */
 
-            /* Katalashes codef rom MapStudio */
+            /* Katalashes code from MapStudio */
             Vector3 MatrixToEulerXZY(Matrix4x4 m) {
                 const float Pi = (float)Math.PI;
                 const float Deg2Rad = Pi / 180.0f;
@@ -858,7 +874,7 @@ namespace PortJob {
                 return ret;
             }
 
-            /* Code from https://github.com/ColeDeanShepherd/TESUnity */
+            /* Adapted code from https://github.com/ColeDeanShepherd/TESUnity */
             Quaternion xRot = Quaternion.CreateFromAxisAngle(new Vector3(1.0f, 0.0f, 0.0f), i);
             Quaternion yRot = Quaternion.CreateFromAxisAngle(new Vector3(0.0f, 1.0f, 0.0f), k);
             Quaternion zRot = Quaternion.CreateFromAxisAngle(new Vector3(0.0f, 0.0f, 1.0f), j);
@@ -870,8 +886,88 @@ namespace PortJob {
             rotation = eu * (float)(180 / Math.PI);
             scale = data["scale"]!=null?float.Parse(data["scale"].ToString()):1f;   
 
-            /* Door stuff */
+            /* DoorContent stuff */
             door = type == ESM.Type.Door?new DoorContent(esm, cell, data):null;
+
+            /* LightContent stuff */
+            light = type == ESM.Type.Light ? new LightContent(esm, cell, data, record) : null;
+        }
+    }
+
+    /* Light is just a light with no physical object */
+    public class Light {
+        public enum Effect {
+            Flicker, FlickerSlow, Pulse, PulseSlow, None
+        };
+
+        public readonly string id;
+        public readonly ESM.Type type;
+
+        public readonly Vector3 position;
+
+        public float radius;
+        public Byte4 color;
+        public bool fire, negative, dynamic;
+        public Effect effect;
+
+        public Light(ESM esm, Cell cell, JObject data, TypedRecord record) {
+            id = data["id"].ToString();
+            type = record.type;
+
+            float x = float.Parse(((JArray)(data["translation"]))[0].ToString());
+            float z = float.Parse(((JArray)(data["translation"]))[1].ToString());
+            float y = float.Parse(((JArray)(data["translation"]))[2].ToString());
+            position = new Vector3(x, y, z) * GLOBAL_SCALE;
+
+            int r = int.Parse(((JArray)(record.record["data"]["color"]))[0].ToString());
+            int g = int.Parse(((JArray)(record.record["data"]["color"]))[1].ToString());
+            int b = int.Parse(((JArray)(record.record["data"]["color"]))[2].ToString());
+            int a = int.Parse(((JArray)(record.record["data"]["color"]))[3].ToString());
+            color = new(r, g, b, a);  // 0 -> 255 colors
+
+            radius = float.Parse(record.record["data"]["radius"].ToString()) * GLOBAL_SCALE;
+
+            int flags = int.Parse(record.record["data"]["flags"].ToString());
+
+            dynamic = ((flags >> 0) & 1) == 1;
+            fire = ((flags >> 1) & 1) == 1;
+            negative = ((flags >> 2) & 1) == 1;
+
+            // Pulse flag is unknown, appears to be unused.
+            if (((flags >> 3) & 1) == 1) { effect = Light.Effect.Flicker; }
+            else if (((flags >> 6) & 1) == 1) { effect = Light.Effect.FlickerSlow; }
+            else if (((flags >> 8) & 1) == 1) { effect = Light.Effect.PulseSlow; }
+            else { effect = Light.Effect.None; }
+        }
+    }
+
+    /* Light Content is physical objects with a light attached to them. Like a torch or a lantern */
+    public class LightContent {
+        public float radius;
+        public Byte4 color;
+        public bool fire, negative, dynamic;
+        public Light.Effect effect;
+
+        public LightContent(ESM esm, Cell cell, JObject data, TypedRecord record) {
+            int r = int.Parse(((JArray)(record.record["data"]["color"]))[0].ToString());
+            int g = int.Parse(((JArray)(record.record["data"]["color"]))[1].ToString());
+            int b = int.Parse(((JArray)(record.record["data"]["color"]))[2].ToString());
+            int a = int.Parse(((JArray)(record.record["data"]["color"]))[3].ToString());
+            color = new(r, g, b, a);  // 0 -> 255 colors
+
+            radius = float.Parse(record.record["data"]["radius"].ToString()) * GLOBAL_SCALE;
+
+            int flags = int.Parse(record.record["data"]["flags"].ToString());
+
+            dynamic = ((flags >> 0) & 1) == 1;
+            fire = ((flags >> 1) & 1) == 1;
+            negative = ((flags >> 2) & 1) == 1;
+
+            // Pulse flag is unknown, appears to be unused.
+            if (((flags >> 3) & 1) == 1) { effect = Light.Effect.Flicker; }
+            else if (((flags >> 6) & 1) == 1) { effect = Light.Effect.FlickerSlow; }
+            else if (((flags >> 8) & 1) == 1) { effect = Light.Effect.PulseSlow; }
+            else { effect = Light.Effect.None; }
         }
     }
 

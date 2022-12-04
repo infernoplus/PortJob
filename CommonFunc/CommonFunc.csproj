@@ -22,15 +22,25 @@
     <None Remove="Resources\DS3_GX_INFO.json" />
     <None Remove="Resources\DS3_MTD_INFO.json" />
     <None Remove="Resources\mtdbnd.dcx" />
+    <None Remove="Resources\param.parambnd.dcx" />
+    <None Remove="Resources\paramdef.paramdefbnd.dcx" />
     <None Remove="Resources\settings.json" />
     <None Remove="Resources\template.emevd" />
+    <None Remove="Resources\test_light.fxr" />
+    <None Remove="Resources\test_resource.ffxbnd.dcx" />
+    <None Remove="Resources\test_sky.objbnd.dcx" />
     <Content Include="ds3-common.emedf.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Overrides\debug_cells.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Resources\param.parambnd.dcx" />
+    <EmbeddedResource Include="Resources\paramdef.paramdefbnd.dcx" />
+    <EmbeddedResource Include="Resources\test_resource.ffxbnd.dcx" />
+    <EmbeddedResource Include="Resources\test_light.fxr" />
     <EmbeddedResource Include="Resources\template.emevd" />
+    <EmbeddedResource Include="Resources\test_sky.objbnd.dcx" />
     <None Update="ColConverter\AssetCc2_fixed.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

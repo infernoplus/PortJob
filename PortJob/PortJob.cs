@@ -21,8 +21,8 @@ using static PortJob.PartBuilder;
 namespace PortJob {
     class PortJob {
         public static readonly ESM.Type[] CONVERT_TO_MAP = { ESM.Type.Static, ESM.Type.Container };
-        public static readonly ESM.Type[] CONVERT_TO_OBJ = { ESM.Type.Door };
-        public static readonly ESM.Type[] CONVERT_ALL = { ESM.Type.Static, ESM.Type.Container, ESM.Type.Door };
+        public static readonly ESM.Type[] CONVERT_TO_OBJ = { ESM.Type.Door, ESM.Type.Light };
+        public static readonly ESM.Type[] CONVERT_ALL = { ESM.Type.Static, ESM.Type.Container, ESM.Type.Door, ESM.Type.Light };
 
         static void Main(string[] args) {
             //BND4 bnd = BND4.Read(@"G:\Steam\steamapps\common\DARK SOULS III\Game\mod\map\m54_00_00_00\m54_00_00_00_009000.mapbnd.dcx");
@@ -125,14 +125,20 @@ namespace PortJob {
             foreach(Layout layout in layouts) { layout.Load(esm); }
             foreach(Layint layint in layints) { layint.Load(esm); }
 
+            /* Load params */
+            Paramanger paramanger = new();
+
             /* Lists to fill up with generated content */
             List<MSBData> msbs = new();
             List<NVAData> nvas = new();
+            List<LightJob> lights = new();
+            List<FXRManager> fxrs = new();
             List<Script> scripts = new();
 
             /* Generate Exterior MSBs from layouts */
             {
                 int area = EXT_AREA;
+                FXRManager fxr = new(area);
                 HashSet<TextureInfo> areaTextures = new();  // All textures to pack for this area
 
                 foreach(Layout layout in layouts) {
@@ -141,7 +147,8 @@ namespace PortJob {
                     int block = layout.id;
 
                     MSB3 msb = new();
-                    NVA nva = new();   //One nva per msb. I put this up here so you can easily add the navmeshes in the loop. 
+                    NVA nva = new();   //One nva per msb. I put this up here so you can easily add the navmeshes in the loop.
+                    LightJob light = new(area, block);
                     Script script = new(area, block);
 
                     Log.Info(0, $"=== Generating Exterior MSB[{block}] === [{layout.cells.Count} cells]", "test");
@@ -172,6 +179,10 @@ namespace PortJob {
                     player.Name = "c0000_0000";
                     msb.Parts.Players.Add(player);
 
+                    /* Create Sky */
+                    MSB3.Part.Object sky = PartBuilder.MakeSky(layout);
+                    msb.Parts.Add(sky);
+
                     /* MSB population pass */
                     for (int c = 0; c < layout.cells.Count; c++) {
                         if (c > DEBUG_MAX_EXT_CELLS) { break; }
@@ -193,7 +204,6 @@ namespace PortJob {
                             MSB3.Part.MapPiece lowTerrain = PartBuilder.MakeLowTerrain(layout, cell, terrainInfo);
                             msb.Parts.MapPieces.Add(lowTerrain);
                         }
-                        
 
                         /* Static map pieces and collision */
                         foreach (Content content in cell.content) {
@@ -218,29 +228,41 @@ namespace PortJob {
                             /* Door ObjAct */
                             if (content.door != null && content.door.type == DoorContent.DoorType.Decoration) {
                                 ObjActInfo objActInfo = cache.GetObjActInfo(content.id);
-                                ObjActPair objAct = MakeActDoor(layout, cell, content, objActInfo, counters);
+                                ObjActPair objAct = PartBuilder.MakeActDoor(layout, cell, content, objActInfo, counters);
                                 msb.Parts.Objects.Add(objAct.obj);
                                 msb.Events.ObjActs.Add(objAct.objAct);
                             }
                             /* Load Door */
                             else if (content.door != null && content.door.type == DoorContent.DoorType.Load) {
                                 ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
-                                MSB3.Part.Object obj = MakeStaticObject(layout, cell, content, objectInfo, counters);
+                                MSB3.Part.Object obj = PartBuilder.MakeStaticObject(layout, cell, content, objectInfo, counters);
                                 msb.Parts.Objects.Add(obj);
                                 obj.EntityID = content.door.entityID;
                                 script.RegisterLoadDoor(content.door);
                             }
+                            /* Light Object */
+                            else if (content.light != null) {
+                                ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
+                                MSB3.Part.Object obj = PartBuilder.MakeLight(layout, cell, content, objectInfo, counters);
+                                msb.Parts.Objects.Add(obj);
+                                fxr.CreateLightSFX(paramanger, objectInfo);
+                            }
                             /* Static Object */
                             else {
                                 ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
-                                MSB3.Part.Object obj = MakeStaticObject(layout, cell, content, objectInfo, counters);
+                                MSB3.Part.Object obj = PartBuilder.MakeStaticObject(layout, cell, content, objectInfo, counters);
                                 msb.Parts.Objects.Add(obj);
                             }
                         }
 
+                        /* Add Lights */
+                        foreach(Light mwl in cell.lights) {
+                            light.CreateLight(mwl);
+                        }
+
                         /* Add Door Markers */
                         foreach (DoorMarker marker in cell.markers) {
-                            MSB3.Part.Player mrk = MakeMarker(area, block, cell, marker, counters);
+                            MSB3.Part.Player mrk = PartBuilder.MakeMarker(area, block, cell, marker, counters);
                             msb.Parts.Players.Add(mrk);
                         }
                     }
@@ -262,15 +284,18 @@ namespace PortJob {
 
                     msbs.Add(new MSBData(area, block, msb, spawnCell.name));
                     nvas.Add(new NVAData(area, block, nva));
+                    lights.Add(light);
                     scripts.Add(script);
                     Log.Info(0, "\n");
                 }
+                fxrs.Add(fxr);
                 PackTextures(area, areaTextures);
             }
 
             /* Generate Interior MSBs from layints */
             {
                 int area = INT_AREA;
+                FXRManager fxr = new(area);
                 HashSet<TextureInfo> areaTextures = new();  // All textures to pack for this area
 
                 foreach (Layint layint in layints) {
@@ -279,6 +304,7 @@ namespace PortJob {
                     int block = layint.id;
                     MSB3 msb = new();
                     NVA nva = new();   //One nva per msb. I put this up here so you can easily add the navmeshes in the loop.
+                    LightJob light = new(area, block);
                     Script script = new(area, block);
 
                     Log.Info(0, $"=== Generating Interior MSB[{block}] === [{layint.cells.Count} cells]", "test");
@@ -305,7 +331,7 @@ namespace PortJob {
                     player.ModelName = "c0000";
                     player.Position = Vector3.Add(Vector3.Add(spawnCell.Value.getCenterOnCell(), spawnCell.Key.offset), spawnCell.Key.center);
                     player.Name = "c0000_0000";
-                    msb.Parts.Players.Add(player);
+                    msb.Parts.Players.Add(player);                    
 
                     /* MSB population pass */
                     for (int c = 0; c < layint.mergedCells.Count; c++) {
@@ -351,29 +377,41 @@ namespace PortJob {
                             /* Door ObjAct */
                             if (content.door != null && content.door.type == DoorContent.DoorType.Decoration) {
                                 ObjActInfo objActInfo = cache.GetObjActInfo(content.id);
-                                ObjActPair objAct = MakeActDoor(layint, cell, content, objActInfo, counters, bounds);
+                                ObjActPair objAct = PartBuilder.MakeActDoor(layint, cell, content, objActInfo, counters, bounds);
                                 msb.Parts.Objects.Add(objAct.obj);
                                 msb.Events.ObjActs.Add(objAct.objAct);
                             }
                             /* Load Door */
                             else if(content.door != null && content.door.type == DoorContent.DoorType.Load) {
                                 ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
-                                MSB3.Part.Object obj = MakeStaticObject(layint, cell, content, objectInfo, counters, bounds);
+                                MSB3.Part.Object obj = PartBuilder.MakeStaticObject(layint, cell, content, objectInfo, counters, bounds);
                                 obj.EntityID = content.door.entityID;
                                 msb.Parts.Objects.Add(obj);
                                 script.RegisterLoadDoor(content.door);
                             }
+                            /* Light Object */
+                            else if(content.light != null) {
+                                ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
+                                MSB3.Part.Object obj = PartBuilder.MakeLight(layint, cell, content, objectInfo, counters, bounds);
+                                msb.Parts.Objects.Add(obj);
+                                fxr.CreateLightSFX(paramanger, objectInfo);
+                            }
                             /* Static Object */
                             else {
                                 ObjectInfo objectInfo = cache.GetObjectInfo(content.id);
-                                MSB3.Part.Object obj = MakeStaticObject(layint, cell, content, objectInfo, counters, bounds);
+                                MSB3.Part.Object obj = PartBuilder.MakeStaticObject(layint, cell, content, objectInfo, counters, bounds);
                                 msb.Parts.Objects.Add(obj);
                             }
                         }
 
+                        /* Add Lights */
+                        foreach (Light mwl in cell.lights) {
+                            light.CreateLight(mwl);
+                        }
+
                         /* Add Door Markers */
-                        foreach(DoorMarker marker in cell.markers) {
-                            MSB3.Part.Player mrk = MakeMarker(area, block, cell, marker, counters, bounds);
+                        foreach (DoorMarker marker in cell.markers) {
+                            MSB3.Part.Player mrk = PartBuilder.MakeMarker(area, block, cell, marker, counters, bounds);
                             msb.Parts.Players.Add(mrk);
                         }
                     }
@@ -395,11 +433,13 @@ namespace PortJob {
 
                     msbs.Add(new MSBData(area, block, msb, spawnCell.Value.name));
                     nvas.Add(new NVAData(area, block, nva));
+                    lights.Add(light);
                     scripts.Add(script);
                     Log.Info(0, "\n");
                 }
 
                 /* Pack textures for area */
+                fxrs.Add(fxr);
                 PackTextures(area, areaTextures);
             }
 
@@ -412,23 +452,7 @@ namespace PortJob {
                 //Utility.PackTestColAndNavMeshes(msb.area, msb.block);
             }
 
-            /* Write scripts */
-            Log.Info(0, "Writing scripts...");
-            string eventDir = Const.OutputPath + "event\\";
-            if (!Directory.Exists(eventDir)) { Directory.CreateDirectory(eventDir); }
-            foreach (Script script in scripts) { script.Write(eventDir); }
-            File.WriteAllBytes($"{eventDir}common.emevd.dcx", Utility.GetEmbededResourceBytes("CommonFunc.Resources.common.emevd.dcx"));
-            File.WriteAllBytes($"{eventDir}common_func.emevd.dcx", Utility.GetEmbededResourceBytes("CommonFunc.Resources.common_func.emevd.dcx"));
-
-            /* Write custom mtdbnd */
-            string mtdDir = OutputPath + "mtd\\";
-            string mtdPath = mtdDir + "allmaterialbnd.mtdbnd.dcx";
-            if (!Directory.Exists(mtdDir)) { Directory.CreateDirectory(mtdDir); }
-            if (File.Exists(mtdPath)) { File.Delete(mtdPath); }
-            byte[] hBytes = Utility.GetEmbededResourceBytes("CommonFunc.Resources.mtdbnd.dcx");
-            Log.Info(0, "Writing MTDBND to: " + mtdPath);
-            File.WriteAllBytes(mtdPath, hBytes);
-
+            /* Write NVAs */
             foreach (NVAData nva in nvas) {
                 string nvaPath = $"{OutputPath}map\\m{nva.area:D2}_{nva.block:D2}_00_00\\m{nva.area:D2}_{nva.block:D2}_00_00.nva.dcx";
                 Log.Info(0, "Writing MSB to: " + nvaPath);
@@ -436,6 +460,32 @@ namespace PortJob {
 
                 Utility.PackAreaCol(nva.area, nva.block);
             }
+
+            /* Write FXRs */
+            Log.Info(0, "Writing FXRBNDs...");
+            foreach(FXRManager fxr in fxrs) {
+                fxr.Write(Const.OutputPath);
+            }
+
+            /* Write BTLs */
+            Log.Info(0, "Writing BTLs...");
+            foreach (LightJob light in lights) {
+                light.Write(Const.OutputPath);
+            }
+
+            /* Write scripts */
+            Log.Info(0, "Writing Scripts...");
+            string eventDir = Const.OutputPath + "event\\";
+            if (!Directory.Exists(eventDir)) { Directory.CreateDirectory(eventDir); }
+            foreach (Script script in scripts) { script.Write(eventDir); }
+
+            /* Write hardcoded resources */
+            Log.Info(0, "Writing Hard Resources...");
+            HardResource.Write(Const.OutputPath);
+
+            /* Write Params */
+            Log.Info(0, "Writing Params...");
+            paramanger.Write(Const.OutputPath);
 
             /* Generate and write loadlists */
             string mapViewListPath = $"{OutputPath}map\\mapviewlist.loadlistlist";

@@ -3,8 +3,10 @@ using Newtonsoft.Json;
 using SoulsFormats;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -215,15 +217,59 @@ namespace PortJob {
                             tpf.Textures.Add(tex);
                         }
                     }
-                    FLVER2 flver = FLVER2.Read(objectInfo.model.path);
-                    byte[] hkxdcx = File.ReadAllBytes(objectInfo.model.GetCollision(1f).path);
-                    byte[] hkx = DCX.Decompress(hkxdcx);
 
+                    /* Read in model */
+                    FLVER2 flver = FLVER2.Read(objectInfo.model.path);
+
+                    /* Add dummys */
+                    Vector3 min = new(float.MaxValue), max = new(float.MinValue); // Get bounding box
+                    foreach (FLVER2.Mesh mesh in flver.Meshes) {
+                        foreach (FLVER.Vertex vertex in mesh.Vertices) {
+                            /* Calculate min and max bounds */
+                            min.X = Math.Min(min.X, vertex.Position.X);
+                            max.X = Math.Max(max.X, vertex.Position.X);
+                            min.Y = Math.Min(min.Y, vertex.Position.Y);
+                            max.Y = Math.Max(max.Y, vertex.Position.Y);
+                            min.Z = Math.Min(min.Z, vertex.Position.Z);
+                            max.Z = Math.Max(max.Z, vertex.Position.Z);
+                        }
+                    }
+                    FLVER.Dummy bottom = new(); 
+                    bottom.Position = new Vector3((max.X + min.X) / 2, min.Y, (max.Z + min.Z) / 2);
+                    bottom.Forward = new Vector3(0, 0, 1);
+                    bottom.Upward = new Vector3(0, 1, 0);
+                    bottom.Color = Color.White;
+                    bottom.ReferenceID = OBJ_DUMMY_LIST[Dummy.Bottom];
+                    bottom.ParentBoneIndex = 0;
+                    bottom.AttachBoneIndex = -1;
+                    bottom.UseUpwardVector = true;
+                    flver.Dummies.Add(bottom);
+
+                    FLVER.Dummy center = new();
+                    center.Position = (max + min) * .5f;
+                    center.Forward = new Vector3(0, 0, 1);
+                    center.Upward = new Vector3(0, 1, 0);
+                    center.Color = Color.White;
+                    center.ReferenceID = OBJ_DUMMY_LIST[Dummy.Center];
+                    center.ParentBoneIndex = 0;
+                    center.AttachBoneIndex = -1;
+                    center.UseUpwardVector = true;
+                    flver.Dummies.Add(center);
+
+                    /* Read in collision */
+                    CollisionInfo collisionInfo = objectInfo.model.GetCollision(1f);
+                    byte[] hkx = null;
+                    if (collisionInfo != null) {
+                        byte[] hkxdcx = File.ReadAllBytes(collisionInfo.path);
+                        hkx = DCX.Decompress(hkxdcx);
+                    }
+
+                    /* Write objbnd */
                     BND4 objBnd = new BND4();
                     string objPath = $"obj\\o{0:D2}\\o{0:D2}{objectInfo.id:D4}\\o{0:D2}{objectInfo.id:D4}";
                     objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 100, $"{objPath}.tpf", tpf.Write()));
                     objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, $"{objPath}.flver", flver.Write()));
-                    objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 300, $"{objPath}.hkx", hkx));
+                    if (hkx != null) { objBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 300, $"{objPath}.hkx", hkx)); }
                     objBnd.Write($"{Const.OutputPath}obj\\o{0:D2}{objectInfo.id:D4}.objbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9);
                 }
 
@@ -260,5 +306,13 @@ namespace PortJob {
                 }
             }
         }
+
+        public enum Dummy {        // Mabye move this into a different class. Kind of out of place here but w/e.
+            Bottom, Center
+        }
+        public static Dictionary<Dummy, short> OBJ_DUMMY_LIST = new() {
+            { Dummy.Bottom, 100 },  // Used by load doors. Needs to be at the bottom center of the object. For trap doors it should be much lower!
+            { Dummy.Center, 200 }   // Used by light objects. This is the dummy poly that the light sfx is at.
+        };
     }
 }

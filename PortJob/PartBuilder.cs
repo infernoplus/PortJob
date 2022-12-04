@@ -24,6 +24,7 @@ namespace PortJob {
             terrain.MapStudioLayer = uint.MaxValue;
             for (int k = 0; k < drawGroup.Length; k++) {
                 terrain.DrawGroups[k] = drawGroup[k];
+                terrain.DispGroups[k] = 0;
                 terrain.BackreadGroups[k] = 0;
             }
             terrain.ShadowSource = true;
@@ -41,12 +42,14 @@ namespace PortJob {
             terrainCol.Rotation = terrain.Rotation;
             terrainCol.MapStudioLayer = uint.MaxValue;
             for (int k = 0; k < displayGroup.Length; k++) {
+                terrainCol.DrawGroups[k] = displayGroup[k];
                 terrainCol.DispGroups[k] = displayGroup[k];
                 terrainCol.BackreadGroups[k] = displayGroup[k];
             }
-            terrainCol.Name = terrainCol.ModelName + "_0000"; // Same as abovev
+            terrainCol.Name = terrainCol.ModelName + "_0000"; // Same as above
             terrainCol.LodParamID = -1;
             terrainCol.UnkE0E = -1;
+            terrainCol.Gparam.LightSetID = 100;
 
             return new MapColPair(terrain, terrainCol);
         }
@@ -64,6 +67,7 @@ namespace PortJob {
             terrain.MapStudioLayer = uint.MaxValue;
             for (int k = 0; k < inverseGroup.Length; k++) {
                 terrain.DrawGroups[k] = inverseGroup[k];
+                terrain.DispGroups[k] = 0;
                 terrain.BackreadGroups[k] = 0;
             }
             terrain.ShadowSource = true;
@@ -98,6 +102,7 @@ namespace PortJob {
             mp.MapStudioLayer = uint.MaxValue;
             for (int k = 0; k < drawGroup.Length; k++) {
                 mp.DrawGroups[k] = drawGroup[k];
+                mp.DispGroups[k] = 0;
                 mp.BackreadGroups[k] = 0;
             }
             mp.ShadowSource = true;
@@ -117,6 +122,7 @@ namespace PortJob {
                 col.Rotation = mp.Rotation;
                 col.MapStudioLayer = uint.MaxValue;
                 for (int k = 0; k < displayGroup.Length; k++) {
+                    col.DrawGroups[k] = displayGroup[k];
                     col.DispGroups[k] = displayGroup[k];
                     col.BackreadGroups[k] = displayGroup[k];
                 }
@@ -124,6 +130,8 @@ namespace PortJob {
                 col.Name = $"{col.ModelName}_{counters.GetCollision(collisionInfo):D4}";
                 col.LodParamID = -1;
                 col.UnkE0E = -1;
+                col.Gparam.LightSetID = 100;
+
                 return new MapColPair(mp, col);
             }
             return new MapColPair(mp, null);
@@ -150,6 +158,7 @@ namespace PortJob {
             obj.MapStudioLayer = uint.MaxValue;
             for (int k = 0; k < drawGroup.Length; k++) {
                 obj.DrawGroups[k] = drawGroup[k];
+                obj.DispGroups[k] = 0;
                 obj.BackreadGroups[k] = 0;
             }
             //obj.CollisionName = terrainCol.Name;
@@ -158,6 +167,41 @@ namespace PortJob {
             obj.Name = $"{obj.ModelName}_{counters.GetObject(objectInfo):D4}";
             obj.UnkE0E = -1;
             obj.LodParamID = 19; //Param for: Don't switch to LOD models 
+
+            return obj;
+        }
+
+        public static MSB3.Part.Object MakeLight(Layout layout, Cell cell, Content content, ObjectInfo objectInfo, Counters counters) {
+            uint[] drawGroup = layout.GetDrawGroup(cell, objectInfo.model, content.scale);
+            return MakeLight(Const.EXT_AREA, layout.id, cell, content, objectInfo, counters, drawGroup);
+        }
+
+        public static MSB3.Part.Object MakeLight(Layint layint, Cell cell, Content content, ObjectInfo objectInfo, Counters counters, Bounds bounds) {
+            uint[] drawGroup = layint.drawGroups[cell];
+            return MakeLight(Const.INT_AREA, layint.id, cell, content, objectInfo, counters, drawGroup, bounds);
+        }
+
+        private static MSB3.Part.Object MakeLight(int area, int block, Cell cell, Content content, ObjectInfo objectInfo, Counters counters, uint[] drawGroup, Bounds? bounds = null) {
+            /* Object */
+            MSB3.Part.Object obj = new();
+            obj.ModelName = $"o{objectInfo.id:D6}";
+            obj.SibPath = "";
+            obj.Position = bounds != null ? Vector3.Add(Vector3.Add(content.position, bounds.offset), bounds.center) : content.position;
+            obj.Rotation = content.rotation;
+            obj.Scale = new Vector3(content.scale);
+            obj.MapStudioLayer = uint.MaxValue;
+            for (int k = 0; k < drawGroup.Length; k++) {
+                obj.DrawGroups[k] = drawGroup[k];
+                obj.DispGroups[k] = 0;
+                obj.BackreadGroups[k] = 0;
+            }
+            //obj.CollisionName = terrainCol.Name;
+            obj.ShadowDest = true;
+            obj.DrawByReflectCam = true;
+            obj.Name = $"{obj.ModelName}_{counters.GetObject(objectInfo):D4}";
+            obj.UnkE0E = -1;
+            obj.LodParamID = 19; //Param for: Don't switch to LOD models 
+            obj.ModelSfxParamRelativeIDs[0] = 0; // object id + this number = sfx. -1 is null?
 
             return obj;
         }
@@ -196,6 +240,7 @@ namespace PortJob {
             obj.MapStudioLayer = uint.MaxValue;
             for (int k = 0; k < drawGroup.Length; k++) {
                 obj.DrawGroups[k] = drawGroup[k];
+                obj.DispGroups[k] = 0;
                 obj.BackreadGroups[k] = 0;
             }
             obj.EntityID = Script.NewEntID();
@@ -228,6 +273,32 @@ namespace PortJob {
             player.EntityID = marker.entityID;
             player.Name = $"c0000_{counters.GetPlayer():D4}";
             return player;
+        }
+
+        public static MSB3.Part.Object MakeSky(Layout layout) {
+            Vector3 skyPos = Vector3.Zero;
+            foreach (Cell cell in layout.cells) { skyPos += cell.area.center; }
+            skyPos *= 1f / layout.cells.Count;
+            skyPos.Y = -500;
+            MSB3.Part.Object sky = new();
+            sky.ModelName = "o004900"; // Dragon peak sky repack. Hard resource. Temporary till we create more skys
+            sky.SibPath = "";
+            sky.Position = skyPos;
+            sky.Rotation = new Vector3(0, 5, 0);
+            sky.MapStudioLayer = uint.MaxValue;
+            for (int k = 0; k < sky.DrawGroups.Length; k++) {
+                sky.DrawGroups[k] = uint.MaxValue;
+                sky.DispGroups[k] = 0;
+                sky.BackreadGroups[k] = 0;
+            }
+            sky.Name = $"{sky.ModelName}_0000";
+            sky.UnkE0E = -1;
+            sky.LodParamID = -1;
+            sky.Gparam.LightSetID = 0;
+            sky.Gparam.FogParamID = 350;
+            sky.Gparam.EnvMapID = -1;
+            sky.Gparam.LightScatteringID = -1;
+            return sky;
         }
 
         public class Counters {
