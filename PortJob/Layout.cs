@@ -300,6 +300,21 @@ namespace PortJob {
                 layout.id = nextId++;               // After merging layouts the ids get oof'd so we just redo them lol.
             }
 
+            /* Calculate grid centers */
+            foreach(Layout layout in layouts) {
+                int minx = int.MaxValue, miny = int.MaxValue;
+                int maxx = int.MinValue, maxy = int.MinValue;
+                foreach (Cell cell in layout.cells) {
+                    minx = Math.Min(minx, cell.position.x);
+                    miny = Math.Min(miny, cell.position.y);
+                    maxx = Math.Max(maxx, cell.position.x);
+                    maxy = Math.Max(maxy, cell.position.y);
+                }
+                layout.center = new Int2((minx + maxx) / 2, (miny + maxy) / 2);
+                layout.min = new(minx, miny);
+                layout.max = new(maxx, maxy);
+            }
+
             /* Test solution */
             int[] visRes = new int[32];
             for (int i = 0; i < cells.Count; i++) {
@@ -390,6 +405,9 @@ namespace PortJob {
         public Box bounds;
         public List<Cell> cells;
         public List<Layout> connects;
+
+        public Int2 center;      // Grid center of the cells in this layout. Multiply by Const.CELL_SIZE to get real coordinates
+        public Int2 min, max;    // Grid bounding box
 
         public Dictionary<Cell, Dictionary<Size, uint[]>> drawGroupSets;
         public Dictionary<Cell, uint[]> drawGroups, displayGroups, inverseGroups;

@@ -106,6 +106,10 @@ namespace CommonFunc {
             Key = k; Value = v; Unk10 = u; Unk11 = uu;
             uv = Vector2.One;
         }
+        public TextureKey(string k, string v, byte u, bool uu, Vector2 uv) {
+            Key = k; Value = v; Unk10 = u; Unk11 = uu;
+            this.uv = uv;
+        }
     }
 
     public class FBXConverterJob {

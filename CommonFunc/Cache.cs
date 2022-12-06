@@ -13,11 +13,13 @@ namespace CommonFunc {
         public List<ObjActInfo> objActs;  // Animated/activatable objects (doors n' such)
         public List<ModelInfo> models;
         public List<TerrainInfo> terrains;
+        public List<WaterInfo> waters;
         public Cache() {
             objects = new();
             objActs = new();
             models = new();
             terrains = new();
+            waters = new();
         }
 
         public ObjectInfo GetObjectInfo(string name) {
@@ -44,6 +46,20 @@ namespace CommonFunc {
         public TerrainInfo GetTerrainInfo(Int2 position) {
             foreach(TerrainInfo terrainInfo in terrains) {
                 if(terrainInfo.position == position) { return terrainInfo; }
+            }
+            return null;
+        }
+
+        public WaterInfo GetWaterInfo(int layout) {
+            foreach (WaterInfo waterInfo in waters) {
+                if (waterInfo.layout == layout) { return waterInfo; }
+            }
+            return null;
+        }
+
+        public WaterInfo GetWaterInfo(string cell) {
+            foreach (WaterInfo waterInfo in waters) {
+                if (waterInfo.cell == cell) { return waterInfo; }
             }
             return null;
         }
@@ -83,6 +99,7 @@ namespace CommonFunc {
         public CollisionInfo collision;
         public List<TextureInfo> textures; // All generated tpf files
 
+        public float min;          // Lowest point of this terrain. Used for deciding if water will be placed in a cell.
         public int idLow, idHigh;  // Model ID number, the last 6 digits in a model filename. EXAMPLE: m30_00_00_00_005521.mapbnd.dcx or h30_00_00_00_000228.hkx.dcx
         public TerrainInfo(Int2 position, string high, string low, CollisionInfo collision) {
             this.position = position;
@@ -91,8 +108,26 @@ namespace CommonFunc {
             this.collision = collision;
             textures = new();
 
+            min = 0;
             idLow = -1;
             idHigh = -1;
+        }
+    }
+
+    public class WaterInfo {
+        public string path; // Relative path from the 'cache' folder to the converted flver file
+        public List<TextureInfo> textures; // All generated tpf files
+
+        public int id;
+        public string cell; // if this is interior water we identify it by the cell name
+        public int layout; // if this is an exterior water we identify it by the layout id
+        public WaterInfo(string path) {
+            this.path = path;
+            textures = new();
+
+            id = -1;
+            cell = null;
+            layout = -1;
         }
     }
 

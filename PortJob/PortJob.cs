@@ -118,12 +118,12 @@ namespace PortJob {
             List<Layout> layouts = Layout.Calculate(esm);
             List<Layint> layints = Layint.Calculate(esm, MAX_MSB_COUNT - layouts.Count);
 
+            /* Load all cells so that load doors can be generated */
+            foreach (Layout layout in layouts) { layout.Load(esm); }
+            foreach (Layint layint in layints) { layint.Load(esm); }
+
             /* Call Mass Convert to convert all models, textures, and collisions and return info about all those files. */
             Cache cache = MassConvert.Convert(esm, layouts, layints);
-
-            /* Load all cells so that load doors can be generated */
-            foreach(Layout layout in layouts) { layout.Load(esm); }
-            foreach(Layint layint in layints) { layint.Load(esm); }
 
             /* Load params */
             Paramanger paramanger = new();
@@ -157,6 +157,7 @@ namespace PortJob {
                     HashSet<ModelInfo> usedMapPieces = new();
                     HashSet<CollisionInfo> usedCollision = new();
                     List<TerrainInfo> usedTerrain = new();         // Terrain is 1 to 1 usage so no need to use hashset. Also no need to track counts below.
+                    List<WaterInfo> usedWater = new();             // Water is also 1 to 1 at the moment
 
                     /* Part counter */
                     Counters counters = new();
@@ -182,6 +183,12 @@ namespace PortJob {
                     /* Create Sky */
                     MSB3.Part.Object sky = PartBuilder.MakeSky(layout);
                     msb.Parts.Add(sky);
+
+                    /* Create EXT Water */
+                    WaterInfo waterInfo = cache.GetWaterInfo(layout.id);
+                    MSB3.Part.MapPiece water = PartBuilder.MakeWater(layout, waterInfo);
+                    msb.Parts.MapPieces.Add(water);
+                    usedWater.Add(waterInfo);
 
                     /* MSB population pass */
                     for (int c = 0; c < layout.cells.Count; c++) {
@@ -273,7 +280,7 @@ namespace PortJob {
 
                     /* Copy resource files into MSB directory and add textures to final bnd list */
                     Log.Info(0, $"Copying files...");
-                    CopyMapResources(area, block, usedTerrain, usedMapPieces, usedCollision, areaTextures);   // @TODO: Move this functino into autoresource and improve it
+                    CopyMapResources(area, block, usedTerrain, usedMapPieces, usedCollision, usedWater, areaTextures);   // @TODO: Move this functino into autoresource and improve it
 
                     //AddTempNavMeshToNVA(block, area, nva);
                     Log.Info(0, $"## Completed: m{area:D2}_{block:D2}_00_00.msb ##");
@@ -312,6 +319,7 @@ namespace PortJob {
                     /* File resource lists */
                     HashSet<ModelInfo> usedMapPieces = new();
                     HashSet<CollisionInfo> usedCollision = new();
+                    List<WaterInfo> usedWater = new();             // Water is also 1 to 1 at the moment
 
                     /* Part counter */
                     Counters counters = new();
@@ -353,6 +361,14 @@ namespace PortJob {
                         breg.Position = Vector3.Add(bounds.center, new Vector3(0f, bounds.height * -.5f, 0f));  // Box regions are centered on XZ but Y is at the root.... fucking!?!?? FROM????????
                         breg.Rotation = Vector3.Zero;
                         msb.Regions.Events.Add(breg);
+
+                        /* Add cell water */
+                        if (cell.water != null) {
+                            WaterInfo waterInfo = cache.GetWaterInfo(cell.name);
+                            MSB3.Part.MapPiece water = PartBuilder.MakeWater(layint, cell, waterInfo, bounds);
+                            msb.Parts.MapPieces.Add(water);
+                            usedWater.Add(waterInfo);
+                        }
 
                         /* Static map pieces and collision */
                         foreach (Content content in cell.content) {
@@ -422,7 +438,7 @@ namespace PortJob {
 
                     /* Copy resource files into MSB directory and add textures to final bnd list */
                     Log.Info(0, $"Copying files...");
-                    CopyMapResources(area, block, new List<TerrainInfo>(), usedMapPieces, usedCollision, areaTextures);   // @TODO: Move this functino into autoresource and improve it
+                    CopyMapResources(area, block, new List<TerrainInfo>(), usedMapPieces, usedCollision, usedWater, areaTextures);   // @TODO: Move this functino into autoresource and improve it
 
                     //AddTempNavMeshToNVA(block, area, nva);
                     Log.Info(0, $"## Completed: m{area:D2}_{block:D2}_00_00.msb ##");
@@ -507,7 +523,7 @@ namespace PortJob {
         }
 
         /* Copy all used resources into map folder for an msb */
-        public static void CopyMapResources(int area, int block, List<TerrainInfo> usedTerrain, HashSet<ModelInfo> usedMapPieces, HashSet<CollisionInfo> usedCollision, HashSet<TextureInfo> textures) {
+        public static void CopyMapResources(int area, int block, List<TerrainInfo> usedTerrain, HashSet<ModelInfo> usedMapPieces, HashSet<CollisionInfo> usedCollision, List<WaterInfo> usedWater, HashSet<TextureInfo> textures) {
             string msbDir = $"{OutputPath}map\\m{area:D2}_{block:D2}_00_00\\";
 
             foreach (ModelInfo modelInfo in usedMapPieces) { // Map pieces
@@ -545,6 +561,17 @@ namespace PortJob {
                 string colPath = $"{msbDir}h{area:D2}_{block:D2}_{0:D2}_{0:D2}_{collisionInfo.id:D6}.hkx.dcx";
                 if (File.Exists(colPath)) { File.Delete(colPath); }
                 File.Copy(collisionInfo.path, colPath);
+            }
+
+            foreach (WaterInfo waterInfo in usedWater) { // Water
+                /* High terrain */
+                FLVER2 flver = FLVER2.Read(waterInfo.path);
+                string flverName = $"m{area:D2}_{block:D2}_{0:D2}_{0:D2}_{waterInfo.id:D6}";
+
+                BND4 bnd = new() { Compression = DCX.Type.DCX_DFLT_10000_44_9 };
+                bnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, 200, $"{flverName}.flver", flver.Write()));
+                bnd.Write($"{msbDir}{flverName}.mapbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9);
+                foreach (TextureInfo textureInfo in waterInfo.textures) { textures.Add(textureInfo); } // Textures
             }
         }
 

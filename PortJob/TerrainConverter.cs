@@ -21,7 +21,9 @@ namespace PortJob {
             string highPath = $"{flverDir}{highName}.flver";
             string lowPath = $"{flverDir}LOW {cell.position.x},{cell.position.y}.flver";
             string objPath = $"{flverDir}{highName}.obj";
-            List<TPF> tpfs = convertTerrain(cell, highPath, tpfDir, true);
+            Tuple<FLVER2, List<TPF>> tupl = convertTerrain(cell, highPath, tpfDir, true);
+            FLVER2 flver = tupl.Item1;
+            List<TPF> tpfs = tupl.Item2;
             if (GENERATE_LOW_TERRAIN) { convertTerrain(cell, lowPath, tpfDir, false); }
 
             CollisionInfo collisionInfo = new(highName, objPath, 100);
@@ -32,10 +34,19 @@ namespace PortJob {
                 terrainInfo.textures.Add(new TextureInfo(tpf.Textures[0].Name.Substring(3, tpf.Textures[0].Name.Length - 3) + ".dds", tpfDir + tpf.Textures[0].Name + ".tpf.dcx"));
             }
 
+            // Find lowest point on terrain for water generation
+            float min = float.MaxValue;
+            foreach(FLVER2.Mesh mesh in flver.Meshes) {
+                foreach(FLVER.Vertex vert in mesh.Vertices) {
+                    min = Math.Min(min, vert.Position.Y);
+                }
+            }
+            terrainInfo.min = min;
+
             return terrainInfo;
         }
 
-        private static List<TPF> convertTerrain(Cell cell, string flverPath, string tpfDir, bool isHigh) {
+        private static Tuple<FLVER2, List<TPF>> convertTerrain(Cell cell, string flverPath, string tpfDir, bool isHigh) {
             List<TerrainData> terrainDatas = isHigh ? cell.terrain : cell.lowTerrain;
 
             /* Create a blank FLVER */
@@ -446,7 +457,7 @@ namespace PortJob {
 
             Log.Info(2, $"Generated Terrain with [{terrainDatas.Count}] meshes -> {Utility.PathToFileName(flverPath)}");
 
-            return tpfs;
+            return new(flver, tpfs);
         }
     }
 }

@@ -79,6 +79,41 @@ namespace PortJob {
             return terrain;
         }
 
+        public static MSB3.Part.MapPiece MakeWater(Layout layout, WaterInfo waterInfo) {
+            uint[] drawGroup = new uint[] { uint.MaxValue, uint.MaxValue, uint.MaxValue, uint.MaxValue };
+            Vector3 position = new Vector3(layout.center.x, 0, layout.center.y) * Const.CELL_SIZE;
+            return MakeWater(Const.EXT_AREA, layout.id, waterInfo, drawGroup, -0.025f, position); // The -0.025f is to avoid zfighting on terrain at exactly 0f
+        }
+
+        public static MSB3.Part.MapPiece MakeWater(Layint layint, Cell cell, WaterInfo waterInfo, Bounds bounds) {
+            uint[] drawGroup = layint.drawGroups[cell];
+            return MakeWater(Const.INT_AREA, layint.id, waterInfo, drawGroup, cell.water.height, Vector3.Zero, bounds);
+        }
+
+        private static MSB3.Part.MapPiece MakeWater(int area, int block, WaterInfo waterInfo, uint[] drawGroup, float height, Vector3 position, Bounds? bounds = null) {
+            /* Static Mesh Map Piece */
+            MSB3.Part.MapPiece water = new();
+            water.ModelName = $"m{waterInfo.id:D6}";
+            water.SibPath = $"N:\\FDP\\data\\Model\\map\\m{area:D2}_{block:D2}_00_00\\sib\\layout_{waterInfo.id:D6}.SIB";
+            water.Position = (bounds != null ? bounds.center : position) + new Vector3(0, height, 0);
+            water.Rotation = Vector3.Zero;
+            water.Scale = Vector3.One;
+            water.MapStudioLayer = uint.MaxValue;
+            for (int k = 0; k < drawGroup.Length; k++) {
+                water.DrawGroups[k] = drawGroup[k];
+                water.DispGroups[k] = 0;
+                water.BackreadGroups[k] = 0;
+            }
+            water.ShadowSource = false;
+            water.ShadowDest = true;
+            water.DrawByReflectCam = true;
+            water.Name = $"{water.ModelName}_0000";
+            water.UnkE0E = -1;
+            water.LodParamID = 19; //Param for: Don't switch to LOD models
+
+            return water;
+        }
+
         public static MapColPair MakeStatic(Layout layout, Cell cell, Content content, ModelInfo modelInfo, Counters counters) {
             uint[] drawGroup = layout.GetDrawGroup(cell, modelInfo, content.scale);
             uint[] displayGroup = layout.displayGroups[cell];
@@ -276,14 +311,10 @@ namespace PortJob {
         }
 
         public static MSB3.Part.Object MakeSky(Layout layout) {
-            Vector3 skyPos = Vector3.Zero;
-            foreach (Cell cell in layout.cells) { skyPos += cell.area.center; }
-            skyPos *= 1f / layout.cells.Count;
-            skyPos.Y = -500;
             MSB3.Part.Object sky = new();
             sky.ModelName = "o004900"; // Dragon peak sky repack. Hard resource. Temporary till we create more skys
             sky.SibPath = "";
-            sky.Position = skyPos;
+            sky.Position = (new Vector3(layout.center.x, 0, layout.center.y) * Const.CELL_SIZE) + new Vector3(0, -500, 0);
             sky.Rotation = new Vector3(0, 5, 0);
             sky.MapStudioLayer = uint.MaxValue;
             for (int k = 0; k < sky.DrawGroups.Length; k++) {
@@ -294,6 +325,9 @@ namespace PortJob {
             sky.Name = $"{sky.ModelName}_0000";
             sky.UnkE0E = -1;
             sky.LodParamID = -1;
+            sky.DrawByReflectCam = true;
+            sky.ShadowDest = false;
+            sky.ShadowSource = false;
             sky.Gparam.LightSetID = 0;
             sky.Gparam.FogParamID = 350;
             sky.Gparam.EnvMapID = -1;

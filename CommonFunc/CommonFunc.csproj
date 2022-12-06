@@ -22,6 +22,12 @@
     <None Remove="Resources\DS3_GX_INFO.json" />
     <None Remove="Resources\DS3_MTD_INFO.json" />
     <None Remove="Resources\mtdbnd.dcx" />
+    <None Remove="Resources\mw_water_00_n.tpf.dcx" />
+    <None Remove="Resources\mw_water_01_n.tpf.dcx" />
+    <None Remove="Resources\mw_water_02_n.tpf.dcx" />
+    <None Remove="Resources\mw_water_blue_a.tpf.dcx" />
+    <None Remove="Resources\mw_water_r.tpf.dcx" />
+    <None Remove="Resources\mw_water_s.tpf.dcx" />
     <None Remove="Resources\param.parambnd.dcx" />
     <None Remove="Resources\paramdef.paramdefbnd.dcx" />
     <None Remove="Resources\settings.json" />
@@ -35,6 +41,12 @@
     <Content Include="Overrides\debug_cells.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Resources\mw_water_00_n.tpf.dcx" />
+    <EmbeddedResource Include="Resources\mw_water_01_n.tpf.dcx" />
+    <EmbeddedResource Include="Resources\mw_water_02_n.tpf.dcx" />
+    <EmbeddedResource Include="Resources\mw_water_blue_a.tpf.dcx" />
+    <EmbeddedResource Include="Resources\mw_water_r.tpf.dcx" />
+    <EmbeddedResource Include="Resources\mw_water_s.tpf.dcx" />
     <EmbeddedResource Include="Resources\param.parambnd.dcx" />
     <EmbeddedResource Include="Resources\paramdef.paramdefbnd.dcx" />
     <EmbeddedResource Include="Resources\test_resource.ffxbnd.dcx" />

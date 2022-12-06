@@ -184,6 +184,31 @@ namespace PortJob {
                     }
                 }
 
+                /* Generate EXT Water */
+                Log.Info(0, $"Mass Converter generating exterior water meshes...");
+                for (int i = 0; i < layouts.Count; i++) {
+                    if (!Const.DEBUG_GEN_EXT_LAYOUT(i)) { continue; } //for rapid debugging 
+                    Layout layout = layouts[i];
+                    WaterInfo waterInfo = Sploosh.CreateWater(tempCache, layout);
+                    tempCache.waters.Add(waterInfo);
+                }
+
+                /* Generate INT Water */
+                Log.Info(0, $"Mass Converter generating interior water meshes...");
+                for (int i = 0; i < layints.Count; i++) {
+                    if (!Const.DEBUG_GEN_INT_LAYINT(i)) { continue; } //for rapid debugging 
+                    Layint layint = layints[i];
+                    for (int c = 0; c < layint.mergedCells.Count; c++) {
+                        if (c > Const.DEBUG_MAX_INT_CELLS) { break; }
+                        Cell cell = layint.mergedCells[c].Value;
+                        Bounds bounds = layint.mergedCells[c].Key;
+                        if (cell.water != null && cell.water.height != 0) {
+                            WaterInfo waterInfo = Sploosh.CreateWater(cell, bounds);
+                            tempCache.waters.Add(waterInfo);
+                        }
+                    }
+                }
+
                 /* Assign resource ID numbers */
                 Log.Info(0, $"Mass Converter assigning IDs...", "test");
                 int nextMId = 0, nextCId = 0, nextOId = 5000;
@@ -195,6 +220,9 @@ namespace PortJob {
                     terrainInfo.idLow = nextMId++;
                     terrainInfo.idHigh = nextMId++;
                     terrainInfo.collision.id = nextCId++;
+                }
+                foreach(WaterInfo waterInfo in tempCache.waters) {
+                    waterInfo.id = nextMId++;
                 }
                 foreach(ObjectInfo objectInfo in tempCache.objects) {
                     objectInfo.id = nextOId++;

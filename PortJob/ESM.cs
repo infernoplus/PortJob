@@ -237,6 +237,7 @@ namespace PortJob {
 
         public readonly List<TerrainData> terrain, lowTerrain;
         public readonly TerrainVertex[,] borders;
+        public WaterContent water;
 
         public readonly List<Content> content;
         public readonly List<Light> lights;
@@ -280,6 +281,7 @@ namespace PortJob {
             terrain = new();
             lowTerrain = new();
             borders = new TerrainVertex[4, 65];
+            water = null;
 
             /* These fields are used by Layout for stuff */
             refs = ((JArray)data["references"]).Count; // We don't actaully process cell content until we call generate() on it but we do make a quick count of it's content for culling purposes
@@ -298,6 +300,13 @@ namespace PortJob {
         /* We don't load every cell initially because it takes a while. We load them on demand when/if we need them */
         public void Load(ESM esm) {
             if (loaded) { return; }
+
+            bool hasWater = raw["water_height"] != null;
+            float waterHeight = hasWater?float.Parse(raw["water_height"].ToString()):0f;
+            if (hasWater && waterHeight != 0f) {
+                water = new WaterContent(esm, this, raw);
+            }
+            if(!hasWater) { water = new WaterContent(esm, this, raw); }
 
             JArray refc = (JArray)(raw["references"]);
             for (int i = 0; i < refc.Count; i++) {
@@ -938,6 +947,19 @@ namespace PortJob {
             else if (((flags >> 6) & 1) == 1) { effect = Light.Effect.FlickerSlow; }
             else if (((flags >> 8) & 1) == 1) { effect = Light.Effect.PulseSlow; }
             else { effect = Light.Effect.None; }
+        }
+    }
+
+    /* Information about a cells water */
+    public class WaterContent {
+        public float height;
+        public WaterContent(ESM esm, Cell cell, JObject data) {
+            /* Exterior cells always have a water plane at 0f */
+            /* Interior cells only have water if the water_height value is NOT 0. If it is 0 there is no water plane. */
+            bool hasWater = data["water_height"] != null;
+            float waterHeight = hasWater ? float.Parse(data["water_height"].ToString()) : 0f;
+            if(hasWater) { height = waterHeight * GLOBAL_SCALE; }     // Int
+            if(!hasWater) { height = 0f; }             // Ext
         }
     }
 
