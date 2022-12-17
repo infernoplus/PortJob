@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using SoulsFormats;
-
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Data.SqlTypes;
@@ -16,7 +14,7 @@ using System.Threading;
 using CommonFunc;
 
 namespace PortJob {
-    public class FBXConverterWorker : Worker{
+    public class FBXConverterWorker : Worker {
         private Process _pipeClient { get; set; }
         private string _jsonString { get; }
         public FBXConverterWorker(string outputPath, string morrowindPath, string tpfDir, List<FBXInfo> fbxList) {
@@ -33,7 +31,7 @@ namespace PortJob {
                 StartInfo = new ProcessStartInfo {
                     FileName = $"{Environment.CurrentDirectory}\\FBXConverter.exe",
                     UseShellExecute = false,
-                    CreateNoWindow = true, 
+                    CreateNoWindow = false,
                     RedirectStandardError = true, //Cannot re-direct standard output while checking IsDone, or this child process will freeze.  
                     RedirectStandardOutput = true
                 }
@@ -79,8 +77,12 @@ namespace PortJob {
             Console.WriteLine(e.Data);
         }
         private void _pipeClient_ErrorDataReceived(object sender, DataReceivedEventArgs e) {
-            ErrorMessage += e.Data;
+            if (!string.IsNullOrWhiteSpace(e.Data)) {
+                throw new FBXConverterWorkerException(e.Data);
+            }
         }
     }
+    public class FBXConverterWorkerException : Exception {
+        public FBXConverterWorkerException(string message) : base(message) { }
+    }
 }
-
