@@ -75,9 +75,21 @@ namespace PortJob {
         public void CreateLightModelSFXParam(ObjectInfo objectInfo, FXRInfo fxrInfo) {
             PARAM param = paramz[ParamType.ModelSfxParam];
 
+            /* Find the dummy marker we should use */
+            int dummyId = -1;
+            foreach (KeyValuePair<string, short> dmy in objectInfo.model.dummies) {
+                foreach (string id in fxrInfo.template.nodeIdentifiers) {
+                    if (dmy.Key.Contains(id)) {
+                        dummyId = dmy.Value;
+                    }
+                }
+                if(dummyId != -1) { break; }
+            }
+            if (dummyId == -1) { dummyId = MassConvert.OBJ_DUMMY_LIST[MassConvert.Dummy.Center]; } // Fall back to center
+
             PARAM.Row row = new PARAM.Row(objectInfo.id*1000, objectInfo.name, param.AppliedParamdef);
             SetCell(row, "VfxId1", fxrInfo.id);
-            SetCell(row, "DummyPolyId1", MassConvert.OBJ_DUMMY_LIST[MassConvert.Dummy.Center]);
+            SetCell(row, "DummyPolyId1", dummyId);
 
             param.Rows.Add(row);
         }

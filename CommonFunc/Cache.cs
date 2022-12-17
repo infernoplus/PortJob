@@ -137,6 +137,8 @@ namespace CommonFunc {
         public List<CollisionInfo> collisions; // All generated HKX collision files
         public List<TextureInfo> textures; // All generated tpf files
 
+        public Dictionary<string, short> dummies; // Dummies and their ids
+
         public int id;  // Model ID number, the last 6 digits in a model filename. EXAMPLE: m30_00_00_00_005521.mapbnd.dcx
 
         public float radius; // Bounding radius, for use in distant LOD generation
@@ -145,6 +147,7 @@ namespace CommonFunc {
             this.path = path;
             collisions = new();
             textures = new();
+            dummies = new();
 
             id = -1;
             radius = -1f;

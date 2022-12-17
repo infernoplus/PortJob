@@ -20,7 +20,7 @@ namespace FBXConverter {
             /* test func */
             /*List<int> scales = new();
             scales.Add(100);
-            FBXConverter.convert(@"D:\Steam\steamapps\common\Morrowind\Data Files\meshes\f\furn_mist256.fbx", @"C:\Games\steamapps\common\DARK SOULS III\Game\mod\cache\meshes\x\test.flver", @"C:\Games\steamapps\common\DARK SOULS III\Game\mod\cache\textures\", scales);
+            FBXConverter.convert(@"D:\Steam\steamapps\common\Morrowind\Data Files\meshes\l\light_com_chandelier_04.fbx", @"C:\Games\steamapps\common\DARK SOULS III\Game\mod\out.flver", @"C:\Games\steamapps\common\DARK SOULS III\Game\mod\cache\textures\", scales);
             return;*/
             string jsonString = null;
             if (args.Length <= 0) throw new Exception("Did not receive pipe handle");

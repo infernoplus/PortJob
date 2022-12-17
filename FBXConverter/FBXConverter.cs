@@ -47,11 +47,17 @@ namespace FBXConverter {
             /* Buffer Layout dictionary */
             Dictionary<string, int> flverMaterials = new();
 
+            /* Certain useful nodes are collected for use as dummies */
+            List<Tuple<string, Vector3>> nodes = new();
 
             void FBXHierarchySearch(NodeContent node) {
                 foreach (NodeContent fbxComponent in node.Children) {
-                    if (fbxComponent.Name.ToLower() == "collision") {
+                    string nodename = fbxComponent.Name.ToLower();
+                    if (nodename.ToLower() == "collision") {
                         continue; // Collision is handled by ColToOBJ
+                    }
+                    if(nodename.Contains("attachlight") || nodename.Contains("emitter")) {
+                        nodes.Add(new(nodename, fbxComponent.AbsoluteTransform.Translation * GLOBAL_SCALE));
                     }
                     if (fbxComponent is MeshContent meshContent) {
                         FBX_Meshes.Add(new FLVER2.Mesh(), meshContent);
@@ -429,16 +435,49 @@ namespace FBXConverter {
             flver.Header.Unk5C = FLVER_UNK_0x5C;
             flver.Header.Unk68 = FLVER_UNK_0x68;
 
-            /* Add dummies */
-            // @TODO: likely don't do it at this point in code, will maybe need dummies for some SFX stuff possibly later on, should not be hard to implement since these are statics 
-            // It's also fairly possible we may instead just place down our 'dummies' as points in the msb to attach SFX to. Idk. figure it out later.
-
             /* Solve bounding box */
             Solvers.BoundingBoxSolver.FixAllBoundingBoxes(flver);
 
             /* Don't know */
             foreach (KeyValuePair<FLVER2.Mesh, MeshContent> kvp in FBX_Meshes) {
                 flverMeshNameMap.Add(kvp.Key, kvp.Value.Name);
+            }
+
+            /* Generate ModelInfo a bit early (so we can dump our collisions/dummies in there right away) */
+            string nifName = fbxPath.Split("\\Data Files\\meshes\\")[1].Replace(".fbx", ".nif"); // Note, really we should just pass the nif name along with other params but this works too, though a little gross
+            ModelInfo modelInfo = new(nifName, flverPath);
+
+            /* Add dummies to both the modelinfo and the flver */
+            short nextRef = 500;
+            foreach (Tuple<string, Vector3> node in nodes) {
+                string name = node.Item1;
+                if (name.Contains(".0")) { name = name.Substring(0, name.Length - 4); }   // Duplicate nodes get a '.001' and what not appended to their names. Remove that.
+                short refid = modelInfo.dummies.ContainsKey(name)?modelInfo.dummies[name]:nextRef++;
+
+                System.Numerics.Vector3 correctedPosition = new(-node.Item2.X, node.Item2.Y, node.Item2.Z); // Flip X
+
+                /* Rotate Y 180 degrees because... */
+                float cosDegrees = (float)Math.Cos(Math.PI);
+                float sinDegrees = (float)Math.Sin(Math.PI);
+
+                float x = (correctedPosition.X * cosDegrees) + (correctedPosition.Z * sinDegrees);
+                float z = (correctedPosition.X * -sinDegrees) + (correctedPosition.Z * cosDegrees);
+
+                correctedPosition.X = x;
+                correctedPosition.Z = z;
+
+
+                FLVER.Dummy dmy = new();
+                dmy.Position = correctedPosition;
+                dmy.Forward = new(0, 0, 1);
+                dmy.Upward = new(0, 1, 0);
+                dmy.Color = System.Drawing.Color.White;
+                dmy.ReferenceID = refid;
+                dmy.ParentBoneIndex = 0;
+                dmy.AttachBoneIndex = -1;
+                dmy.UseUpwardVector = true;
+                flver.Dummies.Add(dmy);
+                modelInfo.dummies.TryAdd(name, refid);
             }
 
             string flverName = Path.GetFileNameWithoutExtension(flverPath);
@@ -452,10 +491,6 @@ namespace FBXConverter {
                 //Log.Info(2, "Writing TPF to: " + tpfPath);
                 tpf.Write(tpfPath, DCX.Type.DCX_DFLT_10000_24_9);
             }
-
-            /* Generate ModelInfo a bit early (so we can dump our collisions in there right away) */
-            string nifName = fbxPath.Split("\\Data Files\\meshes\\")[1].Replace(".fbx", ".nif"); // Note, really we should just pass the nif name along with other params but this works too, though a little gross
-            ModelInfo modelInfo = new(nifName, flverPath);
 
             /* Do collision and generate all needed scales */
             string outputPath = Path.GetDirectoryName(flverPath);

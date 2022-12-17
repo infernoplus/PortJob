@@ -21,6 +21,11 @@
     <None Remove="Resources\DS3_GX_EXAMPLE_INFO.json" />
     <None Remove="Resources\DS3_GX_INFO.json" />
     <None Remove="Resources\DS3_MTD_INFO.json" />
+    <None Remove="Resources\light-candle.fxr" />
+    <None Remove="Resources\light-fire.fxr" />
+    <None Remove="Resources\light-lantern.fxr" />
+    <None Remove="Resources\light-none.fxr" />
+    <None Remove="Resources\light-torch.fxr" />
     <None Remove="Resources\mtdbnd.dcx" />
     <None Remove="Resources\mw_water_00_n.tpf.dcx" />
     <None Remove="Resources\mw_water_01_n.tpf.dcx" />
@@ -28,11 +33,11 @@
     <None Remove="Resources\mw_water_blue_a.tpf.dcx" />
     <None Remove="Resources\mw_water_r.tpf.dcx" />
     <None Remove="Resources\mw_water_s.tpf.dcx" />
+    <None Remove="Resources\nolight-candle.fxr" />
     <None Remove="Resources\param.parambnd.dcx" />
     <None Remove="Resources\paramdef.paramdefbnd.dcx" />
     <None Remove="Resources\settings.json" />
     <None Remove="Resources\template.emevd" />
-    <None Remove="Resources\test_light.fxr" />
     <None Remove="Resources\test_resource.ffxbnd.dcx" />
     <None Remove="Resources\test_sky.objbnd.dcx" />
     <Content Include="ds3-common.emedf.json">
@@ -41,6 +46,12 @@
     <Content Include="Overrides\debug_cells.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Resources\light-candle.fxr" />
+    <EmbeddedResource Include="Resources\nolight-candle.fxr" />
+    <EmbeddedResource Include="Resources\light-fire.fxr" />
+    <EmbeddedResource Include="Resources\light-lantern.fxr" />
+    <EmbeddedResource Include="Resources\light-none.fxr" />
+    <EmbeddedResource Include="Resources\light-torch.fxr" />
     <EmbeddedResource Include="Resources\mw_water_00_n.tpf.dcx" />
     <EmbeddedResource Include="Resources\mw_water_01_n.tpf.dcx" />
     <EmbeddedResource Include="Resources\mw_water_02_n.tpf.dcx" />
@@ -50,7 +61,6 @@
     <EmbeddedResource Include="Resources\param.parambnd.dcx" />
     <EmbeddedResource Include="Resources\paramdef.paramdefbnd.dcx" />
     <EmbeddedResource Include="Resources\test_resource.ffxbnd.dcx" />
-    <EmbeddedResource Include="Resources\test_light.fxr" />
     <EmbeddedResource Include="Resources\template.emevd" />
     <EmbeddedResource Include="Resources\test_sky.objbnd.dcx" />
     <None Update="ColConverter\AssetCc2_fixed.exe">

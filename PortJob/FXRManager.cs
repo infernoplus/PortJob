@@ -10,9 +10,15 @@ using System.Threading.Tasks;
 namespace PortJob {
     /* Class for managing FXR files that will be built into an msbs fxr/resource bnds */
     public class FXRManager {
-        public static string TEST = "CommonFunc.Resources.test_light.fxr";
+        public static readonly List<FXRTemplate> TEMPLATES = new() { // Probably should move this into overrides
+            new("CommonFunc.Resources.light-none.fxr", new() { "blue" }, new() { "light" }),
+            new("CommonFunc.Resources.light-candle.fxr", new() { "candle", "chandelier" }, new() { "emitter" }),
+            new("CommonFunc.Resources.light-lantern.fxr", new() { "lantern", "sconce", "lamp" }, new() { "emitter" }),
+            new("CommonFunc.Resources.light-torch.fxr", new() { "torch", "brazier" }, new() { "fire" }),
+            new("CommonFunc.Resources.light-fire.fxr", new() { "fire", "log" }, new() { "emitter" }),
+        };
 
-        int area;
+        readonly int area;
         public Dictionary<ObjectInfo, FXRInfo> fxrObjs;
 
         public FXRManager(int area) {
@@ -23,7 +29,19 @@ namespace PortJob {
         public void CreateLightSFX(Paramanger paramanger, ObjectInfo objectInfo) {
             if(fxrObjs.ContainsKey(objectInfo)) { return; }
 
-            FXRInfo fxrInfo = new FXRInfo((objectInfo.id * 1000) + 000);
+            FXRTemplate template = null;
+            foreach(FXRTemplate tmp in TEMPLATES) {
+                foreach (string id in tmp.fxrIdentifiers) {
+                    if(objectInfo.name.ToLower().Contains(id)) {
+                        template = tmp; break;
+                    }
+                }
+                if (template != null) { break; }
+            }
+            
+            if(template == null) { Console.WriteLine("OH NO!: " + objectInfo.name); template = TEMPLATES[0]; }
+
+            FXRInfo fxrInfo = new((objectInfo.id * 1000) + 000, template);
             fxrObjs.Add(objectInfo, fxrInfo);
 
             paramanger.CreateLightModelSFXParam(objectInfo, fxrInfo);
@@ -34,7 +52,7 @@ namespace PortJob {
             string sfxPath = $"sfx\\effect\\";
             int i=0;
             foreach (KeyValuePair<ObjectInfo, FXRInfo> fxrInfo in fxrObjs) {
-                FXR3 fxr = FXR3.Read(Utility.GetEmbededResourceBytes(TEST));
+                FXR3 fxr = FXR3.Read(Utility.GetEmbededResourceBytes(fxrInfo.Value.template.path));
                 sfxBnd.Files.Add(new BinderFile(Binder.FileFlags.Flag1, i++, $"{sfxPath}f{fxrInfo.Value.id:D9}.fxr", fxr.Write()));
             }
             sfxBnd.Write($"{dir}sfx\\frpg_sfxbnd_m{area:D2}_effect.ffxbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9);
@@ -42,10 +60,24 @@ namespace PortJob {
         }
     }
 
+    /* Contains some info about an FXR template file. */
+    public class FXRTemplate {
+        public string path;
+        public List<string> fxrIdentifiers;  // We are using the filename of a nif to guess what kind of light it is.
+        public List<string> nodeIdentifiers; // Similar to above we have to guess the name of the dummy to attach this effect to based on what we think it is
+        public FXRTemplate(string path, List<string> fxrIdentifiers, List<string> nodeIdentifiers) {
+            this.path = path;
+            this.fxrIdentifiers = fxrIdentifiers;
+            this.nodeIdentifiers = nodeIdentifiers;
+        }
+    }
+
     public class FXRInfo {
-        public int id;
-        public FXRInfo(int id) {
+        public readonly int id;
+        public readonly FXRTemplate template;
+        public FXRInfo(int id, FXRTemplate template) {
             this.id = id;
+            this.template = template;
         }
     }
 }
