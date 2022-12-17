@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Numerics;
 using System.Linq;
-
 using SoulsFormats;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +16,7 @@ using System.Threading.Tasks;
 using static CommonFunc.Const;
 using SoulsIds;
 using static PortJob.PartBuilder;
+using Debug = CommonFunc.Debug;
 
 namespace PortJob {
     class PortJob {
@@ -25,16 +25,14 @@ namespace PortJob {
         public static readonly ESM.Type[] CONVERT_ALL = { ESM.Type.Static, ESM.Type.Container, ESM.Type.Door, ESM.Type.Light };
 
         static void Main(string[] args) {
-            //BND4 bnd = BND4.Read(@"G:\Steam\steamapps\common\DARK SOULS III\Game\mod\map\m54_00_00_00\m54_00_00_00_009000.mapbnd.dcx");
-            //FLVER2 flver = FLVER2.Read(bnd.Files.First(x => x.Name.EndsWith(".flver")).Bytes);
+            
+            
             CheckIsDarkSouls3IsRunning();
             DateTime startTime = DateTime.Now;
             SetupPaths();
             Log.SetupLogStream();
 
             Convert();
-            //FLVER2 myFlver = FLVER2.Read("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\mod\\map\\m54_00_00_00\\m54_00_00_00_000009-mapbnd-dcx\\m54_00_00_00_000009.flver");
-            //FLVER2 fromFlver = FlverSearch(Directory.GetFiles("C:\\Games\\steamapps\\common\\DARK SOULS III\\Game\\map", "*.mapbnd.dcx", SearchOption.AllDirectories));
 
             TimeSpan length = DateTime.Now - startTime;
             Log.Info(0, $"Porting time: {length}");
@@ -42,49 +40,6 @@ namespace PortJob {
 
         }
 
-        /* Random testing and debug stuff */
-        private static FLVER2 FlverSearch(string[] files) {
-            foreach (string file in files) {
-                BND4 bnd = BND4.Read(file);
-
-                foreach (BinderFile binderFile in bnd.Files) {
-                    if (binderFile.Name.ToLower().Contains("flver")) {
-                        FLVER2 flver = FLVER2.Read(binderFile.Bytes);
-
-                        /*foreach(FLVER2.Mesh mesh in flver.Meshes) {
-                            foreach(FLVER.Vertex vert in mesh.Vertices) {
-                                if(vert.Colors.Count > 1) {
-                                    Console.WriteLine("Multiple Vertex Colors " + file);
-                                    Console.WriteLine("    " + flver.Materials[mesh.MaterialIndex].MTD + " :: " + flver.Materials[mesh.MaterialIndex].Name);
-                                    Console.WriteLine("    [" + vert.Colors[0].R + ", " + vert.Colors[0].G + ", " + vert.Colors[0].B + "]");
-                                    Console.WriteLine("    [" + vert.Colors[1].R + ", " + vert.Colors[1].G + ", " + vert.Colors[1].B + "]");
-                                    break;
-                                }
-                                if (vert.Colors.Count > 0 && vert.Colors[0].R != vert.Colors[0].B && vert.Colors[0].R is not(1f or 0f) && vert.Colors[0].G is not (1f or 0f)) {
-                                    Console.WriteLine("Varied vertex color data in: " + file);
-                                    Console.WriteLine("    " + flver.Materials[mesh.MaterialIndex].MTD + " :: " + flver.Materials[mesh.MaterialIndex].Name);
-                                    Console.WriteLine("    [" + vert.Colors[0].R + ", " + vert.Colors[0].G + ", " + vert.Colors[0].B + "]");
-                                    break;
-                                }
-                            }
-                        }*/
-
-                        //foreach (FLVER2.Material mat in flver.Materials) {
-                            //Console.WriteLine(file);
-                            //if (mat.MTD.ToLower().EndsWith("m[arsn]_m.mtd"))
-                                //return flver;
-
-
-                            //   Console.WriteLine($"Material found {binderFile.Name} {file} {mat.Name}");
-
-                            //if (mat.MTD.ToLower().Contains("m[a]"))
-                            //    Console.WriteLine($"Material found {binderFile.Name} {file} {mat.Name}");
-                        //}
-                    }
-                }
-            }
-            return null;
-        }
 
         private static void CheckIsDarkSouls3IsRunning() {
             Process[] processes = Process.GetProcesses();
@@ -207,7 +162,7 @@ namespace PortJob {
                         usedCollision.Add(terrainInfo.collision);
 
                         /* Add cell low terrain map piece */
-                        if (terrainInfo.low != null && GENERATE_LOW_TERRAIN) {
+                        if(terrainInfo.low != null && GENERATE_LOW_TERRAIN) {
                             MSB3.Part.MapPiece lowTerrain = PartBuilder.MakeLowTerrain(layout, cell, terrainInfo);
                             msb.Parts.MapPieces.Add(lowTerrain);
                         }
@@ -226,10 +181,10 @@ namespace PortJob {
                                 usedCollision.Add(modelInfo.GetCollision(content.scale));
                             }
                         }
-
+                        
                         /* Add Objects */
                         foreach (Content content in cell.content) {
-                            if (!CONVERT_TO_OBJ.Contains(content.type)) { continue; }   // Doors please
+                            if (!CONVERT_TO_OBJ.Contains(content.type)) { continue; } // Doors please
                             if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
 
                             /* Door ObjAct */
@@ -794,7 +749,6 @@ namespace PortJob {
 
                 tpf.Write(OutputPath + "map\\m" + area + "\\" + "m" + area + "_9999.tpf.dcx", DCX.Type.DCX_DFLT_10000_44_9);
             }
-            //Directory.Delete(OutputPath + "map\\tx", true); // Don't delete temp tpf folder because if you delete this we can't re-use it. program is a lot faster without recreating every tpf every time
         }
     }
 

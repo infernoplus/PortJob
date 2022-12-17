@@ -115,7 +115,7 @@ namespace PortJob {
                     }
                 }
 
-                /* Convert HKX files */
+                /* Convert HKX files */ // @TODO: replace with C# version  
                 string[] meshDirs = Directory.GetDirectories(outputMesh);
                 foreach(string dir in meshDirs) {
                     Log.Info(0, $"Mass Converter processing collision: {dir}", "test");

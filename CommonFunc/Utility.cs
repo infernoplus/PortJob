@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static CommonFunc.Const;
 using Binder = SoulsFormats.Binder;
 
 namespace CommonFunc {
@@ -205,5 +207,109 @@ namespace CommonFunc {
             return path.Replace("\\", ".");
         }
 
+ #region TestMethods
+        /* Temporary code for packing up hkx and navmesh BNDss */
+        public static void PackTestColAndNavMeshes(int area, int block) {
+            /* Setup area_block and output path*/
+            string outputPath = Settings.OutputPath;
+            string area_block = $"{area:D2}_{block:D2}";
+            string mapName = $"m{area_block}_00_00";
+            string hPath = $"{mapName}\\h{area_block}_00_00";
+            string lPath = $"{mapName}\\l{area_block}_00_00";
+
+            string[] colFiles = Directory.GetFiles($"{outputPath}\\map\\{mapName}\\hkx\\col", "*.hkx.dcx");
+            int startId = 0; // h col binder file IDs start here and increment by 1
+            BXF4 lBXF = new();
+            BXF4 hBXF = new();
+            foreach (string col in colFiles) {
+                byte[] bytes = File.ReadAllBytes(col);
+                string name = Path.GetFileName(col).Replace("-", "\\");
+
+                BinderFile hBinder = new(flags: Binder.FileFlags.Flag1, id: startId, name: name, bytes: bytes); //in-line parameter names help here to tell what is going on, but are not necessary.
+                hBXF.Files.Add(hBinder);
+
+                BinderFile lBinder = new(flags: Binder.FileFlags.Flag1, id: startId, name: name.Replace("\\h", "\\l"), bytes: bytes);
+                lBXF.Files.Add(lBinder);
+                startId++;
+            }
+
+            hBXF.Write($"{outputPath}map\\{hPath}.hkxbhd", $"{outputPath}map\\{hPath}.hkxbdt");
+            lBXF.Write($"{outputPath}map\\{lPath}.hkxbhd", $"{outputPath}map\\{lPath}.hkxbdt");
+
+            /* Write the nav mesh bnd */
+            string[] navFiles = Directory.GetFiles($"{outputPath}\\map\\{mapName}\\hkx\\nav", "*.hkx");
+            BND4 nvmBND = new();
+            int nStartId = 1000; // navmesh binder file IDs start here and increment by 1
+            foreach (string nav in navFiles) {
+                byte[] bytes = File.ReadAllBytes(nav);
+                string name = Path.GetFileName(nav).Replace("-", "\\"); //Have to seperate the name here, cause the path is long AF
+                string path = $"N:\\FDP\\data\\INTERROOT_win64\\map\\{mapName}\\navimesh\\bind6\\{name}";
+                BinderFile nBinder = new(flags: Binder.FileFlags.Flag1, id: nStartId, name: path, bytes: bytes);
+                nvmBND.Files.Add(nBinder);
+                nStartId++;
+
+            }
+            nvmBND.Write($"{outputPath}map\\{mapName}\\m{area_block}_00_00.nvmhktbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9); //Whole bnd is compressed. 
+        }
+
+
+        /// <summary>
+        /// Copies the pre-rendered flat test nav mesh from embedded resources into the map\mXX_XX_00_00\hkx\nav\ folder so it can be packaged later.
+        /// </summary>
+        /// <param name="cModel"></param>
+        /// <param name="area"></param>
+        /// <param name="block"></param>
+        /// <exception cref="Exception"></exception>
+        private static void WriteTestNavMesh(int nModelId, int area, int block) {
+            /* Setup area_block and output path*/
+            string area_block = $"{area:D2}_{block:D2}";
+            string mapName = $"m{area_block}_00_00";
+
+            /* Write the nav mesh bnd */
+            string nPreGenPath = $"PortJob.TestCol.n{area_block}_00_00_{nModelId:D6}.hkx"; //:fatcat:
+            if (block is not (3 or 8))
+                nPreGenPath = $"PortJob.TestCol.n54_03_00_00_{0:D6}.hkx";
+
+            string nPath = $"n{area_block}_00_00";
+            byte[] nBytes = Utility.GetEmbededResourceBytes(nPreGenPath);
+            Directory.CreateDirectory($"{OutputPath}\\map\\{mapName}\\hkx\\nav\\");
+            File.WriteAllBytes($"{OutputPath}\\map\\{mapName}\\hkx\\nav\\{nPath}_{nModelId:D6}.hkx", nBytes);
+        }
+
+        /// <summary>
+        /// Adds temporary pre-generated flat nav mesh to NVA
+        /// </summary>
+        /// <param name="block"></param>
+        /// <param name="area"></param>
+        /// <param name="nva"></param>
+        private static void AddTempNavMeshToNVA(int block, int area, NVA nva) {
+
+            /* Just add one Navmesh to each nva. Model and Name are not a string, so no '_0000' format, and we have to use a unique ID here. */
+            int nModelID = 0;
+            if (block == 8)
+                nModelID = 91;
+
+            if (int.TryParse($"{area}{block}{nModelID:D6}", out int id)) //This is just for testing so we don't go over int.MaxValue.
+            {
+                nva.Navmeshes.Add(new NVA.Navmesh() {
+                    NameID = id,
+                    ModelID = nModelID,
+                    Position = block == 3 ? new Vector3(798, 3, -185) : new Vector3(), //new Vector3(716, 2, -514),// player.Position, //using player position, here. Change this to cell.center in loop.
+                    VertexCount = 1,
+                    //Unk38 = 12399,
+                    //Unk4C = true
+                });
+            }
+
+            //WriteTestNavMesh(nModelID, area, block);
+
+            /* There has to be an entry for each vertex in each navmesh in nav.Navmashes */
+            foreach (NVA.Navmesh navmesh in nva.Navmeshes) {
+                for (int j = 0; j < navmesh.VertexCount; j++) {
+                    nva.Entries1.Add(new NVA.Entry1());
+                }
+            }
+        }
+  #endregion
     }
 }
