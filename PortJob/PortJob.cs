@@ -207,7 +207,7 @@ namespace PortJob {
                         usedCollision.Add(terrainInfo.collision);
 
                         /* Add cell low terrain map piece */
-                        if(terrainInfo.low != null && GENERATE_LOW_TERRAIN) {
+                        if (terrainInfo.low != null && GENERATE_LOW_TERRAIN) {
                             MSB3.Part.MapPiece lowTerrain = PartBuilder.MakeLowTerrain(layout, cell, terrainInfo);
                             msb.Parts.MapPieces.Add(lowTerrain);
                         }
@@ -226,9 +226,9 @@ namespace PortJob {
                                 usedCollision.Add(modelInfo.GetCollision(content.scale));
                             }
                         }
-                        
+
                         /* Add Objects */
-                        foreach(Content content in cell.content) {
+                        foreach (Content content in cell.content) {
                             if (!CONVERT_TO_OBJ.Contains(content.type)) { continue; }   // Doors please
                             if (content.mesh == null || !content.mesh.Contains("\\")) { continue; } // Skip invalid or top level placeholder meshes
 
@@ -263,7 +263,7 @@ namespace PortJob {
                         }
 
                         /* Add Lights */
-                        foreach(Light mwl in cell.lights) {
+                        foreach (Light mwl in cell.lights) {
                             light.CreateLight(mwl);
                         }
 
@@ -271,6 +271,15 @@ namespace PortJob {
                         foreach (DoorMarker marker in cell.markers) {
                             MSB3.Part.Player mrk = PartBuilder.MakeMarker(area, block, cell, marker, counters);
                             msb.Parts.Players.Add(mrk);
+                        }
+
+                        /* Add Test Enemies */
+                        foreach (Content content in cell.content) {
+                            if(!GENERATE_TEST_ENEMIES) { break; }
+                            if (content.type != ESM.Type.Npc && content.type != ESM.Type.Creature) { continue; }   // Get them dudes
+
+                            MSB3.Part.Enemy enemy = MakeEnemy(layout, cell, content, counters);
+                            msb.Parts.Enemies.Add(enemy);
                         }
                     }
 
@@ -430,6 +439,15 @@ namespace PortJob {
                             MSB3.Part.Player mrk = PartBuilder.MakeMarker(area, block, cell, marker, counters, bounds);
                             msb.Parts.Players.Add(mrk);
                         }
+
+                        /* Add Test Enemies */
+                        foreach (Content content in cell.content) {
+                            if (!GENERATE_TEST_ENEMIES) { break; }
+                            if (content.type != ESM.Type.Npc && content.type != ESM.Type.Creature && content.type != ESM.Type.LevelledCreature) { continue; }   // Get them dudes
+
+                            MSB3.Part.Enemy enemy = MakeEnemy(layint, cell, content, counters, bounds);
+                            msb.Parts.Enemies.Add(enemy);
+                        }
                     }
 
                     /* Auto-generate model resources section of MSB */
@@ -575,35 +593,6 @@ namespace PortJob {
             }
         }
 
-        private static void MakeTestEnemy(int c, Cell cell, MSB3 msb) {
-
-            /* Enemy for testing */
-            string eModel = "c1100";
-            string eName = $"_{c:D4}";
-
-            MSB3.Part.Enemy enemy = new();
-            //enemy.CollisionName = flat.Name;
-            enemy.ThinkParamID = 110050;
-            enemy.NPCParamID = 110010;
-            enemy.TalkID = 0;
-            enemy.CharaInitID = -1;
-            enemy.UnkT78 = 128;
-            enemy.UnkT84 = 1;
-            enemy.Name = eModel + eName;
-            enemy.SibPath = "";
-            enemy.ModelName = eModel;
-            enemy.Position = cell.area.center + new Vector3(0f, 5f, 0f);
-            enemy.MapStudioLayer = 4294967295;
-            /*for (int k = 0; k < cell.drawGroups.Length; k++) {
-                enemy.DrawGroups[k] = 0;
-                enemy.DispGroups[k] = 0;
-                enemy.BackreadGroups[k] = 0;
-            }*/
-            enemy.LodParamID = -1;
-            enemy.UnkE0E = -1;
-
-            msb.Parts.Enemies.Add(enemy);
-        }
         private static MSB3.Part.Collision AddTestcol(string cModel, int area, int block, Cell cell, Vector3 OFFSET, Vector3 ROTATION, MSB3 msb, Dictionary<string, int> partMap) {
             partMap.Add(cModel, 0);
             /* Flat ground for testing */

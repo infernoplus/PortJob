@@ -335,17 +335,58 @@ namespace PortJob {
             return sky;
         }
 
+        /* Test enemies, not finished!!! Just generates a bunch of hollows!!! */
+        public static MSB3.Part.Enemy MakeEnemy(Layout layout, Cell cell, Content content, Counters counters) {
+            uint[] drawGroup = layout.drawGroups[cell];
+            return MakeEnemy(Const.EXT_AREA, layout.id, cell, content, counters, drawGroup);
+        }
+
+        public static MSB3.Part.Enemy MakeEnemy(Layint layint, Cell cell, Content content, Counters counters, Bounds bounds) {
+            uint[] drawGroup = layint.drawGroups[cell];
+            return MakeEnemy(Const.INT_AREA, layint.id, cell, content, counters, drawGroup, bounds);
+        }
+
+        public static MSB3.Part.Enemy MakeEnemy(int area, int block, Cell cell, Content content, Counters counters, uint[] drawGroup, Bounds? bounds = null) {
+            MSB3.Part.Enemy enemy = new();
+            enemy.ModelName = $"c{1100:D4}";
+            enemy.SibPath = "";
+            enemy.Position = bounds != null ? Vector3.Add(Vector3.Add(content.position, bounds.offset), bounds.center) : content.position;
+            enemy.Rotation = content.rotation;
+            enemy.MapStudioLayer = uint.MaxValue;
+            for (int k = 0; k < drawGroup.Length; k++) {
+                enemy.DrawGroups[k] = drawGroup[k];
+                enemy.DispGroups[k] = 0;
+                enemy.BackreadGroups[k] = 0;
+            }
+            //enemy.CollisionName = terrainCol.Name;
+            enemy.ThinkParamID = 110050;
+            enemy.NPCParamID = 110010;
+            enemy.TalkID = 0;
+            enemy.CharaInitID = -1;
+            enemy.UnkT78 = 128;
+            enemy.UnkT84 = 1;
+            enemy.ShadowDest = true;
+            enemy.DrawByReflectCam = true;
+            enemy.Name = $"{enemy.ModelName}_{counters.GetEnemy(enemy.ModelName):D4}";
+            enemy.LodParamID = -1;
+            enemy.UnkE0E = -1;
+
+            return enemy;
+        }
+
         public class Counters {
             Dictionary<ModelInfo, int> mapPieces;
             Dictionary<CollisionInfo, int> collisions;
             Dictionary<ObjectInfo, int> objects;
             Dictionary<ObjActInfo, int> objActs;
+            Dictionary<string, int> enemies;
             int players;
             public Counters() {
                 mapPieces = new();
                 collisions = new();
                 objects = new();
                 objActs = new();
+                enemies = new();
                 players = 1;      // Start at 1 since 0 is always the default debug spawn point
             }
 
@@ -367,6 +408,10 @@ namespace PortJob {
 
             public int GetObjAct(ObjActInfo objActInfo) {
                 if (objActs.ContainsKey(objActInfo)) { return objActs[objActInfo]++; } else { objActs.Add(objActInfo, 1); return 0; }
+            }
+
+            public int GetEnemy(string enemyType) {
+                if (enemies.ContainsKey(enemyType)) { return enemies[enemyType]++; } else { enemies.Add(enemyType, 1); return 0; }
             }
         }
 

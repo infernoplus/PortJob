@@ -58,6 +58,8 @@ namespace CommonFunc {
         public static bool GENERATE_NICE_TERRAIN => Settings.GENERATE_NICE_TERRAIN;  // A little slow but blends terrain much nicer
         public static bool GENERATE_LOW_TERRAIN = true;                              // Generate distant low detail terrain
         public static bool GENERATE_DISTANT_OBJECTS = GENERATE_LOW_TERRAIN && true;  // This should only be on if low terrain is also on.
+
+        public static bool GENERATE_TEST_ENEMIES = true;    // Temporary flag, turns of enemy generation
         
         public static readonly float INTERIOR_CELL_OVERSIZE = 8f; // Extra space beyond content position bounding box, because i dont' want to actually open every model and calculate real bounds~
         public static readonly float INTERIOR_CELL_BUFFER = 8f; // Spacing between cells
