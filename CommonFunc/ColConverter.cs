@@ -13,9 +13,8 @@
         public class ColConverter {
             public static void Run(string objFolderPath) {
 
-                MakeHKX3Files(objFolderPath);
-
-                //CleanupTempHKXFiles(objFolderPath);
+                MakeHKXFiles(objFolderPath);
+                CleanupTempHKXFiles(objFolderPath);
             }
             private static void MakeHKX3Files(string objFolderPath) {
                 

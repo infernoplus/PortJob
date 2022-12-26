@@ -82,50 +82,6 @@ namespace CommonFunc {
             // nvmBND.Write($"{outputPath}map\\{mapName}\\m{area_block}_00_00.nvmhktbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9); //Whole bnd is compressed. 
         }
 
-        /* Temporary code for packing up hkx and navmesh BNDss */
-        public static void PackTestColAndNavMeshes(int area, int block) {
-            /* Setup area_block and output path*/
-            string outputPath = Settings.OutputPath;
-            string area_block = $"{area:D2}_{block:D2}";
-            string mapName = $"m{area_block}_00_00";
-            string hPath = $"{mapName}\\h{area_block}_00_00";
-            string lPath = $"{mapName}\\l{area_block}_00_00";
-
-            string[] colFiles = Directory.GetFiles($"{outputPath}\\map\\{mapName}\\hkx\\col", "*.hkx.dcx");
-            int startId = 0; // h col binder file IDs start here and increment by 1
-            BXF4 lBXF = new();
-            BXF4 hBXF = new();
-            foreach (string col in colFiles) {
-                byte[] bytes = File.ReadAllBytes(col);
-                string name = Path.GetFileName(col).Replace("-", "\\");
-
-                BinderFile hBinder = new(flags: Binder.FileFlags.Flag1, id: startId, name: name, bytes: bytes); //in-line parameter names help here to tell what is going on, but are not necessary.
-                hBXF.Files.Add(hBinder);
-
-                BinderFile lBinder = new(flags: Binder.FileFlags.Flag1, id: startId, name: name.Replace("\\h", "\\l"), bytes: bytes);
-                lBXF.Files.Add(lBinder);
-                startId++;
-            }
-
-            hBXF.Write($"{outputPath}map\\{hPath}.hkxbhd", $"{outputPath}map\\{hPath}.hkxbdt");
-            lBXF.Write($"{outputPath}map\\{lPath}.hkxbhd", $"{outputPath}map\\{lPath}.hkxbdt");
-
-            /* Write the nav mesh bnd */
-            string[] navFiles = Directory.GetFiles($"{outputPath}\\map\\{mapName}\\hkx\\nav", "*.hkx");
-            BND4 nvmBND = new();
-            int nStartId = 1000; // navmesh binder file IDs start here and increment by 1
-            foreach (string nav in navFiles) {
-                byte[] bytes = File.ReadAllBytes(nav);
-                string name = Path.GetFileName(nav).Replace("-", "\\"); //Have to seperate the name here, cause the path is long AF
-                string path = $"N:\\FDP\\data\\INTERROOT_win64\\map\\{mapName}\\navimesh\\bind6\\{name}";
-                BinderFile nBinder = new(flags: Binder.FileFlags.Flag1, id: nStartId, name: path, bytes: bytes);
-                nvmBND.Files.Add(nBinder);
-                nStartId++;
-
-            }
-            nvmBND.Write($"{outputPath}map\\{mapName}\\m{area_block}_00_00.nvmhktbnd.dcx", DCX.Type.DCX_DFLT_10000_44_9); //Whole bnd is compressed. 
-        }
-
         /* If you don't like these summaries, I will replace them with regular comments.
          They show up in the tooltips for the method, though, and are quite helpful at times! */
         /// <summary>
